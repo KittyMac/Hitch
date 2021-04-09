@@ -20,6 +20,20 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hello.hitch().uppercase().description, hello.uppercased())
     }
     
+    func testIteration() {
+        let hello = "Hello".hitch()
+        
+        var i = 0
+        for x in hello {
+            i += Int(x)
+        }
+        for x in hello {
+            i += Int(x)
+        }
+        
+        XCTAssertEqual(i, 1000)
+    }
+    
     
     
     // Performance comparison tests to confirm bstring is faster than Swift strings
@@ -53,7 +67,7 @@ final class HitchTests: XCTestCase {
     }
     
     
-    func testToUpperAndToLower() {
+    func testToUpperAndToLowerPerf() {
         var swiftLorem = lorem
         let hitchLorem = lorem.hitch()
         
@@ -79,7 +93,7 @@ final class HitchTests: XCTestCase {
         )
     }
     
-    func testAppendStaticMemory() {
+    func testAppendStaticMemoryPerf() {
         var swiftLorem = lorem
         let hitchLorem = lorem.hitch()
         
@@ -96,7 +110,7 @@ final class HitchTests: XCTestCase {
         )
     }
     
-    func testAppendDynamicMemory() {
+    func testAppendDynamicMemoryPerf() {
         var swiftLorem = lorem
         let hitchLorem = lorem.hitch()
         XCTAssert(
@@ -109,10 +123,9 @@ final class HitchTests: XCTestCase {
         )
     }
     
-    /*
-    func testIteration() {
+    func testIterationPerf() {
         let swiftLorem = lorem
-        let hitchLorem = lorem.hitch
+        let hitchLorem = lorem.hitch()
         
         XCTAssert(
             test (1000, #function,
@@ -129,12 +142,6 @@ final class HitchTests: XCTestCase {
             })
         )
     }
-        
-    
-    
-    
-    
-    */
 
     static var allTests = [
         ("testSimpleCreate", testSimpleCreate),

@@ -1,32 +1,35 @@
 import Foundation
 import bstrlib
 
+let nullptr = UnsafeMutablePointer<UInt8>(bitPattern: 0)!
+
 public extension String {
     func hitch() -> Hitch {
         return Hitch(stringLiteral: self)
     }
 }
 
-/*
-public struct HitchIterator: Sequence, IteratorProtocol {
-    var startPtr: UnsafeMutablePointer<CChar>
-    var endPtr: UnsafeMutablePointer<CChar>
+public struct HitchIterator: IteratorProtocol {
+    private var index = 0
+    private var max = 0
+    private let storage: UnsafeMutablePointer<UInt8>
 
-    public init(hitch: Hitch) {
-        startPtr = hitch.storage
-        endPtr = hitch.storage + hitch.size
+    init(hitch: Hitch) {
+        max = hitch.count
+        storage = hitch.bstr?.pointee.data ?? nullptr
     }
 
-    @inline(__always)
-    public mutating func next() -> CChar? {
-        defer { startPtr += 1 }
-        return startPtr < endPtr ? startPtr.pointee : nil
+    public mutating func next() -> UInt8? {
+        guard index < max else { return nil }
+        let value = storage[index]
+        index += 1
+        return value
     }
 }
- */
 
-public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral {
+public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence {
     fileprivate var bstr: bstring?
+    private var iterIndex: Int32 = 0
 
     public var description: String {
         if let bstr = bstr,
@@ -38,6 +41,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral {
 
     deinit {
         bdestroy(bstr)
+    }
+
+    public func makeIterator() -> HitchIterator {
+        return HitchIterator(hitch: self)
     }
 
     required public init (stringLiteral: String) {
