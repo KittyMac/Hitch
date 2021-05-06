@@ -89,6 +89,12 @@ final class HitchTests: XCTestCase {
         )
     }
     
+    func testContainsSingle() {
+        let hitchLorem = lorem.hitch()
+        XCTAssertTrue(hitchLorem.contains(111))
+        XCTAssertFalse(hitchLorem.contains(16))
+    }
+    
     func testHashable() {
         let swiftKey1 = "key1"
         let hitchKey1 = swiftKey1.hitch()

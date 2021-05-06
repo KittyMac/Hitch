@@ -149,4 +149,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         let hitch = string.hitch()
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
+
+    @discardableResult
+    @inline(__always)
+    public func contains<T: FixedWidthInteger>(_ char: T) -> Bool {
+        return bstrchrp(bstr, Int32(char), 0) != BSTR_ERR
+    }
 }
