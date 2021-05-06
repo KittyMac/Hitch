@@ -27,7 +27,7 @@ public struct HitchIterator: IteratorProtocol {
     }
 }
 
-public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Equatable {
+public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Equatable, Codable {
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
         if lhs === rhs {
             return true
@@ -43,6 +43,17 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public static func == (lhs: Hitch, rhs: String) -> Bool {
         let hitch = rhs.hitch()
         return biseq(lhs.bstr, hitch.bstr) == 1
+    }
+
+    public convenience init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let stringLiteral = try container.decode(String.self)
+        self.init(stringLiteral: stringLiteral)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.description)
     }
 
     fileprivate var bstr: bstring?
