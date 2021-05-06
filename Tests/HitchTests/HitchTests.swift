@@ -89,6 +89,19 @@ final class HitchTests: XCTestCase {
         )
     }
     
+    func testDirectAccess() {
+        lorem.hitch().withBytes { (bytes) in
+            XCTAssertEqual(bytes[6], 105)
+            XCTAssertEqual(bytes[3], 101)
+        }
+    }
+    
+    func testSubscript() {
+        let hitchLorem = lorem.hitch()
+        XCTAssertEqual(hitchLorem[6], 105)
+        XCTAssertEqual(hitchLorem[3], 101)
+    }
+    
     func testContainsSingle() {
         let hitchLorem = lorem.hitch()
         XCTAssertTrue(hitchLorem.contains(111))

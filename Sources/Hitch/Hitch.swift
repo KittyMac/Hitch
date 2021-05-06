@@ -45,10 +45,29 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return biseq(lhs.bstr, hitch.bstr) == 1
     }
 
-    public convenience init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let stringLiteral = try container.decode(String.self)
-        self.init(stringLiteral: stringLiteral)
+    public func withBytes(_ callback: (UnsafeMutablePointer<UInt8>) -> Void) {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+            callback(data)
+        }
+    }
+
+    public subscript (index: Int) -> UInt8 {
+        get {
+            if let bstr = bstr,
+                let data = bstr.pointee.data,
+                index < bstr.pointee.slen {
+                return data[index]
+            }
+            return 0
+        }
+        set(newValue) {
+            if let bstr = bstr,
+                let data = bstr.pointee.data,
+                index < bstr.pointee.slen {
+                data[index] = newValue
+            }
+        }
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -58,6 +77,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         } else {
             hasher.combine(0)
         }
+    }
+
+    public convenience init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let stringLiteral = try container.decode(String.self)
+        self.init(stringLiteral: stringLiteral)
     }
 
     public func encode(to encoder: Encoder) throws {
