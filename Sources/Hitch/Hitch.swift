@@ -27,7 +27,7 @@ public struct HitchIterator: IteratorProtocol {
     }
 }
 
-public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Equatable, Codable {
+public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Equatable, Codable, Hashable {
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
         if lhs === rhs {
             return true
@@ -49,6 +49,15 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         let container = try decoder.singleValueContainer()
         let stringLiteral = try container.decode(String.self)
         self.init(stringLiteral: stringLiteral)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+            hasher.combine(bytes: UnsafeRawBufferPointer(start: data, count: Int(bstr.pointee.slen)))
+        } else {
+            hasher.combine(0)
+        }
     }
 
     public func encode(to encoder: Encoder) throws {

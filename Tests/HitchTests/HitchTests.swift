@@ -89,7 +89,30 @@ final class HitchTests: XCTestCase {
         )
     }
     
-    func testEqualityPerf() {
+    func testHashable() {
+        let swiftKey1 = "key1"
+        let hitchKey1 = swiftKey1.hitch()
+        
+        let swiftKey2 = "key2"
+        let hitchKey2 = swiftKey2.hitch()
+        
+        var swiftDict: [String: Int] = [:]
+        var hitchDict: [Hitch: Int] = [:]
+        
+        swiftDict[swiftKey1] = 1
+        hitchDict[hitchKey1] = 1
+        
+        swiftDict[swiftKey2] = 2
+        hitchDict[hitchKey2] = 2
+        
+        XCTAssertEqual(swiftDict[swiftKey1] ?? 0, 1)
+        XCTAssertEqual(hitchDict[hitchKey1] ?? 0, 1)
+        
+        XCTAssertEqual(swiftDict[swiftKey2] ?? 0, 2)
+        XCTAssertEqual(hitchDict[hitchKey2] ?? 0, 2)
+    }
+    
+    func testEquality() {
         let swiftLorem = lorem
         let hitchLorem = lorem.hitch()
         
@@ -97,19 +120,6 @@ final class HitchTests: XCTestCase {
         XCTAssertTrue(swiftLorem == hitchLorem)
         XCTAssertTrue(hitchLorem == swiftLorem)
         XCTAssertTrue(hitchLorem == hitchLorem)
-        /*
-        XCTAssert(
-            test (1000, #function,
-            {
-                for _ in 1...1000 {
-                    swiftLorem == swiftLorem
-                }
-            }, {
-                for _ in 1...1000 {
-                    hitchLorem == hitchLorem
-                }
-            })
-        )*/
     }
     
     func testToUpperAndToLowerPerf() {
