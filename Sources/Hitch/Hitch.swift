@@ -147,13 +147,6 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     @inline(__always)
-    public func append(_ character: CChar) -> Self {
-        bconchar(bstr, character)
-        return self
-    }
-
-    @discardableResult
-    @inline(__always)
     public func append(_ hitch: Hitch) -> Self {
         bconcat(bstr, hitch.bstr)
         return self
@@ -170,7 +163,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     @inline(__always)
     public func append<T: FixedWidthInteger>(_ char: T) -> Self {
-        bconchar(bstr, Int8(char))
+        bconchar(bstr, UInt8(clamping: char))
         return self
     }
 

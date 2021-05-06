@@ -68,7 +68,7 @@ extern bstring bmidstr (const_bstring b, int left, int len);
 
 /* Various standard manipulations */
 extern int bconcat (bstring b0, const_bstring b1);
-extern int bconchar (bstring b0, char c);
+extern int bconchar (bstring b0, unsigned char c);
 extern int bcatcstr (bstring b, const char * s);
 extern int bcatblk (bstring b, const void * s, int len);
 extern int binsert (bstring s1, int pos, const_bstring s2, unsigned char fill);

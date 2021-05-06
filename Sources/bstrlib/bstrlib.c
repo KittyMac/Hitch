@@ -409,15 +409,15 @@ bstring aux = (bstring) b1;
  *
  *  Concatenate the single character c to the bstring b.
  */
-int bconchar (bstring b, char c) {
+int bconchar (bstring b, unsigned char c) {
 int d;
 
 	if (b == NULL) return BSTR_ERR;
 	d = b->slen;
 	if ((d | (b->mlen - d)) < 0 || balloc (b, d + 2) != BSTR_OK)
 		return BSTR_ERR;
-	b->data[d] = (unsigned char) c;
-	b->data[d + 1] = (unsigned char) '\0';
+	b->data[d] = c;
+	b->data[d + 1] = '\0';
 	b->slen++;
 	return BSTR_OK;
 }
