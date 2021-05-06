@@ -197,6 +197,30 @@ int ballocmin (bstring b, int len) {
 	return BSTR_OK;
 }
 
+/*  bstring bempty ()
+*
+*  Creates an empty bstring
+*/
+bstring bempty () {
+bstring b;
+int i;
+size_t j;
+
+    j = 0;
+    i = snapUpSize ((int) (j + (2 - (j != 0))));
+    if (i <= (int) j) return NULL;
+
+    b = (bstring) bstr__alloc (sizeof (struct tagbstring));
+    if (NULL == b) return NULL;
+    b->slen = (int) j;
+    if (NULL == (b->data = (unsigned char *) bstr__alloc (b->mlen = i))) {
+        bstr__free (b);
+        return NULL;
+    }
+
+    return b;
+}
+
 /*  bstring bfromcstr (const char * str)
  *
  *  Create a bstring which contains the contents of the '\0' terminated char *

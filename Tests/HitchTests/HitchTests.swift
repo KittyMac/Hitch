@@ -169,10 +169,9 @@ final class HitchTests: XCTestCase {
     
     func testAppendStaticMemoryPerf() {
         var swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
+        let hitchLorem = Hitch(capacity: 455682)
         
         swiftLorem.reserveCapacity(455682)
-        hitchLorem.reserveCapacity(455682)
         
         XCTAssert(
             test (12, #function,

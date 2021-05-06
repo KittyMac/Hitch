@@ -43,6 +43,7 @@ typedef const struct tagbstring * const_bstring;
 
 /* Copy functions */
 #define cstr2bstr bfromcstr
+extern bstring bempty ();
 extern bstring bfromcstr (const char * str);
 extern bstring bfromcstralloc (int mlen, const char * str);
 extern bstring bfromcstrrangealloc (int minl, int maxl, const char* str);

@@ -115,6 +115,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    public init(capacity: Int) {
+        bstr = bempty()
+        reserveCapacity(capacity)
+    }
+
     public var count: Int {
         return Int(bstr?.pointee.slen ?? 0)
     }
@@ -159,6 +164,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func append(_ string: String) -> Self {
         let hitch = string.hitch()
         bconcat(bstr, hitch.bstr)
+        return self
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func append<T: FixedWidthInteger>(_ char: T) -> Self {
+        bconchar(bstr, Int8(char))
         return self
     }
 
