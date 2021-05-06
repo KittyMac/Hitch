@@ -66,6 +66,51 @@ final class HitchTests: XCTestCase {
         return hitchTime < swiftTime
     }
     
+    func testContainsPerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        let swiftNeedle = "nulla pariatur"
+        let hitchNeedle = swiftNeedle.hitch()
+        
+        XCTAssertTrue(swiftLorem.contains(swiftNeedle))
+        XCTAssertTrue(hitchLorem.contains(hitchNeedle))
+        
+        XCTAssert(
+            test (1000, #function,
+            {
+                for _ in 1...1000 {
+                    _ = swiftLorem.contains(swiftNeedle)
+                }
+            }, {
+                for _ in 1...1000 {
+                    hitchLorem.contains(hitchNeedle)
+                }
+            })
+        )
+    }
+    
+    func testEqualityPerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        
+        XCTAssertTrue(swiftLorem == swiftLorem)
+        XCTAssertTrue(swiftLorem == hitchLorem)
+        XCTAssertTrue(hitchLorem == swiftLorem)
+        XCTAssertTrue(hitchLorem == hitchLorem)
+        /*
+        XCTAssert(
+            test (1000, #function,
+            {
+                for _ in 1...1000 {
+                    swiftLorem == swiftLorem
+                }
+            }, {
+                for _ in 1...1000 {
+                    hitchLorem == hitchLorem
+                }
+            })
+        )*/
+    }
     
     func testToUpperAndToLowerPerf() {
         var swiftLorem = lorem

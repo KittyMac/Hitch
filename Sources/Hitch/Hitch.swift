@@ -27,7 +27,24 @@ public struct HitchIterator: IteratorProtocol {
     }
 }
 
-public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence {
+public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Equatable {
+    public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
+        if lhs === rhs {
+            return true
+        }
+        return biseq(lhs.bstr, rhs.bstr) == 1
+    }
+
+    public static func == (lhs: String, rhs: Hitch) -> Bool {
+        let hitch = lhs.hitch()
+        return biseq(hitch.bstr, rhs.bstr) == 1
+    }
+
+    public static func == (lhs: Hitch, rhs: String) -> Bool {
+        let hitch = rhs.hitch()
+        return biseq(lhs.bstr, hitch.bstr) == 1
+    }
+
     fileprivate var bstr: bstring?
     private var iterIndex: Int32 = 0
 
@@ -95,7 +112,21 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     @inline(__always)
     public func append(_ string: String) -> Self {
-        bconcat(bstr, string.hitch().bstr)
+        let hitch = string.hitch()
+        bconcat(bstr, hitch.bstr)
         return self
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func contains(_ hitch: Hitch) -> Bool {
+        return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func contains(_ string: String) -> Bool {
+        let hitch = string.hitch()
+        return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
 }
