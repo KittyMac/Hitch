@@ -120,6 +120,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         reserveCapacity(capacity)
     }
 
+    public init() {
+        bstr = bempty()
+    }
+
     public var count: Int {
         return Int(bstr?.pointee.slen ?? 0)
     }
