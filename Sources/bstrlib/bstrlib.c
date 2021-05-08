@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include "bstrlib.h"
+#include <time.h>
 
 /* Optionally include a mechanism for debugging memory */
 
@@ -1107,6 +1108,46 @@ int bdestroy (bstring b) {
 
 	bstr__free (b);
 	return BSTR_OK;
+}
+
+int btoepoch (const_bstring b) {
+    // Handles just this one date format
+    // 4/30/2021 8:19:27 AM
+    if (b == NULL || b->slen < 0 || b->mlen <= 0 || b->mlen < b->slen ||
+        b->data == NULL)
+        return BSTR_ERR;
+    
+    struct tm ti = {0};
+    
+    if (b->data[b->slen-2] == 'A') {
+        if (sscanf((const char *)b->data, "%d/%d/%d %d:%d:%d",
+                   &ti.tm_mon,
+                   &ti.tm_mday,
+                   &ti.tm_year,
+                   &ti.tm_hour,
+                   &ti.tm_min,
+                   &ti.tm_sec) != 6) {
+            return 0;
+        }
+    } else {
+        if (sscanf((const char *)b->data, "%d/%d/%d %d:%d:%d",
+                   &ti.tm_mon,
+                   &ti.tm_mday,
+                   &ti.tm_year,
+                   &ti.tm_hour,
+                   &ti.tm_min,
+                   &ti.tm_sec) != 6) {
+            return 0;
+        }
+        
+        ti.tm_hour += 12;
+    }
+    
+    ti.tm_hour -= 1;
+    ti.tm_year -= 1900;
+    ti.tm_mon -= 1;
+
+    return mktime(&ti);
 }
 
 /*  int binstr (const_bstring b1, int pos, const_bstring b2)

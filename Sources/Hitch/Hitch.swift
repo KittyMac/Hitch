@@ -241,4 +241,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
         return nil
     }
+
+    @discardableResult
+    @inline(__always)
+    public func toEpoch() -> Int {
+        return Int(btoepoch(bstr))
+    }
 }

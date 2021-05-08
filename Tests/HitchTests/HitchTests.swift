@@ -141,6 +141,14 @@ final class HitchTests: XCTestCase {
         XCTAssertTrue(hitchLorem == hitchLorem)
     }
     
+    func testEpoch() {
+        let test1 = "4/30/2021 8:19:27 AM".hitch()
+        let test2 = "4/30/2021 8:19:27 PM".hitch()
+        
+        XCTAssertEqual(test1.toEpoch(), 1619785167)
+        XCTAssertEqual(test2.toEpoch(), 1619828367)
+    }
+    
     func testExtract() {
         let test1 = """
         "value1": 27,

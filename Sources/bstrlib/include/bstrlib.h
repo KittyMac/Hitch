@@ -92,6 +92,7 @@ extern int biseqcstr (const_bstring b, const char * s);
 extern int biseqcstrcaseless (const_bstring b, const char * s);
 extern int bstrcmp (const_bstring b0, const_bstring b1);
 extern int bstrncmp (const_bstring b0, const_bstring b1, int n);
+extern int btoepoch (const_bstring b);
 extern int binstr (const_bstring s1, int pos, const_bstring s2);
 extern int binstrr (const_bstring s1, int pos, const_bstring s2);
 extern int binstrcaseless (const_bstring s1, int pos, const_bstring s2);
