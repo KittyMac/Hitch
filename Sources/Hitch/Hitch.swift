@@ -200,10 +200,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         guard let bstr = bstr else { return nil }
         var lhsPos = binstr(bstr, 0, lhs.bstr)
         guard lhsPos != BSTR_ERR else { return nil }
-        let rhsPos = binstr(bstr, lhsPos, rhs.bstr)
-        guard rhsPos != BSTR_ERR else { return Hitch(bstr: bmidstr(bstr, lhsPos, bstr.pointee.slen)) }
 
         lhsPos += Int32(lhs.count)
+        let rhsPos = binstr(bstr, lhsPos, rhs.bstr)
+        guard rhsPos != BSTR_ERR else { return Hitch(bstr: bmidstr(bstr, lhsPos, bstr.pointee.slen)) }
         return Hitch(bstr: bmidstr(bstr, lhsPos, (rhsPos - lhsPos)))
     }
 

@@ -146,11 +146,13 @@ final class HitchTests: XCTestCase {
         "value1": 27,
         "value2": 27,
         value3: 27,
+        "value4": "6.0",
         """.hitch()
         
         XCTAssertEqual(test1.extract(#""value1""#, ",")?.toInt() ?? 0, 27)
         XCTAssertEqual(test1.extract(#""value2""#, ",")?.toInt() ?? 0, 27)
         XCTAssertEqual(test1.extract(#"value3"#, ",")?.toInt() ?? 0, 27)
+        XCTAssertEqual(test1.extract(#""value4": ""#, "\""), "6.0")
     }
     
     func testToUpperAndToLowerPerf() {
