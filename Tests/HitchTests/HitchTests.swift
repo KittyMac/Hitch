@@ -141,6 +141,18 @@ final class HitchTests: XCTestCase {
         XCTAssertTrue(hitchLorem == hitchLorem)
     }
     
+    func testExtract() {
+        let test1 = """
+        "value1": 27,
+        "value2": 27,
+        value3: 27,
+        """.hitch()
+        
+        XCTAssertEqual(test1.extract(#""value1""#, ",")?.toInt() ?? 0, 27)
+        XCTAssertEqual(test1.extract(#""value2""#, ",")?.toInt() ?? 0, 27)
+        XCTAssertEqual(test1.extract(#"value3"#, ",")?.toInt() ?? 0, 27)
+    }
+    
     func testToUpperAndToLowerPerf() {
         var swiftLorem = lorem
         let hitchLorem = lorem.hitch()

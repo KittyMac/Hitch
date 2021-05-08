@@ -124,6 +124,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         bstr = bempty()
     }
 
+    private init(bstr: bstring) {
+        self.bstr = bstr
+    }
+
     public var count: Int {
         return Int(bstr?.pointee.slen ?? 0)
     }
@@ -188,5 +192,53 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inline(__always)
     public func contains<T: FixedWidthInteger>(_ char: T) -> Bool {
         return bstrchrp(bstr, Int32(char), 0) != BSTR_ERR
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
+        guard let bstr = bstr else { return nil }
+        var lhsPos = binstr(bstr, 0, lhs.bstr)
+        guard lhsPos != BSTR_ERR else { return nil }
+        let rhsPos = binstr(bstr, lhsPos, rhs.bstr)
+        guard rhsPos != BSTR_ERR else { return Hitch(bstr: bmidstr(bstr, lhsPos, bstr.pointee.slen)) }
+
+        lhsPos += Int32(lhs.count)
+        return Hitch(bstr: bmidstr(bstr, lhsPos, (rhsPos - lhsPos)))
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func extract(_ lhs: String, _ rhs: String) -> Hitch? {
+        return extract(lhs.hitch(), rhs.hitch())
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func extract(_ lhs: Hitch, _ rhs: String) -> Hitch? {
+        return extract(lhs, rhs.hitch())
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func extract(_ lhs: String, _ rhs: Hitch) -> Hitch? {
+        return extract(lhs.hitch(), rhs)
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func toInt() -> Int? {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+            var value = 0
+            for idx in 0..<Int(bstr.pointee.slen) {
+                let char = data[idx]
+                if char >= 48 && char <= 57 {
+                    value = (value * 10) &+ Int(char - 48)
+                }
+            }
+            return value
+        }
+        return nil
     }
 }
