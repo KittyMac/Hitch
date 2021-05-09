@@ -132,6 +132,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Int(bstr?.pointee.slen ?? 0)
     }
 
+    public func replace(with string: String) {
+        bdestroy(bstr)
+        string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
+            self.bstr = bfromcstr(bytes)
+        }
+    }
+
     @discardableResult
     @inline(__always)
     public func reserveCapacity(_ newCapacity: Int) -> Self {
