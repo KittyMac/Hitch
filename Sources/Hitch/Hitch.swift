@@ -117,7 +117,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     public init(data: Data) {
         data.withUnsafeBytes { bytes in
-            bstr = bfromcstr(bytes)
+            bstr = blk2bstr(bytes, Int32(data.count))
         }
     }
 
