@@ -66,29 +66,6 @@ final class HitchTests: XCTestCase {
         return hitchTime < swiftTime
     }
     
-    func testContainsPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        let swiftNeedle = "nulla pariatur"
-        let hitchNeedle = swiftNeedle.hitch()
-        
-        XCTAssertTrue(swiftLorem.contains(swiftNeedle))
-        XCTAssertTrue(hitchLorem.contains(hitchNeedle))
-        
-        XCTAssert(
-            test (1000, #function,
-            {
-                for _ in 1...1000 {
-                    _ = swiftLorem.contains(swiftNeedle)
-                }
-            }, {
-                for _ in 1...1000 {
-                    hitchLorem.contains(hitchNeedle)
-                }
-            })
-        )
-    }
-    
     func testDirectAccess() {
         lorem.hitch().withBytes { (bytes) in
             XCTAssertEqual(bytes[6], 105)
@@ -193,6 +170,29 @@ final class HitchTests: XCTestCase {
                     } else {
                         hitchLorem.uppercase()
                     }
+                }
+            })
+        )
+    }
+    
+    func testContainsPerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        let swiftNeedle = "nulla pariatur"
+        let hitchNeedle = swiftNeedle.hitch()
+        
+        XCTAssertTrue(swiftLorem.contains(swiftNeedle))
+        XCTAssertTrue(hitchLorem.contains(hitchNeedle))
+        
+        XCTAssert(
+            test (1000, #function,
+            {
+                for _ in 1...1000 {
+                    _ = swiftLorem.contains(swiftNeedle)
+                }
+            }, {
+                for _ in 1...1000 {
+                    hitchLorem.contains(hitchNeedle)
                 }
             })
         )
