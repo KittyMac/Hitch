@@ -115,6 +115,20 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    public init(data: Data) {
+        data.withUnsafeBytes { bytes in
+            bstr = bfromcstr(bytes)
+        }
+    }
+
+    public var data: Data {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+            return Data(bytesNoCopy: data, count: Int(bstr.pointee.slen), deallocator: .none)
+        }
+        return Data()
+    }
+
     public init(capacity: Int) {
         bstr = bempty()
         reserveCapacity(capacity)
