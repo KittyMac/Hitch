@@ -146,6 +146,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Int(bstr?.pointee.slen ?? 0)
     }
 
+    public func clear() {
+        bdestroy(bstr)
+        bstr = bempty()
+    }
+
     public func replace(with string: String) {
         bdestroy(bstr)
         string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
