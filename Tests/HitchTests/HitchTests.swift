@@ -119,11 +119,14 @@ final class HitchTests: XCTestCase {
     }
     
     func testEpoch() {
-        let test1 = "4/30/2021 8:19:27 AM".hitch()
-        let test2 = "4/30/2021 8:19:27 PM".hitch()
+        XCTAssertEqual("4/30/2021 12:00:00 AM".hitch().toEpoch(), 1619740800)
+        XCTAssertEqual("4/30/2021 1:00:00 AM".hitch().toEpoch(), 1619744400)
+        XCTAssertEqual("4/30/2021 8:19:27 AM".hitch().toEpoch(), 1619770767)
+        XCTAssertEqual("4/30/2021 8:19:27 PM".hitch().toEpoch(), 1619813967)
+        XCTAssertEqual("4/30/2021 12:00:00 PM".hitch().toEpoch(), 1619784000)
+        XCTAssertEqual("4/30/2021 1:19:27 PM".hitch().toEpoch(), 1619788767)
+        XCTAssertEqual("4/30/2021 11:59:59 PM".hitch().toEpoch(), 1619827199)
         
-        XCTAssertEqual(test1.toEpoch(), 1619785167)
-        XCTAssertEqual(test2.toEpoch(), 1619828367)
     }
     
     func testData() {

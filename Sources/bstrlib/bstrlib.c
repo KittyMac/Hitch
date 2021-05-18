@@ -1110,8 +1110,39 @@ int bdestroy (bstring b) {
 	return BSTR_OK;
 }
 
+time_t my_timegm(register struct tm * t)
+/* struct tm to seconds since Unix epoch */
+{
+    register long year;
+    register time_t result;
+#define MONTHSPERYEAR   12      /* months per calendar year */
+    static const int cumdays[MONTHSPERYEAR] =
+        { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+
+    /*@ +matchanyintegral @*/
+    year = 1900 + t->tm_year + t->tm_mon / MONTHSPERYEAR;
+    result = (year - 1970) * 365 + cumdays[t->tm_mon % MONTHSPERYEAR];
+    result += (year - 1968) / 4;
+    result -= (year - 1900) / 100;
+    result += (year - 1600) / 400;
+    if ((year % 4) == 0 && ((year % 100) != 0 || (year % 400) == 0) &&
+        (t->tm_mon % MONTHSPERYEAR) < 2)
+        result--;
+    result += t->tm_mday - 1;
+    result *= 24;
+    result += t->tm_hour;
+    result *= 60;
+    result += t->tm_min;
+    result *= 60;
+    result += t->tm_sec;
+    if (t->tm_isdst == 1)
+        result -= 3600;
+    /*@ -matchanyintegral @*/
+    return (result);
+}
+
 int btoepoch (const_bstring b) {
-    // Handles just this one date format
+    // Handles just this one date format. Timezone is always considered to be UTC
     // 4/30/2021 8:19:27 AM
     if (b == NULL || b->slen < 0 || b->mlen <= 0 || b->mlen < b->slen ||
         b->data == NULL)
@@ -1129,6 +1160,11 @@ int btoepoch (const_bstring b) {
                    &ti.tm_sec) != 6) {
             return 0;
         }
+        
+        if (ti.tm_hour == 12) {
+            ti.tm_hour = 0;
+        }
+        
     } else {
         if (sscanf((const char *)b->data, "%d/%d/%d %d:%d:%d",
                    &ti.tm_mon,
@@ -1140,14 +1176,17 @@ int btoepoch (const_bstring b) {
             return 0;
         }
         
+        if (ti.tm_hour == 12) {
+            ti.tm_hour = 0;
+        }
+        
         ti.tm_hour += 12;
     }
     
-    ti.tm_hour -= 1;
     ti.tm_year -= 1900;
     ti.tm_mon -= 1;
 
-    return mktime(&ti);
+    return my_timegm(&ti);
 }
 
 /*  int binstr (const_bstring b1, int pos, const_bstring b2)
