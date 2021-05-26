@@ -151,7 +151,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     public var count: Int {
-        return Int(bstr?.pointee.slen ?? 0)
+        get {
+            return Int(bstr?.pointee.slen ?? 0)
+        }
+        set {
+            btrunc(bstr, Int32(newValue))
+        }
     }
 
     public func clear() {
