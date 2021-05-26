@@ -121,10 +121,18 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
-    public var data: Data {
+    public var dataNoCopy: Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             return Data(bytesNoCopy: data, count: Int(bstr.pointee.slen), deallocator: .none)
+        }
+        return Data()
+    }
+
+    public var dataCopy: Data {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+            return Data(bytes: data, count: Int(bstr.pointee.slen))
         }
         return Data()
     }
