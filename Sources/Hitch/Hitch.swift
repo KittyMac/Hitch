@@ -142,7 +142,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         if let bstr = bstr,
             let data = bstr.pointee.data {
 
-            let max = Int(bstr.pointee.slen) - 1
+            let max = Int(bstr.pointee.slen)
             var start = inStart
             var end = inEnd
 
@@ -166,7 +166,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         if let bstr = bstr,
             let data = bstr.pointee.data {
 
-            let max = Int(bstr.pointee.slen) - 1
+            let max = Int(bstr.pointee.slen)
             var start = inStart
             var end = inEnd
 
