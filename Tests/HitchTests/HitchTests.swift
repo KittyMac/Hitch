@@ -132,10 +132,20 @@ final class HitchTests: XCTestCase {
     func testData() {
         let hitchLorem = lorem.hitch()
         
-        let loremData = hitchLorem.dataNoCopy
+        let loremData = hitchLorem.dataNoCopy()
         let hitchLorem2 = Hitch(data: loremData)
         
         XCTAssertEqual(hitchLorem, hitchLorem2)
+    }
+    
+    func testSubdata() {
+        let hitchLorem = lorem.hitch()
+        
+        let loremData = hitchLorem.dataNoCopy(start: 6,
+                                              end: 11)
+        let hitchLorem2 = Hitch(data: loremData)
+        
+        XCTAssertEqual(Hitch("ipsum"), hitchLorem2)
     }
     
     func testExtract() {

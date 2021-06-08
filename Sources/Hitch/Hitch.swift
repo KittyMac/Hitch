@@ -121,7 +121,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
-    public var dataNoCopy: Data {
+    public func dataNoCopy() -> Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             return Data(bytesNoCopy: data, count: Int(bstr.pointee.slen), deallocator: .none)
@@ -129,10 +129,58 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
-    public var dataCopy: Data {
+    public func dataCopy() -> Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             return Data(bytes: data, count: Int(bstr.pointee.slen))
+        }
+        return Data()
+    }
+
+    public func dataNoCopy(start inStart: Int = -1,
+                           end inEnd: Int = -1) -> Data {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+
+            let max = Int(bstr.pointee.slen) - 1
+            var start = inStart
+            var end = inEnd
+
+            if start < 0 || start > max {
+                start = 0
+            }
+            if end < 0 || start > max {
+                end = max
+            }
+            if start > end {
+                end = start
+            }
+
+            return Data(bytesNoCopy: data + start, count: end - start, deallocator: .none)
+        }
+        return Data()
+    }
+
+    public func dataCopy(start inStart: Int,
+                         end inEnd: Int) -> Data {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+
+            let max = Int(bstr.pointee.slen) - 1
+            var start = inStart
+            var end = inEnd
+
+            if start < 0 || start > max {
+                start = 0
+            }
+            if end < 0 || start > max {
+                end = max
+            }
+            if start > end {
+                end = start
+            }
+
+            return Data(bytes: data + start, count: end - start)
         }
         return Data()
     }
