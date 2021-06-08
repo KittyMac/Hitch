@@ -264,6 +264,15 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     @inline(__always)
+    public func append(_ data: Data) -> Self {
+        data.withUnsafeBytes { bytes in
+            bcatblk(bstr, bytes, Int32(data.count))
+        }
+        return self
+    }
+
+    @discardableResult
+    @inline(__always)
     public func contains(_ hitch: Hitch) -> Bool {
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
