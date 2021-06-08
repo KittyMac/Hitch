@@ -235,6 +235,28 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     @inline(__always)
+    public func firstIndex(of hitch: Hitch) -> Int? {
+        let index = binstr(bstr, 0, hitch.bstr)
+        return index != BSTR_ERR ? Int(index) : nil
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func firstIndex(of string: String) -> Int? {
+        let hitch = string.hitch()
+        let index = binstr(bstr, 0, hitch.bstr)
+        return index != BSTR_ERR ? Int(index) : nil
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func firstIndex<T: FixedWidthInteger>(of char: T) -> Int? {
+        let index = bstrchrp(bstr, Int32(char), 0)
+        return index != BSTR_ERR ? Int(index) : nil
+    }
+
+    @discardableResult
+    @inline(__always)
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
         guard let bstr = bstr else { return nil }
         var lhsPos = binstr(bstr, 0, lhs.bstr)
