@@ -270,6 +270,20 @@ final class HitchTests: XCTestCase {
             })
         )
     }
+    
+    func testSplitToInt() {
+        let hitch = "1,2,3,4,52345,6,7,8134,9".hitch()
+        var array = [Int]()
+            
+        let parts = hitch.split(separator: 44)
+        for part in parts {
+            guard let part = part.toInt() else { continue }
+            array.append(part)
+        }
+        
+        let result = array.map { String($0) }.joined(separator: ",").hitch()
+        XCTAssertEqual(result, hitch)
+    }
 
     static var allTests = [
         ("testSimpleCreate", testSimpleCreate),

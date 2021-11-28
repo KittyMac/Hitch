@@ -353,6 +353,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                 let char = data[idx]
                 if char >= 48 && char <= 57 {
                     value = (value * 10) &+ Int(char - 48)
+                } else {
+                    return nil
                 }
             }
             return value
