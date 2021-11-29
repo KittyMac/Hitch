@@ -116,9 +116,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     public init(hitch: Hitch) {
-        let data = hitch.dataNoCopy()
-        data.withUnsafeBytes { bytes in
-            bstr = blk2bstr(bytes, Int32(data.count))
+        if let other = hitch.bstr,
+            let data = other.pointee.data {
+            bstr = blk2bstr(data, Int32(other.pointee.slen))
         }
     }
 
