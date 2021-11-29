@@ -271,9 +271,24 @@ final class HitchTests: XCTestCase {
         )
     }
     
-    func testSubstring() {
+    func testSubstring0() {
         let hitch = "Hello world again".hitch()
         XCTAssertEqual(hitch.substring(6, 11), "world")
+    }
+    
+    func testSubstring1() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertNil(hitch.substring(99, 11))
+    }
+    
+    func testSubstring2() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertNil(hitch.substring(99, 120))
+    }
+    
+    func testSubstring3() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertNil(hitch.substring(-100, 120))
     }
     
     func testSplitToInt() {
