@@ -291,6 +291,11 @@ final class HitchTests: XCTestCase {
         XCTAssertNil(hitch.substring(-100, 120))
     }
     
+    func testInitFromHitch() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertEqual(Hitch(hitch: hitch), "Hello world again")
+    }
+    
     func testSplitToInt() {
         let hitch = "1,2,3,4,52345,6,7,8134,9".hitch()
         var array = [Int]()
