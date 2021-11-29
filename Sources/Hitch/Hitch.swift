@@ -322,8 +322,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     @inline(__always)
     public func substring(_ lhsPos: Int, _ rhsPos: Int) -> Hitch? {
-        guard lhsPos >= 0 && lhsPos < count else { return nil }
-        guard rhsPos >= 0 && rhsPos < count else { return nil }
+        guard lhsPos >= 0 && lhsPos <= count else { return nil }
+        guard rhsPos >= 0 && rhsPos <= count else { return nil }
         guard lhsPos < rhsPos else { return nil }
         return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
     }
