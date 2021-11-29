@@ -314,6 +314,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     @inline(__always)
+    public func substring(_ lhsPos: Int, _ rhsPos: Int) -> Hitch? {
+        return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
+    }
+
+    @discardableResult
+    @inline(__always)
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
         guard let bstr = bstr else { return nil }
         var lhsPos = binstr(bstr, 0, lhs.bstr)
