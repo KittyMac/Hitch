@@ -24,13 +24,17 @@ final class HitchTests: XCTestCase {
         let hello = "Hello".hitch()
         
         var i = 0
+        var c = 0
         for x in hello {
+            c += 1
             i += Int(x)
         }
         for x in hello {
+            c += 1
             i += Int(x)
         }
         
+        XCTAssertEqual(c, 10)
         XCTAssertEqual(i, 1000)
     }
     

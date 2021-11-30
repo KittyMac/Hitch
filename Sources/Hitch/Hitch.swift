@@ -21,7 +21,7 @@ public struct HitchIterator: IteratorProtocol {
     internal init(hitch: Hitch) {
         if let data = hitch.raw() {
             ptr = data - 1
-            end = data + hitch.count
+            end = data + hitch.count - 1
         } else {
             ptr = nullptr
             end = ptr
