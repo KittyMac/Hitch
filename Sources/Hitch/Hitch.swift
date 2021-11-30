@@ -278,6 +278,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inline(__always)
+    public func trim() {
+        btrimws(bstr)
+    }
+
     @discardableResult
     @inline(__always)
     public func contains(_ hitch: Hitch) -> Bool {

@@ -291,6 +291,12 @@ final class HitchTests: XCTestCase {
         XCTAssertNil(hitch.substring(-100, 120))
     }
     
+    func testTrim() {
+        let hitch = "   \t\n\r  Hello   \t\n\r  ".hitch()
+        hitch.trim()
+        XCTAssertEqual(hitch, "Hello")
+    }
+    
     func testInitFromHitch() {
         let hitch = "Hello world again".hitch()
         XCTAssertEqual(Hitch(hitch: hitch), "Hello world again")
