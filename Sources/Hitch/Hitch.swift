@@ -1,3 +1,5 @@
+// swiftlint:disable type_body_length
+
 import Foundation
 import bstrlib
 
@@ -10,20 +12,24 @@ public extension String {
 }
 
 public struct HitchIterator: IteratorProtocol {
-    private var index = 0
-    private var max = 0
-    private let storage: UnsafeMutablePointer<UInt8>
+    private var ptr: UnsafeMutablePointer<UInt8>
+    private let end: UnsafeMutablePointer<UInt8>
 
     init(hitch: Hitch) {
-        max = hitch.count
-        storage = hitch.bstr?.pointee.data ?? nullptr
+        if let bstr = hitch.bstr?.pointee {
+            ptr = bstr.data - 1
+            end = bstr.data + Int(bstr.slen)
+        } else {
+            ptr = nullptr
+            end = ptr
+        }
     }
 
+    @inline(__always)
     public mutating func next() -> UInt8? {
-        guard index < max else { return nil }
-        let value = storage[index]
-        index += 1
-        return value
+        if ptr >= end { return nil }
+        ptr += 1
+        return ptr.pointee
     }
 }
 
@@ -106,7 +112,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     public func makeIterator() -> HitchIterator {
-        return HitchIterator(hitch: self)
+       return HitchIterator(hitch: self)
     }
 
     required public init (stringLiteral: String) {
@@ -270,6 +276,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @discardableResult
+        @inline(__always)
+        public func append<T: FixedWidthInteger>(number: T) -> Self {
+            return insert(number: number, index: count)
+        }
+
+    @discardableResult
     @inline(__always)
     public func append(_ data: Data) -> Self {
         data.withUnsafeBytes { bytes in
@@ -300,6 +312,30 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func insert<T: FixedWidthInteger>(_ char: T, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
         binsertch(bstr, Int32(position), 1, UInt8(clamping: char))
+        return self
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
+        let zero: UInt8 = 48
+        let minus: UInt8 = 45
+        if number == 0 {
+            insert(zero, index: index)
+        } else {
+            let isNegative = number < 0
+
+            var value = isNegative ? -1 * number : number
+            while value > 0 {
+                let digit = value % 10
+                value /= 10
+                insert(zero + UInt8(digit), index: index)
+            }
+
+            if isNegative {
+                insert(minus, index: index)
+            }
+        }
         return self
     }
 

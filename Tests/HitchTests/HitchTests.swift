@@ -34,6 +34,27 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(i, 1000)
     }
     
+    func testIterationPerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        
+        XCTAssert(
+            test (100000, #function,
+            {
+                var i = 0
+                for x in swiftLorem.utf8 {
+                    i += Int(x)
+                }
+                //XCTAssertEqual(i, 42248)
+            }, {
+                var i = 0
+                for x in hitchLorem {
+                    i += Int(x)
+                }
+                //XCTAssertEqual(i, 42248)
+            })
+        )
+    }
     
     
     // Performance comparison tests to confirm bstring is faster than Swift strings
@@ -58,9 +79,9 @@ final class HitchTests: XCTestCase {
         let hitchTime = abs(hitchStart.timeIntervalSinceNow / Double(iterations))
         
         if hitchTime < swiftTime {
-            print("\(functionName) is \(swiftTime/hitchTime)x faster" )
+            print("\(functionName) is \(swiftTime/hitchTime)x faster in Hitch" )
         } else {
-            print("\(functionName) is \(hitchTime/swiftTime)x slower" )
+            print("\(functionName) is \(hitchTime/swiftTime)x slower in Hitch" )
         }
         
         return hitchTime < swiftTime
@@ -251,26 +272,6 @@ final class HitchTests: XCTestCase {
         )
     }
     
-    func testIterationPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
-        XCTAssert(
-            test (1000, #function,
-            {
-                var i = 0
-                for x in swiftLorem.utf8 {
-                    i += Int(x)
-                }
-            }, {
-                var i = 0
-                for x in hitchLorem {
-                    i += Int(x)
-                }
-            })
-        )
-    }
-    
     func testSubstring0() {
         let hitch = "Hello world again".hitch()
         XCTAssertEqual(hitch.substring(6, 11), "world")
@@ -300,6 +301,28 @@ final class HitchTests: XCTestCase {
         }
         
         XCTAssertEqual(hitch, "12345")
+    }
+    
+    func testAppendValue() {
+        let values = [
+            12345,
+            0,
+            -12345
+        ]
+        for value in values {
+            XCTAssertEqual("hello: ".hitch().append(number: value), "hello: \(value)".hitch())
+        }
+    }
+    
+    func testInsertValue() {
+        let values = [
+            12345,
+            0,
+            -12345
+        ]
+        for value in values {
+            XCTAssertEqual("hello  world".hitch().insert(number: value, index: 6), "hello \(value) world".hitch())
+        }
     }
     
     func testTrim() {
