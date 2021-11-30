@@ -278,6 +278,41 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @discardableResult
+    @inline(__always)
+    public func insert(_ hitch: Hitch, index: Int) -> Self {
+        let position = Swift.max(Swift.min(index, 0), count)
+        binsert(bstr, Int32(position), hitch.bstr, 32)
+        return self
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func insert(_ string: String, index: Int) -> Self {
+        let hitch = string.hitch()
+        let position = Swift.max(Swift.min(index, 0), count)
+        binsert(bstr, Int32(position), hitch.bstr, 32)
+        return self
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func insert<T: FixedWidthInteger>(_ char: T, index: Int) -> Self {
+        let position = Swift.max(Swift.min(index, count), 0)
+        binsertch(bstr, Int32(position), 1, UInt8(clamping: char))
+        return self
+    }
+
+    @discardableResult
+    @inline(__always)
+    public func insert(_ data: Data, index: Int) -> Self {
+        let position = Swift.max(Swift.min(index, 0), count)
+        data.withUnsafeBytes { bytes in
+            binsertblk(bstr, Int32(position), bytes, Int32(data.count), 32)
+        }
+        return self
+    }
+
     @inline(__always)
     public func trim() {
         btrimws(bstr)
@@ -366,7 +401,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     @inline(__always)
-    public func toInt() -> Int? {
+    public func toInt(_ fuzzy: Bool = true) -> Int? {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             var value = 0
@@ -374,7 +409,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                 let char = data[idx]
                 if char >= 48 && char <= 57 {
                     value = (value * 10) &+ Int(char - 48)
-                } else {
+                } else if fuzzy == false {
                     return nil
                 }
             }

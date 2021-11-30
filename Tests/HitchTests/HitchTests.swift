@@ -291,6 +291,17 @@ final class HitchTests: XCTestCase {
         XCTAssertNil(hitch.substring(-100, 120))
     }
     
+    func testInsert() {
+        let hitch = "".hitch()
+        let values = [53, 52, 51, 50, 49]
+        
+        for value in values {
+            hitch.insert(value, index: 0)
+        }
+        
+        XCTAssertEqual(hitch, "12345")
+    }
+    
     func testTrim() {
         let hitch = "   \t\n\r  Hello   \t\n\r  ".hitch()
         hitch.trim()
