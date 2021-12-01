@@ -367,7 +367,7 @@ final class HitchTests: XCTestCase {
     }
     
     func testSplitToInt() {
-        let hitch = "1,2,3,4,52345,6,7,8134,9".hitch()
+        let hitch = "1,2,3,4,52345,-6,7,8134,9,-72".hitch()
         var array = [Int]()
             
         let parts = hitch.split(separator: 44)

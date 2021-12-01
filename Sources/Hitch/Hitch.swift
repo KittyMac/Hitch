@@ -512,13 +512,19 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         if let bstr = bstr,
             let data = bstr.pointee.data {
             var value = 0
+            var isNegative = false
             for idx in 0..<Int(bstr.pointee.slen) {
                 let char = data[idx]
-                if char >= .zero && char <= .nine {
+                if char == .minus && value == 0 {
+                    isNegative = true
+                } else if char >= .zero && char <= .nine {
                     value = (value * 10) &+ Int(char - .zero)
                 } else if fuzzy == false {
                     return nil
                 }
+            }
+            if isNegative {
+                value = -1 * value
             }
             return value
         }
