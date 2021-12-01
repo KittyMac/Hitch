@@ -43,7 +43,7 @@ final class HitchTests: XCTestCase {
         let hitchLorem = lorem.hitch()
         
         XCTAssert(
-            test (100000, #function,
+            test (1000, #function,
             {
                 var i = 0
                 for x in swiftLorem.utf8 {
@@ -294,6 +294,32 @@ final class HitchTests: XCTestCase {
     func testSubstring3() {
         let hitch = "Hello world again".hitch()
         XCTAssertNil(hitch.substring(-100, 120))
+    }
+    
+    func testUnescaping() {
+        // A, ö, Ж, €, 𝄞
+        let hitch0 = #"\\ \' \" \t \f \n \r \b"#.hitch()
+        hitch0.unescape()
+        XCTAssertEqual(hitch0[0], .backSlash)
+        XCTAssertEqual(hitch0[1], .space)
+        XCTAssertEqual(hitch0[2], .singleQuote)
+        XCTAssertEqual(hitch0[3], .space)
+        XCTAssertEqual(hitch0[4], .doubleQuote)
+        XCTAssertEqual(hitch0[5], .space)
+        XCTAssertEqual(hitch0[6], .tab)
+        XCTAssertEqual(hitch0[7], .space)
+        XCTAssertEqual(hitch0[8], .formFeed)
+        XCTAssertEqual(hitch0[9], .space)
+        XCTAssertEqual(hitch0[10], .newLine)
+        XCTAssertEqual(hitch0[11], .space)
+        XCTAssertEqual(hitch0[12], .carriageReturn)
+        XCTAssertEqual(hitch0[13], .space)
+        XCTAssertEqual(hitch0[14], .bell)
+        XCTAssertEqual(hitch0[15], 0)
+        
+        let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch()
+        hitch1.unescape()
+        XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
     }
     
     func testInsert() {

@@ -12,8 +12,7 @@ set -e
 
 # SwiftLint - Confirms all swift code meets basic formatting standards
 if which swiftlint >/dev/null; then
-  swiftlint autocorrect --path ./Sources/
-  swiftlint --path ./Sources/
+  swiftlint --fix --path ./Sources/
 else
   echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
 fi

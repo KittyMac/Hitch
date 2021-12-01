@@ -292,7 +292,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, 0), count)
-        binsert(bstr, Int32(position), hitch.bstr, 32)
+        binsert(bstr, Int32(position), hitch.bstr, .space)
         return self
     }
 
@@ -300,7 +300,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func insert(_ string: String, index: Int) -> Self {
         let hitch = string.hitch()
         let position = Swift.max(Swift.min(index, 0), count)
-        binsert(bstr, Int32(position), hitch.bstr, 32)
+        binsert(bstr, Int32(position), hitch.bstr, .space)
         return self
     }
 
@@ -313,10 +313,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
-        let zero: UInt8 = 48
-        let minus: UInt8 = 45
         if number == 0 {
-            insert(zero, index: index)
+            insert(UInt8.zero, index: index)
         } else {
             let isNegative = number < 0
 
@@ -324,11 +322,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             while value > 0 {
                 let digit = value % 10
                 value /= 10
-                insert(zero + UInt8(digit), index: index)
+                insert(.zero + UInt8(digit), index: index)
             }
 
             if isNegative {
-                insert(minus, index: index)
+                insert(UInt8.minus, index: index)
             }
         }
         return self
@@ -338,7 +336,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func insert(_ data: Data, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, 0), count)
         data.withUnsafeBytes { bytes in
-            binsertblk(bstr, Int32(position), bytes, Int32(data.count), 32)
+            binsertblk(bstr, Int32(position), bytes, Int32(data.count), .space)
         }
         return self
     }
@@ -390,6 +388,98 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
     }
 
+    public func unescape() {
+        guard let raw = raw() else { return }
+
+        var read = raw
+        var write = raw
+        let end = raw + count
+
+        let append: (UInt8, Int) -> Void = { v, advance in
+            write.pointee = v
+            write += 1
+            read += advance
+        }
+
+        let hex: (UInt8) -> UInt32? = { v in
+            switch v {
+            case .zero: return 0
+            case .one: return 1
+            case .two: return 2
+            case .three: return 3
+            case .four: return 4
+            case .five: return 5
+            case .six: return 6
+            case .seven: return 7
+            case .eight: return 8
+            case .nine: return 9
+            case .a, .A: return 10
+            case .b, .B: return 11
+            case .c, .C: return 12
+            case .d, .D: return 13
+            case .e, .E: return 14
+            case .f, .F: return 15
+            default: return nil
+            }
+        }
+
+        while read < end {
+
+            if read.pointee == UInt8.backSlash {
+                switch read[1] {
+                case .backSlash: append(.backSlash, 2); continue
+                case .singleQuote: append(.singleQuote, 2); continue
+                case .doubleQuote: append(.doubleQuote, 2); continue
+                case .r: append(.carriageReturn, 2); continue
+                case .f: append(.formFeed, 2); continue
+                case .t: append(.tab, 2); continue
+                case .n: append(.newLine, 2); continue
+                case .b: append(.bell, 2); continue
+                case .u:
+                    let convert: (() -> Bool) -> Void = { endCondition in
+                        var value: UInt32 = 0
+                        while read < end && endCondition() == false {
+                            guard let byte = hex(read.pointee) else { break }
+                            value &*= 16
+                            value &+= byte
+                            read += 1
+                        }
+                        if let scalar = UnicodeScalar(value) {
+                            for v in Character(scalar).utf8 {
+                                append(v, 0)
+                            }
+                        }
+                    }
+
+                    if read[2] == .openBracket {
+                        // like: \u{1D11E}
+                        read += 3
+                        convert {
+                            return read.pointee == .closeBracket
+                        }
+                        if read.pointee == .closeBracket {
+                            read += 1
+                        }
+                    } else {
+                        // like: \u20AC
+                        read += 2
+                        let start = read
+                        convert {
+                            return read - start >= 4
+                        }
+                    }
+                    continue
+                default:
+                    break
+                }
+            }
+
+            append(read.pointee, 1)
+        }
+
+        count = (write - raw)
+    }
+
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
         guard let bstr = bstr else { return nil }
@@ -424,8 +514,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             var value = 0
             for idx in 0..<Int(bstr.pointee.slen) {
                 let char = data[idx]
-                if char >= 48 && char <= 57 {
-                    value = (value * 10) &+ Int(char - 48)
+                if char >= .zero && char <= .nine {
+                    value = (value * 10) &+ Int(char - .zero)
                 } else if fuzzy == false {
                     return nil
                 }
