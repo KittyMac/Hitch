@@ -346,6 +346,17 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @discardableResult
+    public func starts(with hitch: Hitch) -> Bool {
+        return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
+    }
+
+    @discardableResult
+    public func starts(with string: String) -> Bool {
+        let hitch = string.hitch()
+        return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
+    }
+
+    @discardableResult
     public func contains(_ hitch: Hitch) -> Bool {
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }

@@ -296,6 +296,26 @@ final class HitchTests: XCTestCase {
         XCTAssertNil(hitch.substring(-100, 120))
     }
     
+    func testStartsWith1() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertTrue(hitch.starts(with: "Hello "))
+    }
+    
+    func testStartsWith2() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertFalse(hitch.starts(with: "ello "))
+    }
+    
+    func testStartsWith3() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertFalse(hitch.starts(with: "world"))
+    }
+    
+    func testStartsWith4() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertTrue(hitch.starts(with: Hitch("Hello world agai")))
+    }
+    
     func testUnescaping() {
         // A, ö, Ж, €, 𝄞
         let hitch0 = #"\\ \' \" \t \f \n \r \b"#.hitch()
