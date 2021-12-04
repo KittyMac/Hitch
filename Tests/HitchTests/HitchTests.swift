@@ -342,6 +342,33 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
     }
     
+    func testEscaping() {
+        let hitch0 = "\\ \' \" \t \n \r".hitch()
+        hitch0.escape(escapeSingleQuote: true)
+        XCTAssertEqual(hitch0[0], .backSlash)
+        XCTAssertEqual(hitch0[1], .backSlash)
+        XCTAssertEqual(hitch0[2], .space)
+        XCTAssertEqual(hitch0[3], .backSlash)
+        XCTAssertEqual(hitch0[4], .singleQuote)
+        XCTAssertEqual(hitch0[5], .space)
+        XCTAssertEqual(hitch0[6], .backSlash)
+        XCTAssertEqual(hitch0[7], .doubleQuote)
+        XCTAssertEqual(hitch0[8], .space)
+        XCTAssertEqual(hitch0[9], .backSlash)
+        XCTAssertEqual(hitch0[10], .t)
+        XCTAssertEqual(hitch0[11], .space)
+        XCTAssertEqual(hitch0[12], .backSlash)
+        XCTAssertEqual(hitch0[13], .n)
+        XCTAssertEqual(hitch0[14], .space)
+        XCTAssertEqual(hitch0[15], .backSlash)
+        XCTAssertEqual(hitch0[16], .r)
+        XCTAssertEqual(hitch0[17], 0)
+        
+        let hitch1 = "A ö Ж € 𝄞".hitch()
+        hitch1.escape()
+        XCTAssertEqual(hitch1, #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+    }
+    
     func testInsert() {
         let hitch = "".hitch()
         let values = [53, 52, 51, 50, 49]

@@ -3,6 +3,50 @@
 import Foundation
 import bstrlib
 
+private func hex(_ v: UInt8) -> UInt32? {
+    switch v {
+    case .zero: return 0
+    case .one: return 1
+    case .two: return 2
+    case .three: return 3
+    case .four: return 4
+    case .five: return 5
+    case .six: return 6
+    case .seven: return 7
+    case .eight: return 8
+    case .nine: return 9
+    case .a, .A: return 10
+    case .b, .B: return 11
+    case .c, .C: return 12
+    case .d, .D: return 13
+    case .e, .E: return 14
+    case .f, .F: return 15
+    default: return nil
+    }
+}
+
+private func hex2(_ v: UInt32) -> UInt8 {
+    switch v {
+    case 0: return .zero
+    case 1: return .one
+    case 2: return .two
+    case 3: return .three
+    case 4: return .four
+    case 5: return .five
+    case 6: return .six
+    case 7: return .seven
+    case 8: return .eight
+    case 9: return .nine
+    case 10: return .A
+    case 11: return .B
+    case 12: return .C
+    case 13: return .D
+    case 14: return .E
+    case 15: return .F
+    default: return .questionMark
+    }
+}
+
 public let nullptr = UnsafeMutablePointer<UInt8>(bitPattern: 0)!
 
 public extension String {
@@ -239,6 +283,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    public func replace(with hitch: Hitch) {
+        bdestroy(bstr)
+        self.bstr = bstrcpy(hitch.bstr)
+    }
+
     @discardableResult
     public func reserveCapacity(_ newCapacity: Int) -> Self {
         balloc(bstr, Int32(newCapacity))
@@ -399,6 +448,101 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
     }
 
+    public func escape(escapeSingleQuote: Bool = false) {
+        guard let raw = raw() else { return }
+
+        let writer = Hitch(capacity: count)
+
+        // TODO: handle \u for unicode
+        var read = raw
+        let end = raw + count
+
+        while read < end {
+            let ch = read.pointee
+
+            if ch > 0x7f {
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.u)
+
+                var value: UInt32 = 0
+                if ch & 0b11100000 == 0b11000000 {
+                    value |= (UInt32(read[0]) & 0b00011111) << 6
+                    value |= (UInt32(read[1]) & 0b00111111) << 0
+                    read += 1
+                } else if ch & 0b11110000 == 0b11100000 {
+                    value |= (UInt32(read[0]) & 0b00001111) << 12
+                    value |= (UInt32(read[1]) & 0b00111111) << 6
+                    value |= (UInt32(read[2]) & 0b00111111) << 0
+                    read += 2
+                } else if ch & 0b11111000 == 0b11110000 {
+                    value |= (UInt32(read[0]) & 0b00000111) << 18
+                    value |= (UInt32(read[1]) & 0b00111111) << 12
+                    value |= (UInt32(read[2]) & 0b00111111) << 6
+                    value |= (UInt32(read[3]) & 0b00111111) << 0
+                    read += 3
+                }
+
+                if value > 0xFFFF {
+                    writer.append(UInt8.openBracket)
+                }
+
+                var hasFoundBits = false
+                for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
+                    let hex = hex2((value >> shift) & 0xF)
+                    if hex != .zero || shift <= 12 {
+                        hasFoundBits = true
+                    }
+                    guard hasFoundBits else { continue }
+
+                    writer.append(hex)
+                }
+
+                if value > 0xFFFF {
+                    writer.append(UInt8.closeBracket)
+                }
+
+            } else {
+                switch ch {
+                case .bell:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.b)
+                case .newLine:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.n)
+                case .tab:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.t)
+                case .formFeed:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.f)
+                case .carriageReturn:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.r)
+                case .singleQuote:
+                    if escapeSingleQuote {
+                        writer.append(UInt8.backSlash)
+                    }
+                    writer.append(UInt8.singleQuote)
+                case .doubleQuote:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.doubleQuote)
+                case .backSlash:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.backSlash)
+                case .forwardSlash:
+                    writer.append(UInt8.backSlash)
+                    writer.append(UInt8.forwardSlash)
+                default:
+                    writer.append(ch)
+                }
+            }
+
+            read += 1
+        }
+
+        self.replace(with: writer)
+    }
+
     public func unescape() {
         guard let raw = raw() else { return }
 
@@ -410,28 +554,6 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             write.pointee = v
             write += 1
             read += advance
-        }
-
-        let hex: (UInt8) -> UInt32? = { v in
-            switch v {
-            case .zero: return 0
-            case .one: return 1
-            case .two: return 2
-            case .three: return 3
-            case .four: return 4
-            case .five: return 5
-            case .six: return 6
-            case .seven: return 7
-            case .eight: return 8
-            case .nine: return 9
-            case .a, .A: return 10
-            case .b, .B: return 11
-            case .c, .C: return 12
-            case .d, .D: return 13
-            case .e, .E: return 14
-            case .f, .F: return 15
-            default: return nil
-            }
         }
 
         while read < end {
