@@ -3,6 +3,50 @@
 import Foundation
 import bstrlib
 
+func intFromBinary(data: UnsafeRawBufferPointer,
+                   count: Int) -> Int? {
+    var value = 0
+    var isNegative = false
+    var endedOnlyAllowsWhitespace = false
+    var idx = 0
+
+    var skipping = true
+    while skipping && idx < count {
+        let char = data[idx]
+        switch char {
+        case UInt8.zero, UInt8.one, UInt8.two, UInt8.three, UInt8.four, UInt8.five, UInt8.six, UInt8.seven, UInt8.eight, UInt8.nine, UInt8.minus:
+            skipping = false
+            break
+        default:
+            idx += 1
+            break
+        }
+    }
+
+    while idx < count {
+        let char = data[idx]
+        if endedOnlyAllowsWhitespace == true {
+            switch char {
+            case UInt8.zero, UInt8.one, UInt8.two, UInt8.three, UInt8.four, UInt8.five, UInt8.six, UInt8.seven, UInt8.eight, UInt8.nine, UInt8.minus:
+                return nil
+            default:
+                break
+            }
+        } else if char == .minus && value == 0 {
+            isNegative = true
+        } else if char >= .zero && char <= .nine {
+            value = (value * 10) &+ Int(char - .zero)
+        } else {
+            endedOnlyAllowsWhitespace = true
+        }
+        idx += 1
+    }
+    if isNegative {
+        value = -1 * value
+    }
+    return value
+}
+
 private func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -663,22 +707,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func toInt(_ fuzzy: Bool = true) -> Int? {
         if let bstr = bstr,
             let data = bstr.pointee.data {
-            var value = 0
-            var isNegative = false
-            for idx in 0..<Int(bstr.pointee.slen) {
-                let char = data[idx]
-                if char == .minus && value == 0 {
-                    isNegative = true
-                } else if char >= .zero && char <= .nine {
-                    value = (value * 10) &+ Int(char - .zero)
-                } else if fuzzy == false {
-                    return nil
-                }
-            }
-            if isNegative {
-                value = -1 * value
-            }
-            return value
+            let count = Int(bstr.pointee.slen)
+            return intFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
+                                 count: count)
         }
         return nil
     }
