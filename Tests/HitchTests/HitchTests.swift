@@ -224,6 +224,13 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitchLorem.firstIndex(of: hitchNeedle), 319)
     }
     
+    func testLastIndexOf() {
+        let hitchLorem = "/true|false/".hitch()
+        let hitchNeedle = Hitch("/")
+        
+        XCTAssertEqual(hitchLorem.lastIndex(of: hitchNeedle), 11)
+    }
+    
     func testContainsPerf() {
         let swiftLorem = lorem
         let hitchLorem = lorem.hitch()
