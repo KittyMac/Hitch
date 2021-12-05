@@ -441,6 +441,25 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @discardableResult
+    public func lastIndex(of hitch: Hitch) -> Int? {
+        let index = binstrr(bstr, 0, hitch.bstr)
+        return index != BSTR_ERR ? Int(index) : nil
+    }
+
+    @discardableResult
+    public func lastIndex(of string: String) -> Int? {
+        let hitch = string.hitch()
+        let index = binstrr(bstr, 0, hitch.bstr)
+        return index != BSTR_ERR ? Int(index) : nil
+    }
+
+    @discardableResult
+    public func lastIndex<T: FixedWidthInteger>(of char: T) -> Int? {
+        let index = bstrrchrp(bstr, Int32(char), 0)
+        return index != BSTR_ERR ? Int(index) : nil
+    }
+
+    @discardableResult
     public func substring(_ lhsPos: Int, _ rhsPos: Int) -> Hitch? {
         guard lhsPos >= 0 && lhsPos <= count else { return nil }
         guard rhsPos >= 0 && rhsPos <= count else { return nil }
