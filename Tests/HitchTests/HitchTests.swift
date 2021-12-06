@@ -392,6 +392,13 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch, "12345")
     }
     
+    func testComparable() {
+        let hitch1 = "Apple".hitch()
+        let hitch2 = "apple".hitch()
+        
+        XCTAssertEqual(hitch1 < hitch2, "Apple" < "apple")
+    }
+    
     func testAppendValue() {
         let values = [
             12345,
@@ -442,6 +449,26 @@ final class HitchTests: XCTestCase {
     func testToInt() {
         let hitch = "  5  ".hitch()
         XCTAssertEqual(hitch.toInt(), 5)
+    }
+    
+    func testSplitToDouble() {
+        //let hitch = "1,2.2,3.9,4.0012,52345.24,-6.0,7.12,8134.99,9.320547,-72.25,  5.6  ,  2.2  4.4  ".hitch()
+        XCTAssertEqual("2.2".hitch().toDouble(), 2.2)
+        XCTAssertEqual("3.9".hitch().toDouble(), 3.9)
+        XCTAssertEqual("4.0012".hitch().toDouble(), 4.0012)
+        XCTAssertEqual("52345.24".hitch().toDouble(), 52345.24)
+        XCTAssertEqual("-6.0".hitch().toDouble(), -6.0)
+        XCTAssertEqual("7.12".hitch().toDouble(), 7.12)
+        XCTAssertEqual("8134.99".hitch().toDouble(), 8134.99)
+        XCTAssertEqual("9.320547".hitch().toDouble(), 9.320547)
+        XCTAssertEqual("-72.25".hitch().toDouble(), -72.25)
+        XCTAssertEqual("  5.6  ".hitch().toDouble(), 5.6)
+        XCTAssertNil("  2.2  4.4  ".hitch().toDouble())
+    }
+    
+    func testToDouble() {
+        let hitch = "  5.2567  ".hitch()
+        XCTAssertEqual(hitch.toDouble(), 5.2567)
     }
 
     static var allTests = [

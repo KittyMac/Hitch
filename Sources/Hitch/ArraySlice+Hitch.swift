@@ -10,4 +10,13 @@ public extension ArraySlice where Element == UInt8 {
                                  count: count)
         }
     }
+
+    @discardableResult
+    @inline(__always)
+    func toDouble() -> Double? {
+        return self.withUnsafeBytes { ptr in
+            return doubleFromBinary(data: ptr,
+                                    count: count)
+        }
+    }
 }

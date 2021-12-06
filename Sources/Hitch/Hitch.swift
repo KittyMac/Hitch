@@ -3,6 +3,11 @@
 import Foundation
 import bstrlib
 
+func roundToPlaces(value: Double, places: Int) -> Double {
+    let divisor = pow(10.0, Double(places))
+    return round(value * divisor) / divisor
+}
+
 func intFromBinary(data: UnsafeRawBufferPointer,
                    count: Int) -> Int? {
     var value = 0
@@ -27,10 +32,10 @@ func intFromBinary(data: UnsafeRawBufferPointer,
         let char = data[idx]
         if endedOnlyAllowsWhitespace == true {
             switch char {
-            case UInt8.zero, UInt8.one, UInt8.two, UInt8.three, UInt8.four, UInt8.five, UInt8.six, UInt8.seven, UInt8.eight, UInt8.nine, UInt8.minus:
-                return nil
-            default:
+            case UInt8.space, UInt8.tab, UInt8.newLine, UInt8.carriageReturn:
                 break
+            default:
+                return nil
             }
         } else if char == .minus && value == 0 {
             isNegative = true
@@ -41,6 +46,76 @@ func intFromBinary(data: UnsafeRawBufferPointer,
         }
         idx += 1
     }
+    if isNegative {
+        value = -1 * value
+    }
+    return value
+}
+
+func doubleFromBinary(data: UnsafeRawBufferPointer,
+                      count: Int) -> Double? {
+    var value: Double = 0
+
+    var isNegative = false
+    var endedOnlyAllowsWhitespace = false
+    var idx = 0
+
+    // skip leading whitespace
+    while idx < count {
+        let char = data[idx]
+        if char == UInt8.space || char == UInt8.tab || char == UInt8.newLine || char == UInt8.carriageReturn {
+            idx += 1
+        } else {
+            break
+        }
+    }
+
+    // part before the period
+    while idx < count {
+        let char = data[idx]
+        if endedOnlyAllowsWhitespace == true {
+            if char != UInt8.space && char != UInt8.tab && char != UInt8.newLine && char != UInt8.carriageReturn {
+                return nil
+            }
+        } else if char == .minus && value == 0 {
+            isNegative = true
+        } else if char >= .zero && char <= .nine {
+            value = (value * 10) + Double(char - .zero)
+        } else if char == .dot {
+            break
+        } else {
+            endedOnlyAllowsWhitespace = true
+        }
+        idx += 1
+    }
+
+    // part after the period
+    if idx < count && data[idx] == .dot {
+        idx += 1
+
+        var precision = 0
+        var divider: Double = 10.0
+        while idx < count {
+            let char = data[idx]
+            if endedOnlyAllowsWhitespace == true {
+                if char != UInt8.space && char != UInt8.tab && char != UInt8.newLine && char != UInt8.carriageReturn {
+                    return nil
+                }
+            } else if char >= .zero && char <= .nine {
+                value = value + Double(char - .zero) / divider
+                divider *= 10.0
+            } else {
+                endedOnlyAllowsWhitespace = true
+            }
+            precision += 1
+            idx += 1
+        }
+
+        if precision > 0 {
+            value = roundToPlaces(value: value, places: precision)
+        }
+    }
+
     if isNegative {
         value = -1 * value
     }
@@ -124,7 +199,24 @@ public struct HitchIterator: IteratorProtocol {
     }
 }
 
-public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Equatable, Codable, Hashable {
+public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
+    public static func < (lhs: Hitch, rhs: Hitch) -> Bool {
+        if lhs === rhs {
+            return true
+        }
+        return bstrcmp(lhs.bstr, rhs.bstr) < 0
+    }
+
+    public static func < (lhs: String, rhs: Hitch) -> Bool {
+        let hitch = lhs.hitch()
+        return bstrcmp(hitch.bstr, rhs.bstr) < 0
+    }
+
+    public static func < (lhs: Hitch, rhs: String) -> Bool {
+        let hitch = rhs.hitch()
+        return bstrcmp(lhs.bstr, hitch.bstr) < 0
+    }
+
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
         if lhs === rhs {
             return true
@@ -704,12 +796,23 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @discardableResult
-    public func toInt(_ fuzzy: Bool = true) -> Int? {
+    public func toInt() -> Int? {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             let count = Int(bstr.pointee.slen)
             return intFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
                                  count: count)
+        }
+        return nil
+    }
+
+    @discardableResult
+    public func toDouble() -> Double? {
+        if let bstr = bstr,
+            let data = bstr.pointee.data {
+            let count = Int(bstr.pointee.slen)
+            return doubleFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
+                                    count: count)
         }
         return nil
     }
