@@ -201,9 +201,6 @@ public struct HitchIterator: IteratorProtocol {
 
 public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
     public static func < (lhs: Hitch, rhs: Hitch) -> Bool {
-        if lhs === rhs {
-            return true
-        }
         return bstrcmp(lhs.bstr, rhs.bstr) < 0
     }
 
@@ -405,6 +402,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         set {
             btrunc(bstr, Int32(newValue))
         }
+    }
+
+    public func compare(other: Hitch) -> Int {
+        return Int(bstrcmp(bstr, other.bstr))
     }
 
     public func clear() {
