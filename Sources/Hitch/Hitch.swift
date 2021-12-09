@@ -11,6 +11,7 @@ func roundToPlaces(value: Double, places: Int) -> Double {
 func intFromBinary(data: UnsafeRawBufferPointer,
                    count: Int) -> Int? {
     var value = 0
+    var hasValue = false
     var isNegative = false
     var endedOnlyAllowsWhitespace = false
     var idx = 0
@@ -40,11 +41,15 @@ func intFromBinary(data: UnsafeRawBufferPointer,
         } else if char == .minus && value == 0 {
             isNegative = true
         } else if char >= .zero && char <= .nine {
+            hasValue = true
             value = (value * 10) &+ Int(char - .zero)
         } else {
             endedOnlyAllowsWhitespace = true
         }
         idx += 1
+    }
+    if hasValue == false {
+        return nil
     }
     if isNegative {
         value = -1 * value
@@ -55,7 +60,7 @@ func intFromBinary(data: UnsafeRawBufferPointer,
 func doubleFromBinary(data: UnsafeRawBufferPointer,
                       count: Int) -> Double? {
     var value: Double = 0
-
+    var hasValue = false
     var isNegative = false
     var endedOnlyAllowsWhitespace = false
     var idx = 0
@@ -80,6 +85,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
         } else if char == .minus && value == 0 {
             isNegative = true
         } else if char >= .zero && char <= .nine {
+            hasValue = true
             value = (value * 10) + Double(char - .zero)
         } else if char == .dot {
             break
@@ -102,6 +108,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
                     return nil
                 }
             } else if char >= .zero && char <= .nine {
+                hasValue = true
                 value = value + Double(char - .zero) / divider
                 divider *= 10.0
             } else {
@@ -116,6 +123,9 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
         }
     }
 
+    if hasValue == false {
+        return nil
+    }
     if isNegative {
         value = -1 * value
     }
@@ -609,7 +619,6 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
         let writer = Hitch(capacity: count)
 
-        // TODO: handle \u for unicode
         var read = raw
         let end = raw + count
 

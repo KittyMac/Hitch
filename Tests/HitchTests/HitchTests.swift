@@ -330,7 +330,7 @@ final class HitchTests: XCTestCase {
     
     func testUnescaping() {
         // A, ö, Ж, €, 𝄞
-        let hitch0 = #"\\ \' \" \t \f \n \r \b"#.hitch()
+        let hitch0 = #"\\ \' \" \t \n \r"#.hitch()
         hitch0.unescape()
         XCTAssertEqual(hitch0[0], .backSlash)
         XCTAssertEqual(hitch0[1], .space)
@@ -340,14 +340,10 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch0[5], .space)
         XCTAssertEqual(hitch0[6], .tab)
         XCTAssertEqual(hitch0[7], .space)
-        XCTAssertEqual(hitch0[8], .formFeed)
+        XCTAssertEqual(hitch0[8], .newLine)
         XCTAssertEqual(hitch0[9], .space)
-        XCTAssertEqual(hitch0[10], .newLine)
-        XCTAssertEqual(hitch0[11], .space)
-        XCTAssertEqual(hitch0[12], .carriageReturn)
-        XCTAssertEqual(hitch0[13], .space)
-        XCTAssertEqual(hitch0[14], .bell)
-        XCTAssertEqual(hitch0[15], 0)
+        XCTAssertEqual(hitch0[10], .carriageReturn)
+        XCTAssertEqual(hitch0[11], 0)
         
         let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch()
         hitch1.unescape()
@@ -449,6 +445,9 @@ final class HitchTests: XCTestCase {
     func testToInt() {
         let hitch = "  5  ".hitch()
         XCTAssertEqual(hitch.toInt(), 5)
+        
+        XCTAssertNil("A".hitch().toInt())
+        XCTAssertNil("B".hitch().toInt())
     }
     
     func testSplitToDouble() {
@@ -464,6 +463,9 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual("-72.25".hitch().toDouble(), -72.25)
         XCTAssertEqual("  5.6  ".hitch().toDouble(), 5.6)
         XCTAssertNil("  2.2  4.4  ".hitch().toDouble())
+        
+        XCTAssertNil("A".hitch().toDouble())
+        XCTAssertNil("B".hitch().toDouble())
     }
     
     func testToDouble() {
