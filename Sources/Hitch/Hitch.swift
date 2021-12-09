@@ -487,7 +487,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
-        let position = Swift.max(Swift.min(index, 0), count)
+        let position = Swift.max(Swift.min(index, count), 0)
         binsert(bstr, Int32(position), hitch.bstr, .space)
         return self
     }
@@ -495,7 +495,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
         let hitch = string.hitch()
-        let position = Swift.max(Swift.min(index, 0), count)
+        let position = Swift.max(Swift.min(index, count), 0)
         binsert(bstr, Int32(position), hitch.bstr, .space)
         return self
     }
@@ -530,7 +530,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
-        let position = Swift.max(Swift.min(index, 0), count)
+        let position = Swift.max(Swift.min(index, count), 0)
         data.withUnsafeBytes { bytes in
             binsertblk(bstr, Int32(position), bytes, Int32(data.count), .space)
         }

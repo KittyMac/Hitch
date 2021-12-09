@@ -388,6 +388,13 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch, "12345")
     }
     
+    func testInsert2() {
+        let hitch = "store.book".hitch()
+        XCTAssertEqual(hitch.insert("$.", index: 0), "$.store.book")
+        XCTAssertEqual(hitch.insert("$.", index: -99), "$.$.store.book")
+        XCTAssertEqual(hitch.insert("$.", index: 99), "$.$.store.book$.")
+    }
+    
     func testComparable() {
         let hitch1 = "Apple".hitch()
         let hitch2 = "apple".hitch()
