@@ -310,6 +310,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         bdestroy(bstr)
     }
 
+    @inlinable
     public func makeIterator() -> HitchIterator {
        return HitchIterator(hitch: self)
     }
@@ -320,6 +321,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    @inlinable
     public init(hitch: Hitch) {
         if let other = hitch.bstr,
             let data = other.pointee.data {
@@ -327,12 +329,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    @inlinable
     public init(data: Data) {
         data.withUnsafeBytes { bytes in
             bstr = blk2bstr(bytes, Int32(data.count))
         }
     }
 
+    @inlinable
     public func dataNoCopy() -> Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
@@ -341,6 +345,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
+    @inlinable
     public func dataCopy() -> Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
@@ -349,6 +354,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
+    @inlinable
     public func dataNoCopy(start inStart: Int = -1,
                            end inEnd: Int = -1) -> Data {
         if let bstr = bstr,
@@ -373,6 +379,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
+    @inlinable
     public func dataCopy(start inStart: Int,
                          end inEnd: Int) -> Data {
         if let bstr = bstr,
@@ -397,11 +404,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
+    @inlinable
     public init(capacity: Int) {
         bstr = bempty()
         reserveCapacity(capacity)
     }
 
+    @inlinable
     public init() {
         bstr = bempty()
     }
@@ -411,6 +420,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         self.bstr = bstr
     }
 
+    @inlinable
     public var count: Int {
         get {
             return Int(bstr?.pointee.slen ?? 0)
@@ -420,39 +430,43 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    @inlinable
     public func compare(other: Hitch) -> Int {
         return Int(bstrcmp(bstr, other.bstr))
     }
 
+    @inlinable
     public func clear() {
-        bdestroy(bstr)
-        bstr = bempty()
+        btrunc(bstr, Int32(0))
     }
 
+    @inlinable
     public func replace(with string: String) {
-        bdestroy(bstr)
-        string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
-            self.bstr = bfromcstr(bytes)
-        }
+        count = 0
+        append(string)
     }
 
+    @inlinable
     public func replace(with hitch: Hitch) {
-        bdestroy(bstr)
-        self.bstr = bstrcpy(hitch.bstr)
+        count = 0
+        append(hitch)
     }
 
+    @inlinable
     @discardableResult
     public func reserveCapacity(_ newCapacity: Int) -> Self {
         balloc(bstr, Int32(newCapacity))
         return self
     }
 
+    @inlinable
     @discardableResult
     public func lowercase() -> Self {
         btolower(bstr)
         return self
     }
 
+    @inlinable
     @discardableResult
     public func uppercase() -> Self {
         btoupper(bstr)

@@ -258,7 +258,7 @@ final class HitchTests: XCTestCase {
             })
         )
     }
-    
+        
     func testAppendStaticMemoryPerf() {
         var swiftLorem = lorem
         let hitchLorem = Hitch(capacity: 455682)
