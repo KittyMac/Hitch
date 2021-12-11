@@ -3,11 +3,13 @@
 import Foundation
 import bstrlib
 
+@inlinable
 func roundToPlaces(value: Double, places: Int) -> Double {
     let divisor = pow(10.0, Double(places))
     return round(value * divisor) / divisor
 }
 
+@inlinable
 func intFromBinary(data: UnsafeRawBufferPointer,
                    count: Int) -> Int? {
     var value = 0
@@ -57,6 +59,7 @@ func intFromBinary(data: UnsafeRawBufferPointer,
     return value
 }
 
+@inlinable
 func doubleFromBinary(data: UnsafeRawBufferPointer,
                       count: Int) -> Double? {
     var value: Double = 0
@@ -132,7 +135,8 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
     return value
 }
 
-private func hex(_ v: UInt8) -> UInt32? {
+@inlinable
+func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
     case .one: return 1
@@ -154,7 +158,8 @@ private func hex(_ v: UInt8) -> UInt32? {
     }
 }
 
-private func hex2(_ v: UInt32) -> UInt8 {
+@inlinable
+func hex2(_ v: UInt32) -> UInt8 {
     switch v {
     case 0: return .zero
     case 1: return .one
@@ -290,7 +295,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         try container.encode(self.description)
     }
 
-    private var bstr: bstring?
+    @usableFromInline
+    var bstr: bstring?
 
     public var description: String {
         if let bstr = bstr,
@@ -400,7 +406,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         bstr = bempty()
     }
 
-    // @usableFromInline
+    @usableFromInline
     internal init(bstr: bstring) {
         self.bstr = bstr
     }
@@ -453,12 +459,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func append(_ hitch: Hitch) -> Self {
         bconcat(bstr, hitch.bstr)
         return self
     }
 
+    @inlinable
     @discardableResult
     public func append(_ string: String) -> Self {
         let hitch = string.hitch()
@@ -466,17 +474,20 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func append<T: FixedWidthInteger>(_ char: T) -> Self {
         bconchar(bstr, UInt8(clamping: char))
         return self
     }
 
+    @inlinable
     @discardableResult
     public func append<T: FixedWidthInteger>(number: T) -> Self {
         return insert(number: number, index: count)
     }
 
+    @inlinable
     @discardableResult
     public func append(_ data: Data) -> Self {
         data.withUnsafeBytes { bytes in
@@ -485,6 +496,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
@@ -492,6 +504,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
         let hitch = string.hitch()
@@ -500,6 +513,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func insert<T: FixedWidthInteger>(_ char: T, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
@@ -507,6 +521,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
         if number == 0 {
@@ -518,7 +533,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             while value > 0 {
                 let digit = value % 10
                 value /= 10
-                insert(.zero + UInt8(digit), index: index)
+                insert(UInt8.zero + UInt8(digit), index: index)
             }
 
             if isNegative {
@@ -528,6 +543,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
@@ -537,43 +553,51 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
+    @inlinable
     public func trim() {
         btrimws(bstr)
     }
 
+    @inlinable
     @discardableResult
     public func starts(with hitch: Hitch) -> Bool {
         return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
     }
 
+    @inlinable
     @discardableResult
     public func starts(with string: String) -> Bool {
         let hitch = string.hitch()
         return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
     }
 
+    @inlinable
     @discardableResult
     public func contains(_ hitch: Hitch) -> Bool {
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
 
+    @inlinable
     @discardableResult
     public func contains(_ string: String) -> Bool {
         let hitch = string.hitch()
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
 
+    @inlinable
     @discardableResult
     public func contains<T: FixedWidthInteger>(_ char: T) -> Bool {
         return bstrchrp(bstr, Int32(char), 0) != BSTR_ERR
     }
 
+    @inlinable
     @discardableResult
     public func firstIndex(of hitch: Hitch) -> Int? {
         let index = binstr(bstr, 0, hitch.bstr)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
+    @inlinable
     @discardableResult
     public func firstIndex(of string: String) -> Int? {
         let hitch = string.hitch()
@@ -581,18 +605,21 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return index != BSTR_ERR ? Int(index) : nil
     }
 
+    @inlinable
     @discardableResult
     public func firstIndex<T: FixedWidthInteger>(of char: T) -> Int? {
         let index = bstrchrp(bstr, Int32(char), 0)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
+    @inlinable
     @discardableResult
     public func lastIndex(of hitch: Hitch) -> Int? {
         let index = binstrr(bstr, Int32(count-1), hitch.bstr)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
+    @inlinable
     @discardableResult
     public func lastIndex(of string: String) -> Int? {
         let hitch = string.hitch()
@@ -600,12 +627,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return index != BSTR_ERR ? Int(index) : nil
     }
 
+    @inlinable
     @discardableResult
     public func lastIndex<T: FixedWidthInteger>(of char: T) -> Int? {
         let index = bstrrchrp(bstr, Int32(char), Int32(count-1))
         return index != BSTR_ERR ? Int(index) : nil
     }
 
+    @inlinable
     @discardableResult
     public func substring(_ lhsPos: Int, _ rhsPos: Int) -> Hitch? {
         guard lhsPos >= 0 && lhsPos <= count else { return nil }
@@ -614,6 +643,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
     }
 
+    @inlinable
     public func escape(escapeSingleQuote: Bool = false) {
         guard let raw = raw() else { return }
 
@@ -708,6 +738,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         self.replace(with: writer)
     }
 
+    @inlinable
     public func unescape() {
         guard let raw = raw() else { return }
 
@@ -778,6 +809,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         count = (write - raw)
     }
 
+    @inlinable
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
         guard let bstr = bstr else { return nil }
@@ -790,21 +822,25 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Hitch(bstr: bmidstr(bstr, lhsPos, (rhsPos - lhsPos)))
     }
 
+    @inlinable
     @discardableResult
     public func extract(_ lhs: String, _ rhs: String) -> Hitch? {
         return extract(lhs.hitch(), rhs.hitch())
     }
 
+    @inlinable
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: String) -> Hitch? {
         return extract(lhs, rhs.hitch())
     }
 
+    @inlinable
     @discardableResult
     public func extract(_ lhs: String, _ rhs: Hitch) -> Hitch? {
         return extract(lhs.hitch(), rhs)
     }
 
+    @inlinable
     @discardableResult
     public func toInt() -> Int? {
         if let bstr = bstr,
@@ -816,6 +852,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return nil
     }
 
+    @inlinable
     @discardableResult
     public func toDouble() -> Double? {
         if let bstr = bstr,
@@ -827,6 +864,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return nil
     }
 
+    @inlinable
     @discardableResult
     public func toEpoch() -> Int {
         return Int(btoepoch(bstr))
