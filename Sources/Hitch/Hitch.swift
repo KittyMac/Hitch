@@ -298,6 +298,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @usableFromInline
     var bstr: bstring?
 
+    @inlinable
     public var description: String {
         if let bstr = bstr,
             let data = bstr.pointee.data {
