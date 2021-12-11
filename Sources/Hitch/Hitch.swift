@@ -44,7 +44,7 @@ func intFromBinary(data: UnsafeRawBufferPointer,
             isNegative = true
         } else if char >= .zero && char <= .nine {
             hasValue = true
-            value = (value * 10) &+ Int(char - .zero)
+            value = (value &* 10) &+ Int(char - .zero)
         } else {
             endedOnlyAllowsWhitespace = true
         }
