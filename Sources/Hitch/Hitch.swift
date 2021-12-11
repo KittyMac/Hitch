@@ -483,8 +483,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable
     @discardableResult
     public func append(_ string: String) -> Self {
-        let hitch = string.hitch()
-        bconcat(bstr, hitch.bstr)
+        string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
+            bcatcstr(bstr, bytes)
+        }
         return self
     }
 
