@@ -136,6 +136,87 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
 }
 
 @inlinable
+func intFromBinaryFuzzy(data: UnsafeRawBufferPointer,
+                        count: Int) -> Int? {
+    var value = 0
+    var hasValue = false
+    var isNegative = false
+    var idx = 0
+
+    while idx < count {
+        let char = data[idx]
+        if char == .minus && value == 0 {
+            isNegative = true
+        } else if char >= .zero && char <= .nine {
+            hasValue = true
+            value = (value &* 10) &+ Int(char - .zero)
+        }
+        idx += 1
+    }
+    if hasValue == false {
+        return nil
+    }
+    if isNegative {
+        value = -1 * value
+    }
+    return value
+}
+
+@inlinable
+func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
+                           count: Int) -> Double? {
+    var value: Double = 0
+    var hasValue = false
+    var isNegative = false
+    var endedOnlyAllowsWhitespace = false
+    var idx = 0
+
+    // part before the period
+    while idx < count {
+        let char = data[idx]
+        if char == .minus && value == 0 {
+            isNegative = true
+        } else if char >= .zero && char <= .nine {
+            hasValue = true
+            value = (value * 10) + Double(char - .zero)
+        } else if char == .dot {
+            break
+        }
+        idx += 1
+    }
+
+    // part after the period
+    if idx < count && data[idx] == .dot {
+        idx += 1
+
+        var precision = 0
+        var divider: Double = 10.0
+        while idx < count {
+            let char = data[idx]
+            if char >= .zero && char <= .nine {
+                hasValue = true
+                value = value + Double(char - .zero) / divider
+                divider *= 10.0
+            }
+            precision += 1
+            idx += 1
+        }
+
+        if precision > 0 {
+            value = roundToPlaces(value: value, places: precision)
+        }
+    }
+
+    if hasValue == false {
+        return nil
+    }
+    if isNegative {
+        value = -1 * value
+    }
+    return value
+}
+
+@inlinable
 func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -858,10 +939,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable
     @discardableResult
-    public func toInt() -> Int? {
+    public func toInt(fuzzy: Bool = false) -> Int? {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             let count = Int(bstr.pointee.slen)
+            if fuzzy {
+                return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: data, count: count),
+                                          count: count)
+            }
             return intFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
                                  count: count)
         }
@@ -870,10 +955,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable
     @discardableResult
-    public func toDouble() -> Double? {
+    public func toDouble(fuzzy: Bool = false) -> Double? {
         if let bstr = bstr,
             let data = bstr.pointee.data {
             let count = Int(bstr.pointee.slen)
+            if fuzzy {
+                return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: data, count: count),
+                                             count: count)
+            }
             return doubleFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
                                     count: count)
         }

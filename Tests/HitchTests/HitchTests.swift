@@ -457,6 +457,26 @@ final class HitchTests: XCTestCase {
         XCTAssertNil("B".hitch().toInt())
     }
     
+    func testToIntFuzzy() {
+        XCTAssertEqual("22".hitch().toInt(fuzzy: true), 22)
+        XCTAssertEqual("39".hitch().toInt(fuzzy: true), 39)
+        XCTAssertEqual("40012".hitch().toInt(fuzzy: true), 40012)
+
+        XCTAssertEqual("  sdf asdf22asdfasd f".hitch().toInt(fuzzy: true), 22)
+        XCTAssertEqual("gsdg39sdf .sdfsd".hitch().toInt(fuzzy: true), 39)
+        XCTAssertEqual("sdfsdf40012sdfg ".hitch().toInt(fuzzy: true), 40012)
+    }
+    
+    func testToDoubleFuzzy() {
+        XCTAssertEqual("2.2".hitch().toDouble(fuzzy: true), 2.2)
+        XCTAssertEqual("3.9".hitch().toDouble(fuzzy: true), 3.9)
+        XCTAssertEqual("4.0012".hitch().toDouble(fuzzy: true), 4.0012)
+
+        XCTAssertEqual("  sdf asdf2.2asdfasd f".hitch().toDouble(fuzzy: true), 2.2)
+        XCTAssertEqual("gsdg3.9sdf .sdfsd".hitch().toDouble(fuzzy: true), 3.9)
+        XCTAssertEqual("sdfsdf4.0012sdfg ".hitch().toDouble(fuzzy: true), 4.0012)
+    }
+    
     func testSplitToDouble() {
         //let hitch = "1,2.2,3.9,4.0012,52345.24,-6.0,7.12,8134.99,9.320547,-72.25,  5.6  ,  2.2  4.4  ".hitch()
         XCTAssertEqual("2.2".hitch().toDouble(), 2.2)
