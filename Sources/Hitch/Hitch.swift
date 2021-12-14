@@ -3,13 +3,13 @@
 import Foundation
 import bstrlib
 
-@inlinable
+@inlinable @inline(__always)
 func roundToPlaces(value: Double, places: Int) -> Double {
     let divisor = pow(10.0, Double(places))
     return round(value * divisor) / divisor
 }
 
-@inlinable
+@inlinable @inline(__always)
 func intFromBinary(data: UnsafeRawBufferPointer,
                    count: Int) -> Int? {
     var value = 0
@@ -59,7 +59,7 @@ func intFromBinary(data: UnsafeRawBufferPointer,
     return value
 }
 
-@inlinable
+@inlinable @inline(__always)
 func doubleFromBinary(data: UnsafeRawBufferPointer,
                       count: Int) -> Double? {
     var value: Double = 0
@@ -135,7 +135,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
     return value
 }
 
-@inlinable
+@inlinable @inline(__always)
 func intFromBinaryFuzzy(data: UnsafeRawBufferPointer,
                         count: Int) -> Int? {
     var value = 0
@@ -162,7 +162,7 @@ func intFromBinaryFuzzy(data: UnsafeRawBufferPointer,
     return value
 }
 
-@inlinable
+@inlinable @inline(__always)
 func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
                            count: Int) -> Double? {
     var value: Double = 0
@@ -216,7 +216,7 @@ func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
     return value
 }
 
-@inlinable
+@inlinable @inline(__always)
 func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -239,7 +239,7 @@ func hex(_ v: UInt8) -> UInt32? {
     }
 }
 
-@inlinable
+@inlinable @inline(__always)
 func hex2(_ v: UInt32) -> UInt8 {
     switch v {
     case 0: return .zero
@@ -334,6 +334,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    @inlinable @inline(__always)
     public func raw() -> UnsafeMutablePointer<UInt8>? {
         return bstr?.pointee.data
     }
@@ -379,7 +380,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @usableFromInline
     var bstr: bstring?
 
-    @inlinable
+    @inlinable @inline(__always)
     public var description: String {
         if let bstr = bstr,
             let data = bstr.pointee.data {
@@ -392,7 +393,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         bdestroy(bstr)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func makeIterator() -> HitchIterator {
        return HitchIterator(hitch: self)
     }
@@ -403,7 +404,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public init(hitch: Hitch) {
         if let other = hitch.bstr,
             let data = other.pointee.data {
@@ -411,14 +412,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public init(data: Data) {
         data.withUnsafeBytes { bytes in
             bstr = blk2bstr(bytes, Int32(data.count))
         }
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func dataNoCopy() -> Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
@@ -427,7 +428,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func dataCopy() -> Data {
         if let bstr = bstr,
             let data = bstr.pointee.data {
@@ -436,7 +437,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func dataNoCopy(start inStart: Int = -1,
                            end inEnd: Int = -1) -> Data {
         if let bstr = bstr,
@@ -461,7 +462,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func dataCopy(start inStart: Int,
                          end inEnd: Int) -> Data {
         if let bstr = bstr,
@@ -486,13 +487,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Data()
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public init(capacity: Int) {
         bstr = bempty()
         reserveCapacity(capacity)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public init() {
         bstr = bempty()
     }
@@ -502,7 +503,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         self.bstr = bstr
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public var count: Int {
         get {
             return Int(bstr?.pointee.slen ?? 0)
@@ -512,57 +513,57 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func compare(other: Hitch) -> Int {
         return Int(bstrcmp(bstr, other.bstr))
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func clear() {
         btrunc(bstr, Int32(0))
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func replace(with string: String) {
         count = 0
         append(string)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func replace(with hitch: Hitch) {
         count = 0
         append(hitch)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func reserveCapacity(_ newCapacity: Int) -> Self {
         balloc(bstr, Int32(newCapacity))
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func lowercase() -> Self {
         btolower(bstr)
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func uppercase() -> Self {
         btoupper(bstr)
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: Hitch) -> Self {
         bconcat(bstr, hitch.bstr)
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func append(_ string: String) -> Self {
         string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
@@ -571,20 +572,20 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func append<T: FixedWidthInteger>(_ char: T) -> Self {
         bconchar(bstr, UInt8(clamping: char))
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func append<T: FixedWidthInteger>(number: T) -> Self {
         return insert(number: number, index: count)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func append(_ data: Data) -> Self {
         data.withUnsafeBytes { bytes in
@@ -593,7 +594,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
@@ -601,7 +602,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
         let hitch = string.hitch()
@@ -610,7 +611,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(_ char: T, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
@@ -618,7 +619,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
         if number == 0 {
@@ -640,7 +641,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
@@ -650,51 +651,51 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return self
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func trim() {
         btrimws(bstr)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func starts(with hitch: Hitch) -> Bool {
         return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func starts(with string: String) -> Bool {
         let hitch = string.hitch()
         return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func contains(_ hitch: Hitch) -> Bool {
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func contains(_ string: String) -> Bool {
         let hitch = string.hitch()
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func contains<T: FixedWidthInteger>(_ char: T) -> Bool {
         return bstrchrp(bstr, Int32(char), 0) != BSTR_ERR
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of hitch: Hitch) -> Int? {
         let index = binstr(bstr, 0, hitch.bstr)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of string: String) -> Int? {
         let hitch = string.hitch()
@@ -702,21 +703,21 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return index != BSTR_ERR ? Int(index) : nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func firstIndex<T: FixedWidthInteger>(of char: T) -> Int? {
         let index = bstrchrp(bstr, Int32(char), 0)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func lastIndex(of hitch: Hitch) -> Int? {
         let index = binstrr(bstr, Int32(count-1), hitch.bstr)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func lastIndex(of string: String) -> Int? {
         let hitch = string.hitch()
@@ -724,14 +725,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return index != BSTR_ERR ? Int(index) : nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func lastIndex<T: FixedWidthInteger>(of char: T) -> Int? {
         let index = bstrrchrp(bstr, Int32(char), Int32(count-1))
         return index != BSTR_ERR ? Int(index) : nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func substring(_ lhsPos: Int, _ rhsPos: Int) -> Hitch? {
         guard lhsPos >= 0 && lhsPos <= count else { return nil }
@@ -740,7 +741,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func escape(escapeSingleQuote: Bool = false) {
         guard let raw = raw() else { return }
 
@@ -835,7 +836,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         self.replace(with: writer)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     public func unescape() {
         guard let raw = raw() else { return }
 
@@ -906,7 +907,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         count = (write - raw)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
         guard let bstr = bstr else { return nil }
@@ -919,25 +920,25 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return Hitch(bstr: bmidstr(bstr, lhsPos, (rhsPos - lhsPos)))
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func extract(_ lhs: String, _ rhs: String) -> Hitch? {
         return extract(lhs.hitch(), rhs.hitch())
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: String) -> Hitch? {
         return extract(lhs, rhs.hitch())
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func extract(_ lhs: String, _ rhs: Hitch) -> Hitch? {
         return extract(lhs.hitch(), rhs)
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func toInt(fuzzy: Bool = false) -> Int? {
         if let bstr = bstr,
@@ -953,7 +954,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func toDouble(fuzzy: Bool = false) -> Double? {
         if let bstr = bstr,
@@ -969,7 +970,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return nil
     }
 
-    @inlinable
+    @inlinable @inline(__always)
     @discardableResult
     public func toEpoch() -> Int {
         return Int(btoepoch(bstr))
