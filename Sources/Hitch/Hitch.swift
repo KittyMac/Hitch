@@ -524,6 +524,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    public func release() {
+        bdestroy(bstr)
+        bstr = bempty()
+    }
+
+    @inlinable @inline(__always)
     public func replace(with string: String) {
         count = 0
         append(string)
