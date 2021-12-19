@@ -499,6 +499,15 @@ final class HitchTests: XCTestCase {
         let hitch = "  5.2567  ".hitch()
         XCTAssertEqual(hitch.toDouble(), 5.2567)
     }
+    
+    func testReplace() {
+        // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
+        let hitch = "Hello CrUeL world".hitch()
+        
+        XCTAssertEqual(hitch.replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
+        
+        XCTAssertEqual(hitch.replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
+    }
 
     static var allTests = [
         ("testSimpleCreate", testSimpleCreate),
