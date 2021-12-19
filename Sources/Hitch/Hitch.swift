@@ -542,6 +542,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
         if ignoreCase == false {
             bfindreplace(bstr, hitch.bstr, with.bstr, 0)
