@@ -168,7 +168,6 @@ func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
     var value: Double = 0
     var hasValue = false
     var isNegative = false
-    var endedOnlyAllowsWhitespace = false
     var idx = 0
 
     // part before the period
@@ -413,8 +412,15 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    public init(bytes: UnsafePointer<Int8>, offset: Int, count: Int) {
+        self.bstr = blk2bstr(bytes + offset, Int32(count))
+    }
+
+    @inlinable @inline(__always)
     public init(data: Data) {
-        data.withUnsafeBytes { bytes in
+        data.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return }
             bstr = blk2bstr(bytes, Int32(data.count))
         }
     }
@@ -605,7 +611,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ data: Data) -> Self {
-        data.withUnsafeBytes { bytes in
+        data.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return }
             bcatblk(bstr, bytes, Int32(data.count))
         }
         return self
@@ -662,7 +670,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
-        data.withUnsafeBytes { bytes in
+        data.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return }
             binsertblk(bstr, Int32(position), bytes, Int32(data.count), .space)
         }
         return self
