@@ -428,6 +428,7 @@ final class HitchTests: XCTestCase {
         let values = [
             12345.12345,
             0,
+            0.5,
             -12345.12345
         ]
         for value in values {
@@ -439,6 +440,7 @@ final class HitchTests: XCTestCase {
         let values = [
             12345.12345,
             0,
+            0.5,
             -12345.12345
         ]
         for value in values {

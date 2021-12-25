@@ -702,6 +702,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
             // number part
             intValue = Int(value)
+            if intValue == 0 {
+                insert(UInt8.zero, index: index)
+            }
             while intValue > 0 {
                 let digit = intValue % 10
                 intValue /= 10
