@@ -597,8 +597,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func append<T: FixedWidthInteger>(_ char: T) -> Self {
-        bconchar(bstr, UInt8(clamping: char))
+    public func append(_ char: UInt8) -> Self {
+        bconchar(bstr, char)
         return self
     }
 
@@ -644,9 +644,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func insert<T: FixedWidthInteger>(_ char: T, index: Int) -> Self {
+    public func insert(_ char: UInt8, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
-        binsertch(bstr, Int32(position), 1, UInt8(clamping: char))
+        binsertch(bstr, Int32(position), 1, char)
         return self
     }
 

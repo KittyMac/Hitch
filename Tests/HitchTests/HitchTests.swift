@@ -379,7 +379,7 @@ final class HitchTests: XCTestCase {
     
     func testInsert() {
         let hitch = "".hitch()
-        let values = [53, 52, 51, 50, 49]
+        let values: [UInt8] = [53, 52, 51, 50, 49]
         
         for value in values {
             hitch.insert(value, index: 0)
