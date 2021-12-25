@@ -424,6 +424,28 @@ final class HitchTests: XCTestCase {
         }
     }
     
+    func testAppendDouble() {
+        let values = [
+            12345.12345,
+            0,
+            -12345.12345
+        ]
+        for value in values {
+            XCTAssertEqual("hello: ".hitch().append(double: value), "hello: \(value)".hitch())
+        }
+    }
+    
+    func testInsertDouble() {
+        let values = [
+            12345.12345,
+            0,
+            -12345.12345
+        ]
+        for value in values {
+            XCTAssertEqual("hello  world".hitch().insert(double: value, index: 6), "hello \(value) world".hitch())
+        }
+    }
+    
     func testTrim() {
         let hitch = "   \t\n\r  Hello   \t\n\r  ".hitch()
         hitch.trim()

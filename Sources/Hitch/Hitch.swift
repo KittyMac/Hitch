@@ -610,6 +610,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
+    public func append(double: Double) -> Self {
+        return insert(double: double, index: count)
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func append(_ data: Data) -> Self {
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -656,6 +662,49 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             while value > 0 {
                 let digit = value % 10
                 value /= 10
+                insert(UInt8.zero + UInt8(digit), index: index)
+            }
+
+            if isNegative {
+                insert(UInt8.minus, index: index)
+            }
+        }
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func insert(double: Double, index: Int) -> Self {
+        if double == 0 {
+            insert(UInt8.zero, index: index)
+            insert(UInt8.dot, index: index)
+            insert(UInt8.zero, index: index)
+        } else {
+            let isNegative = double < 0
+            let value = isNegative ? -1 * double : double
+
+            // fractional part
+            var intValue = Int((value.truncatingRemainder(dividingBy: 1) * 1000000000.0).rounded())
+            var skipInitialZeros = true
+            while intValue > 0 {
+                let digit = intValue % 10
+                intValue /= 10
+                if skipInitialZeros {
+                    if digit == 0 {
+                        continue
+                    }
+                    skipInitialZeros = false
+                }
+                insert(UInt8.zero + UInt8(digit), index: index)
+            }
+
+            insert(UInt8.dot, index: index)
+
+            // number part
+            intValue = Int(value)
+            while intValue > 0 {
+                let digit = intValue % 10
+                intValue /= 10
                 insert(UInt8.zero + UInt8(digit), index: index)
             }
 
