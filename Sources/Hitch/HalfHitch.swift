@@ -23,6 +23,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Codable, Hashable 
         self.to = to
     }
 
+    @usableFromInline
     internal var tagbstr: tagbstring {
         guard let raw = source.raw() else { return tagbstring(mlen: 0, slen: 0, data: nil) }
         let mlen = Int32(source.count - from)

@@ -604,6 +604,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
+    public func append(_ hitch: HalfHitch) -> Self {
+        var tagbstr = hitch.tagbstr
+        bconcat(bstr, &tagbstr)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func append(_ string: String) -> Self {
         string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
             bcatcstr(bstr, bytes)
@@ -768,6 +776,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func contains(_ hitch: Hitch) -> Bool {
         return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func contains(_ hitch: HalfHitch) -> Bool {
+        var tagbstr = hitch.tagbstr
+        return binstr(bstr, 0, &tagbstr) != BSTR_ERR
     }
 
     @inlinable @inline(__always)
