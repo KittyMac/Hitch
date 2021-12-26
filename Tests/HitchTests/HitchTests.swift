@@ -38,6 +38,21 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(i, 1000)
     }
     
+    func testIterationRange() {
+        let hello = "Hello".hitch()
+        
+        var i = 0
+        var c = 0
+
+        for x in hello.stride(from: 1, to: 3) {
+            c += 1
+            i += Int(x)
+        }
+        
+        XCTAssertEqual(c, 2)
+        XCTAssertEqual(i, 209)
+    }
+    
     func testIterationPerf() {
         let swiftLorem = lorem
         let hitchLorem = lorem.hitch()

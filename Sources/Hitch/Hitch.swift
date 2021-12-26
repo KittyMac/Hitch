@@ -269,7 +269,7 @@ public extension String {
     }
 }
 
-public struct HitchIterator: IteratorProtocol {
+public struct HitchIterator: Sequence, IteratorProtocol {
     @usableFromInline
     internal var ptr: UnsafeMutablePointer<UInt8>
     @usableFromInline
@@ -280,6 +280,17 @@ public struct HitchIterator: IteratorProtocol {
         if let data = hitch.raw() {
             ptr = data - 1
             end = data + hitch.count - 1
+        } else {
+            ptr = nullptr
+            end = ptr
+        }
+    }
+
+    @inlinable @inline(__always)
+    internal init(hitch: Hitch, from: Int, to: Int) {
+        if let data = hitch.raw() {
+            ptr = data + from - 1
+            end = data + to - 1
         } else {
             ptr = nullptr
             end = ptr
@@ -394,7 +405,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     public func makeIterator() -> HitchIterator {
-       return HitchIterator(hitch: self)
+        return HitchIterator(hitch: self)
+    }
+
+    @inlinable @inline(__always)
+    public func stride(from: Int, to: Int) -> HitchIterator {
+        return HitchIterator(hitch: self, from: from, to: to)
     }
 
     required public init (stringLiteral: String) {
