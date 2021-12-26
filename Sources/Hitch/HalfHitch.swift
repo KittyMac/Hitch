@@ -3,6 +3,42 @@
 import Foundation
 import bstrlib
 
+public struct HalfHitchIterator: Sequence, IteratorProtocol {
+    @usableFromInline
+    internal var ptr: UnsafeMutablePointer<UInt8>
+    @usableFromInline
+    internal let end: UnsafeMutablePointer<UInt8>
+
+    @inlinable @inline(__always)
+    internal init(halfHitch: HalfHitch) {
+        if let data = halfHitch.raw() {
+            ptr = data - 1
+            end = data + halfHitch.count - 1
+        } else {
+            ptr = nullptr
+            end = ptr
+        }
+    }
+
+    @inlinable @inline(__always)
+    internal init(halfHitch: HalfHitch, from: Int, to: Int) {
+        if let data = halfHitch.raw() {
+            ptr = data + from - 1
+            end = data + to - 1
+        } else {
+            ptr = nullptr
+            end = ptr
+        }
+    }
+
+    @inlinable @inline(__always)
+    public mutating func next() -> UInt8? {
+        if ptr >= end { return nil }
+        ptr += 1
+        return ptr.pointee
+    }
+}
+
 /// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like, read-only
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
@@ -15,8 +51,9 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
 
     @usableFromInline
     let source: UnsafeMutablePointer<UInt8>?
-    @usableFromInline
-    let count: Int
+
+    public let count: Int
+
     @usableFromInline
     var from: Int
     @usableFromInline
@@ -101,6 +138,21 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
         let hitch = rhs.hitch()
         var lhs = lhs.tagbstr
         return biseq(&lhs, hitch.bstr) == 1
+    }
+
+    @inlinable @inline(__always)
+    public func makeIterator() -> HalfHitchIterator {
+        return HalfHitchIterator(halfHitch: self)
+    }
+
+    @inlinable @inline(__always)
+    public func stride(from: Int, to: Int) -> HalfHitchIterator {
+        return HalfHitchIterator(halfHitch: self, from: from, to: to)
+    }
+
+    @inlinable @inline(__always)
+    public func raw() -> UnsafeMutablePointer<UInt8>? {
+        return source
     }
 
     @inlinable @inline(__always)
