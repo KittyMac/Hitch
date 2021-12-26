@@ -55,15 +55,15 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
     public let count: Int
 
     @inlinable @inline(__always)
-    public static func using(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> Void) {
+    public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
         var data2 = data
-        data2.withUnsafeMutableBytes { unsafeRawBufferPointer in
+        return data2.withUnsafeMutableBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
-            guard let bytes = unsafeBufferPointer.baseAddress else { return }
-            callback(HalfHitch(raw: bytes,
-                               count: data.count,
-                               from: from,
-                               to: to >= 0 ? to : data.count))
+            guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
+            return callback(HalfHitch(raw: bytes,
+                                      count: data.count,
+                                      from: from,
+                                      to: to >= 0 ? to : data.count))
         }
     }
 

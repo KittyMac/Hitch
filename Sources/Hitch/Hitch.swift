@@ -349,6 +349,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return bstr?.pointee.data
     }
 
+    @inlinable @inline(__always)
+    public func using<T>(_ callback: (UnsafeMutablePointer<UInt8>) -> T?) -> T? {
+        if let raw = bstr?.pointee.data {
+            return callback(raw)
+        }
+        return nil
+    }
+
     public subscript (index: Int) -> UInt8 {
         get {
             if let bstr = bstr,
