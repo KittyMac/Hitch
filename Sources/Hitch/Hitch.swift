@@ -769,23 +769,23 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func firstIndex(of hitch: Hitch) -> Int? {
-        let index = binstr(bstr, 0, hitch.bstr)
+    public func firstIndex(of hitch: Hitch, offset: Int32 = 0) -> Int? {
+        let index = binstr(bstr, offset, hitch.bstr)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func firstIndex(of string: String) -> Int? {
+    public func firstIndex(of string: String, offset: Int32 = 0) -> Int? {
         let hitch = string.hitch()
-        let index = binstr(bstr, 0, hitch.bstr)
+        let index = binstr(bstr, offset, hitch.bstr)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func firstIndex<T: FixedWidthInteger>(of char: T) -> Int? {
-        let index = bstrchrp(bstr, Int32(char), 0)
+    public func firstIndex<T: FixedWidthInteger>(of char: T, offset: Int32 = 0) -> Int? {
+        let index = bstrchrp(bstr, Int32(char), offset)
         return index != BSTR_ERR ? Int(index) : nil
     }
 
