@@ -96,6 +96,14 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
         self.to = to
     }
 
+    @inlinable @inline(__always)
+    public init() {
+        self.source = nil
+        self.count = 0
+        self.from = 0
+        self.to = 0
+    }
+
     @usableFromInline
     internal var tagbstr: tagbstring {
         guard let raw = source else { return tagbstring(mlen: 0, slen: 0, data: nil) }
