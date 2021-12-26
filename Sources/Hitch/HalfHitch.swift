@@ -65,4 +65,30 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Codable, Hashable 
         var lhs = lhs.tagbstr
         return biseq(&lhs, hitch.bstr) == 1
     }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func toInt(fuzzy: Bool = false) -> Int? {
+        guard let raw = source.raw() else { return nil }
+        let count = to - from
+        if fuzzy {
+            return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+                                      count: count)
+        }
+        return intFromBinary(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+                             count: count)
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func toDouble(fuzzy: Bool = false) -> Double? {
+        guard let raw = source.raw() else { return nil }
+        let count = to - from
+        if fuzzy {
+            return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+                                         count: count)
+        }
+        return doubleFromBinary(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+                                count: count)
+    }
 }

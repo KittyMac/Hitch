@@ -308,6 +308,16 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch.halfhitch(6, 11)?.description, "world")
     }
     
+    func testHalfHitchToInt0() {
+        let hitch = "Hello 123456 again".hitch()
+        XCTAssertEqual(hitch.halfhitch(6, 12)?.toInt(), 123456)
+    }
+    
+    func testHalfHitchToDouble0() {
+        let hitch = "Hello 123456.123456 again".hitch()
+        XCTAssertEqual(hitch.halfhitch(6, 19)?.toDouble(), 123456.123456)
+    }
+    
     func testSubstring0() {
         let hitch = "Hello world again".hitch()
         XCTAssertEqual(hitch.substring(6, 11), "world")
