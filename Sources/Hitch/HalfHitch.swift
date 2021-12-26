@@ -46,18 +46,13 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
 
     public var description: String {
         guard let source = source else { return "null" }
-        return String(data: Data(bytesNoCopy: source + from, count: to - from, deallocator: .none), encoding: .utf8) ?? "null"
+        return String(data: Data(bytesNoCopy: source, count: count, deallocator: .none), encoding: .utf8) ?? "null"
     }
 
     @usableFromInline
     let source: UnsafeMutablePointer<UInt8>?
 
     public let count: Int
-
-    @usableFromInline
-    var from: Int
-    @usableFromInline
-    var to: Int
 
     @inlinable @inline(__always)
     public static func using(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> Void) {
@@ -74,42 +69,43 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
 
     @inlinable @inline(__always)
     init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
-        self.source = raw
-        self.count = count
-        self.from = from
-        self.to = to
+        self.source = raw + from
+        self.count = to - from
     }
 
     @inlinable @inline(__always)
     public init(source: Hitch, from: Int, to: Int) {
-        self.source = source.raw()
-        self.count = source.count
-        self.from = from
-        self.to = to
+        if let raw = source.raw() {
+            self.source = raw + from
+            self.count = to - from
+        } else {
+            self.source = nil
+            self.count = 0
+        }
     }
 
     @inlinable @inline(__always)
     public init(source: HalfHitch, from: Int, to: Int) {
-        self.source = source.source
-        self.count = source.count
-        self.from = from
-        self.to = to
+        if let raw = source.source {
+            self.source = raw + from
+            self.count = to - from
+        } else {
+            self.source = nil
+            self.count = 0
+        }
     }
 
     @inlinable @inline(__always)
     public init() {
         self.source = nil
         self.count = 0
-        self.from = 0
-        self.to = 0
     }
 
     @usableFromInline
     internal var tagbstr: tagbstring {
         guard let raw = source else { return tagbstring(mlen: 0, slen: 0, data: nil) }
-        let mlen = Int32(count - from)
-        let slen = Int32(to - from)
-        return tagbstring(mlen: mlen, slen: slen, data: raw + from)
+        let len = Int32(count)
+        return tagbstring(mlen: len, slen: len, data: raw)
     }
 
     public static func < (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
@@ -175,12 +171,11 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
     @discardableResult
     public func toInt(fuzzy: Bool = false) -> Int? {
         guard let raw = source else { return nil }
-        let count = to - from
         if fuzzy {
-            return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+            return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw, count: count),
                                       count: count)
         }
-        return intFromBinary(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+        return intFromBinary(data: UnsafeRawBufferPointer(start: raw, count: count),
                              count: count)
     }
 
@@ -188,12 +183,11 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
     @discardableResult
     public func toDouble(fuzzy: Bool = false) -> Double? {
         guard let raw = source else { return nil }
-        let count = to - from
         if fuzzy {
-            return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+            return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw, count: count),
                                          count: count)
         }
-        return doubleFromBinary(data: UnsafeRawBufferPointer(start: raw + from, count: count),
+        return doubleFromBinary(data: UnsafeRawBufferPointer(start: raw, count: count),
                                 count: count)
     }
 }
