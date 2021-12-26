@@ -3,30 +3,58 @@
 import Foundation
 import bstrlib
 
-public struct HalfHitch: CustomStringConvertible, Comparable, Codable, Hashable {
+/// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like, read-only
+/// processing on existing data without copies or allocations, then HalfHitch is your answer.
+/// Note: as you can gather from the above, use HalfHitch carefully!
+public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
 
     public var description: String {
-        return String(data: source.dataNoCopy(start: from, end: to), encoding: .utf8) ?? "null"
+        guard let source = source else { return "null" }
+        return String(data: Data(bytesNoCopy: source + from, count: to - from, deallocator: .none), encoding: .utf8) ?? "null"
     }
 
     @usableFromInline
-    let source: Hitch
+    let source: UnsafeMutablePointer<UInt8>?
+    @usableFromInline
+    let count: Int
     @usableFromInline
     var from: Int
     @usableFromInline
     var to: Int
 
     @inlinable @inline(__always)
+    static func using(data: Data, from: Int = 0, to: Int = 0, _ callback: (HalfHitch) -> Void) {
+        var data2 = data
+        data2.withUnsafeMutableBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return }
+            callback(HalfHitch(raw: bytes,
+                               count: data.count,
+                               from: from,
+                               to: to))
+        }
+    }
+
+    @inlinable @inline(__always)
+    init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
+        self.source = raw
+        self.count = count
+        self.from = from
+        self.to = to
+    }
+
+    @inlinable @inline(__always)
     init(source: Hitch, from: Int, to: Int) {
-        self.source = source
+        self.source = source.raw()
+        self.count = source.count
         self.from = from
         self.to = to
     }
 
     @usableFromInline
     internal var tagbstr: tagbstring {
-        guard let raw = source.raw() else { return tagbstring(mlen: 0, slen: 0, data: nil) }
-        let mlen = Int32(source.count - from)
+        guard let raw = source else { return tagbstring(mlen: 0, slen: 0, data: nil) }
+        let mlen = Int32(count - from)
         let slen = Int32(to - from)
         return tagbstring(mlen: mlen, slen: slen, data: raw + from)
     }
@@ -70,7 +98,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Codable, Hashable 
     @inlinable @inline(__always)
     @discardableResult
     public func toInt(fuzzy: Bool = false) -> Int? {
-        guard let raw = source.raw() else { return nil }
+        guard let raw = source else { return nil }
         let count = to - from
         if fuzzy {
             return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw + from, count: count),
@@ -83,7 +111,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Codable, Hashable 
     @inlinable @inline(__always)
     @discardableResult
     public func toDouble(fuzzy: Bool = false) -> Double? {
-        guard let raw = source.raw() else { return nil }
+        guard let raw = source else { return nil }
         let count = to - from
         if fuzzy {
             return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: raw + from, count: count),
