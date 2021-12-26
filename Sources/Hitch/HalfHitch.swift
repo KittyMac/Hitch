@@ -44,8 +44,16 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
     }
 
     @inlinable @inline(__always)
-    init(source: Hitch, from: Int, to: Int) {
+    public init(source: Hitch, from: Int, to: Int) {
         self.source = source.raw()
+        self.count = source.count
+        self.from = from
+        self.to = to
+    }
+
+    @inlinable @inline(__always)
+    public init(source: HalfHitch, from: Int, to: Int) {
+        self.source = source.source
         self.count = source.count
         self.from = from
         self.to = to
