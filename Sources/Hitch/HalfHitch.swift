@@ -60,7 +60,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
     var to: Int
 
     @inlinable @inline(__always)
-    public static func using(data: Data, from: Int = 0, to: Int = 0, _ callback: (HalfHitch) -> Void) {
+    public static func using(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> Void) {
         var data2 = data
         data2.withUnsafeMutableBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -68,7 +68,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
             callback(HalfHitch(raw: bytes,
                                count: data.count,
                                from: from,
-                               to: to))
+                               to: to >= 0 ? to : data.count))
         }
     }
 
