@@ -164,6 +164,14 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
     }
 
     @inlinable @inline(__always)
+    public subscript (index: Int) -> UInt8 {
+        get {
+            guard index > 0 && index < count else { return 0 }
+            return source?[index] ?? 0
+        }
+    }
+
+    @inlinable @inline(__always)
     @discardableResult
     public func toInt(fuzzy: Bool = false) -> Int? {
         guard let raw = source else { return nil }
