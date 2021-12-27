@@ -102,7 +102,11 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: count))
+        if source == nil {
+            hasher.combine(0)
+        } else {
+            hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: count))
+        }
     }
 
     @usableFromInline
