@@ -306,6 +306,7 @@ public struct HitchIterator: Sequence, IteratorProtocol {
 }
 
 public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
+    static let empty = Hitch()
 
     public static func < (lhs: Hitch, rhs: Hitch) -> Bool {
         return bstrcmp(lhs.bstr, rhs.bstr) < 0

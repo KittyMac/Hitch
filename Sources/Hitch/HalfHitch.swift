@@ -43,6 +43,7 @@ public struct HalfHitchIterator: Sequence, IteratorProtocol {
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
 public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatable {
+    static let empty = HalfHitch()
 
     public var description: String {
         guard let source = source else { return "null" }
