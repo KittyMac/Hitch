@@ -890,30 +890,21 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
-    public func canEscape(escapeSingleQuote: Bool) -> Bool {
-        if escapeSingleQuote {
-            for char in self where char > 0x7f ||
-                char == .bell ||
-                char == .newLine ||
-                char == .tab ||
-                char == .formFeed ||
-                char == .carriageReturn ||
-                char == .singleQuote ||
-                char == .doubleQuote ||
-                char == .backSlash ||
-                char == .forwardSlash {
+    public func canEscape(unicode: Bool,
+                          singleQuotes: Bool) -> Bool {
+        for char in self {
+            if unicode && char > 0x7f {
                 return true
-            }
-        } else {
-            for char in self where char > 0x7f ||
-                char == .bell ||
-                char == .newLine ||
-                char == .tab ||
-                char == .formFeed ||
-                char == .carriageReturn ||
-                char == .doubleQuote ||
-                char == .backSlash ||
-                char == .forwardSlash {
+            } else if singleQuotes && char == .singleQuote {
+                return true
+            } else if char == .bell ||
+                        char == .newLine ||
+                        char == .tab ||
+                        char == .formFeed ||
+                        char == .carriageReturn ||
+                        char == .doubleQuote ||
+                        char == .backSlash ||
+                        char == .forwardSlash {
                 return true
             }
         }
@@ -921,15 +912,19 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
-    public func escaped(escapeSingleQuote: Bool = false) -> Hitch {
-        guard canEscape(escapeSingleQuote: escapeSingleQuote) else { return self }
+    public func escaped(unicode: Bool,
+                        singleQuotes: Bool) -> Hitch {
+        guard canEscape(unicode: unicode,
+                        singleQuotes: singleQuotes) else { return self }
         let tmp = Hitch(hitch: self)
-        tmp.escape(escapeSingleQuote: escapeSingleQuote)
+        tmp.escape(unicode: unicode,
+                   singleQuotes: singleQuotes)
         return tmp
     }
 
     @inlinable @inline(__always)
-    public func escape(escapeSingleQuote: Bool = false) {
+    public func escape(unicode: Bool,
+                       singleQuotes: Bool) {
         guard let raw = raw() else { return }
 
         let writer = Hitch(capacity: count)
@@ -940,7 +935,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         while read < end {
             let ch = read.pointee
 
-            if ch > 0x7f {
+            if unicode && ch > 0x7f {
                 writer.append(UInt8.backSlash)
                 writer.append(UInt8.u)
 
@@ -999,7 +994,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                     writer.append(UInt8.backSlash)
                     writer.append(UInt8.r)
                 case .singleQuote:
-                    if escapeSingleQuote {
+                    if singleQuotes {
                         writer.append(UInt8.backSlash)
                     }
                     writer.append(UInt8.singleQuote)

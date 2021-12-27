@@ -408,7 +408,8 @@ final class HitchTests: XCTestCase {
     
     func testEscaping() {
         let hitch0 = "\\ \' \" \t \n \r".hitch()
-        hitch0.escape(escapeSingleQuote: true)
+        hitch0.escape(unicode: true,
+                      singleQuotes: true)
         XCTAssertEqual(hitch0[0], .backSlash)
         XCTAssertEqual(hitch0[1], .backSlash)
         XCTAssertEqual(hitch0[2], .space)
@@ -429,10 +430,13 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch0[17], 0)
         
         let hitch1 = "A ö Ж € 𝄞".hitch()
-        XCTAssertEqual(hitch1.escaped(), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
-        XCTAssertEqual(hitch1.halfhitch().escaped(), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+        XCTAssertEqual(hitch1.escaped(unicode: true,
+                                      singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+        XCTAssertEqual(hitch1.halfhitch().escaped(unicode: true,
+                                                  singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
         
-        hitch1.escape()
+        hitch1.escape(unicode: true,
+                      singleQuotes: true)
         XCTAssertEqual(hitch1, #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
     }
     

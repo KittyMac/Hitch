@@ -223,30 +223,21 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    public func canEscape(escapeSingleQuote: Bool) -> Bool {
-        if escapeSingleQuote {
-            for char in self where char > 0x7f ||
-                char == .bell ||
-                char == .newLine ||
-                char == .tab ||
-                char == .formFeed ||
-                char == .carriageReturn ||
-                char == .singleQuote ||
-                char == .doubleQuote ||
-                char == .backSlash ||
-                char == .forwardSlash {
+    public func canEscape(unicode: Bool,
+                          singleQuotes: Bool) -> Bool {
+        for char in self {
+            if unicode && char > 0x7f {
                 return true
-            }
-        } else {
-            for char in self where char > 0x7f ||
-                char == .bell ||
-                char == .newLine ||
-                char == .tab ||
-                char == .formFeed ||
-                char == .carriageReturn ||
-                char == .doubleQuote ||
-                char == .backSlash ||
-                char == .forwardSlash {
+            } else if singleQuotes && char == .singleQuote {
+                return true
+            } else if char == .bell ||
+                        char == .newLine ||
+                        char == .tab ||
+                        char == .formFeed ||
+                        char == .carriageReturn ||
+                        char == .doubleQuote ||
+                        char == .backSlash ||
+                        char == .forwardSlash {
                 return true
             }
         }
@@ -262,10 +253,13 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    public func escaped(escapeSingleQuote: Bool = false) -> HalfHitch {
-        guard canEscape(escapeSingleQuote: escapeSingleQuote) else { return self }
+    public func escaped(unicode: Bool,
+                        singleQuotes: Bool) -> HalfHitch {
+        guard canEscape(unicode: unicode,
+                        singleQuotes: singleQuotes) else { return self }
         let clone = hitch()
-        clone.escape(escapeSingleQuote: escapeSingleQuote)
+        clone.escape(unicode: unicode,
+                     singleQuotes: singleQuotes)
         return clone.halfhitch()
     }
 
