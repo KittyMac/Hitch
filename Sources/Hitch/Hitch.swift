@@ -306,6 +306,7 @@ public struct HitchIterator: Sequence, IteratorProtocol {
 }
 
 public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
+
     public static func < (lhs: Hitch, rhs: Hitch) -> Bool {
         return bstrcmp(lhs.bstr, rhs.bstr) < 0
     }
@@ -788,8 +789,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func contains(_ hitch: HalfHitch) -> Bool {
-        var tagbstr = hitch.tagbstr
+    public func contains(_ halfHitch: HalfHitch) -> Bool {
+        var tagbstr = halfHitch.tagbstr
         return binstr(bstr, 0, &tagbstr) != BSTR_ERR
     }
 

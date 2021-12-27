@@ -101,9 +101,15 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
         self.count = 0
     }
 
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: count))
+    }
+
     @usableFromInline
     internal var tagbstr: tagbstring {
-        guard let raw = source else { return tagbstring(mlen: 0, slen: 0, data: nil) }
+        guard let raw = source else {
+            return tagbstring(mlen: 0, slen: 0, data: nil)
+        }
         let len = Int32(count)
         return tagbstring(mlen: len, slen: len, data: raw)
     }
@@ -127,9 +133,9 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     }
 
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        var lhs = lhs.tagbstr
-        var rhs = rhs.tagbstr
-        return biseq(&lhs, &rhs) == 1
+        var lhsBstr = lhs.tagbstr
+        var rhsBstr = rhs.tagbstr
+        return biseq(&lhsBstr, &rhsBstr) == 1
     }
 
     public static func == (lhs: String, rhs: HalfHitch) -> Bool {

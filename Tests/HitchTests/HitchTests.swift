@@ -583,6 +583,20 @@ final class HitchTests: XCTestCase {
         
         XCTAssertEqual(hitch.replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
     }
+    
+    func testHitchAsKeys() {
+        
+        var info = [HalfHitch: Int]()
+        
+        let hitch = "Hello CrUeL world".hitch()
+        
+        info[HalfHitch(source: hitch, from: 0, to: 5)] = 0
+        info[HalfHitch(source: hitch, from: 6, to: 11)] = 1
+        info[HalfHitch(source: hitch, from: 12, to: 17)] = 2
+        
+        let key = "Hello".hitch()
+        XCTAssertNotNil(info[key.halfhitch()])
+    }
 
     static var allTests = [
         ("testSimpleCreate", testSimpleCreate),
