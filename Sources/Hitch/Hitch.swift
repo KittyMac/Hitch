@@ -1003,9 +1003,6 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                 case .backSlash:
                     writer.append(UInt8.backSlash)
                     writer.append(UInt8.backSlash)
-                case .forwardSlash:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.forwardSlash)
                 default:
                     writer.append(ch)
                 }
