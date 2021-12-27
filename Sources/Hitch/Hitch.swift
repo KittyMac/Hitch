@@ -261,7 +261,7 @@ func hex2(_ v: UInt32) -> UInt8 {
     }
 }
 
-public let nullptr = UnsafeMutablePointer<UInt8>(bitPattern: 0)!
+public let nullptr = UnsafeMutablePointer<UInt8>(bitPattern: 1)!
 
 public extension String {
     func hitch() -> Hitch {

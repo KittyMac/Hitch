@@ -605,6 +605,15 @@ final class HitchTests: XCTestCase {
         let key = "Hello".hitch()
         XCTAssertNotNil(info[key.halfhitch()])
     }
+    
+    func testNullHalfHitch() {
+        let halfHitch = HalfHitch()
+        for _ in halfHitch {
+            XCTFail()
+        }
+        
+        let _ = halfHitch[1]
+    }
 
     static var allTests = [
         ("testSimpleCreate", testSimpleCreate),
