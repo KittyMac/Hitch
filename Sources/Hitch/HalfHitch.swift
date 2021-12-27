@@ -42,7 +42,8 @@ public struct HalfHitchIterator: Sequence, IteratorProtocol {
 /// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like, read-only
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
-public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatable {
+public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable {
+
     public static let empty = HalfHitch()
 
     public var description: String {
@@ -118,6 +119,18 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     }
 
     @inlinable @inline(__always)
+    public init(stringLiteral: String) {
+        self.sourceHitch = stringLiteral.hitch()
+        if let raw = self.sourceHitch.raw() {
+            self.source = raw
+            self.count = self.sourceHitch.count
+        } else {
+            self.source = nil
+            self.count = 0
+        }
+    }
+
+    @inlinable @inline(__always)
     public func hitch() -> Hitch {
         if let raw = source {
             return Hitch(bytes: raw, offset: 0, count: count)
@@ -128,7 +141,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     @inlinable @inline(__always)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(count)
-        hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: min(count, 8)))
+        hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: Swift.min(count, 8)))
     }
 
     @usableFromInline
@@ -210,25 +223,58 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     }
 
     @inlinable @inline(__always)
-    public func escaped(escapeSingleQuote: Bool = false) -> Hitch {
-        return hitch().escaped(escapeSingleQuote: escapeSingleQuote)
+    public func canEscape(escapeSingleQuote: Bool) -> Bool {
+        if escapeSingleQuote {
+            for char in self where char > 0x7f ||
+                char == .bell ||
+                char == .newLine ||
+                char == .tab ||
+                char == .formFeed ||
+                char == .carriageReturn ||
+                char == .singleQuote ||
+                char == .doubleQuote ||
+                char == .backSlash ||
+                char == .forwardSlash {
+                return true
+            }
+        } else {
+            for char in self where char > 0x7f ||
+                char == .bell ||
+                char == .newLine ||
+                char == .tab ||
+                char == .formFeed ||
+                char == .carriageReturn ||
+                char == .doubleQuote ||
+                char == .backSlash ||
+                char == .forwardSlash {
+                return true
+            }
+        }
+        return false
     }
 
     @inlinable @inline(__always)
-    public func unescaped() -> Hitch {
-        return hitch().unescaped()
+    public func canUnescape() -> Bool {
+        for char in self where char == .backSlash {
+            return true
+        }
+        return false
     }
 
     @inlinable @inline(__always)
-    public func escape(escapeSingleQuote: Bool = false) {
-        guard sourceHitch != Hitch.empty else { return }
-        sourceHitch.escape(escapeSingleQuote: escapeSingleQuote)
+    public func escaped(escapeSingleQuote: Bool = false) -> HalfHitch {
+        guard canEscape(escapeSingleQuote: escapeSingleQuote) else { return self }
+        let clone = hitch()
+        clone.escape(escapeSingleQuote: escapeSingleQuote)
+        return clone.halfhitch()
     }
 
     @inlinable @inline(__always)
-    public func unescape() {
-        guard sourceHitch != Hitch.empty else { return }
-        sourceHitch.unescape()
+    public func unescaped() -> HalfHitch {
+        guard canUnescape() else { return self }
+        let clone = hitch()
+        clone.unescape()
+        return clone.halfhitch()
     }
 
     @inlinable @inline(__always)

@@ -890,7 +890,39 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    public func canEscape(escapeSingleQuote: Bool) -> Bool {
+        if escapeSingleQuote {
+            for char in self where char > 0x7f ||
+                char == .bell ||
+                char == .newLine ||
+                char == .tab ||
+                char == .formFeed ||
+                char == .carriageReturn ||
+                char == .singleQuote ||
+                char == .doubleQuote ||
+                char == .backSlash ||
+                char == .forwardSlash {
+                return true
+            }
+        } else {
+            for char in self where char > 0x7f ||
+                char == .bell ||
+                char == .newLine ||
+                char == .tab ||
+                char == .formFeed ||
+                char == .carriageReturn ||
+                char == .doubleQuote ||
+                char == .backSlash ||
+                char == .forwardSlash {
+                return true
+            }
+        }
+        return false
+    }
+
+    @inlinable @inline(__always)
     public func escaped(escapeSingleQuote: Bool = false) -> Hitch {
+        guard canEscape(escapeSingleQuote: escapeSingleQuote) else { return self }
         let tmp = Hitch(hitch: self)
         tmp.escape(escapeSingleQuote: escapeSingleQuote)
         return tmp
@@ -992,7 +1024,16 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    public func canUnescape() -> Bool {
+        for char in self where char == .backSlash {
+            return true
+        }
+        return false
+    }
+
+    @inlinable @inline(__always)
     public func unescaped() -> Hitch {
+        guard canUnescape() else { return self }
         let tmp = Hitch(hitch: self)
         tmp.unescape()
         return tmp

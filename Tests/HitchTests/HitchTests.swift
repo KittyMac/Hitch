@@ -398,6 +398,7 @@ final class HitchTests: XCTestCase {
         
         let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch()
         XCTAssertEqual(hitch1.unescaped(), "A ö Ж € 𝄞")
+        XCTAssertEqual(hitch1.halfhitch().unescaped(), "A ö Ж € 𝄞")
         
         hitch1.unescape()
         XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
@@ -429,6 +430,7 @@ final class HitchTests: XCTestCase {
         
         let hitch1 = "A ö Ж € 𝄞".hitch()
         XCTAssertEqual(hitch1.escaped(), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+        XCTAssertEqual(hitch1.halfhitch().escaped(), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
         
         hitch1.escape()
         XCTAssertEqual(hitch1, #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
