@@ -57,6 +57,9 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     }
 
     @usableFromInline
+    let sourceHitch: Hitch
+
+    @usableFromInline
     let source: UnsafeMutablePointer<UInt8>?
 
     public let count: Int
@@ -76,6 +79,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
 
     @inlinable @inline(__always)
     init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
+        self.sourceHitch = Hitch.empty
         self.source = raw + from
         self.count = to - from
     }
@@ -83,9 +87,11 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     @inlinable @inline(__always)
     public init(source: Hitch, from: Int, to: Int) {
         if let raw = source.raw() {
+            self.sourceHitch = source
             self.source = raw + from
             self.count = to - from
         } else {
+            self.sourceHitch = Hitch.empty
             self.source = nil
             self.count = 0
         }
@@ -94,9 +100,11 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     @inlinable @inline(__always)
     public init(source: HalfHitch, from: Int, to: Int) {
         if let raw = source.source {
+            self.sourceHitch = Hitch.empty
             self.source = raw + from
             self.count = to - from
         } else {
+            self.sourceHitch = Hitch.empty
             self.source = nil
             self.count = 0
         }
@@ -104,6 +112,7 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
 
     @inlinable @inline(__always)
     public init() {
+        self.sourceHitch = Hitch.empty
         self.source = nil
         self.count = 0
     }
@@ -198,6 +207,28 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
             guard index >= 0 && index < count else { return 0 }
             return source?[index] ?? 0
         }
+    }
+
+    @inlinable @inline(__always)
+    public func escaped(escapeSingleQuote: Bool = false) -> Hitch {
+        return hitch().escaped(escapeSingleQuote: escapeSingleQuote)
+    }
+
+    @inlinable @inline(__always)
+    public func unescaped() -> Hitch {
+        return hitch().unescaped()
+    }
+
+    @inlinable @inline(__always)
+    public func escape(escapeSingleQuote: Bool = false) {
+        guard sourceHitch != Hitch.empty else { return }
+        sourceHitch.escape(escapeSingleQuote: escapeSingleQuote)
+    }
+
+    @inlinable @inline(__always)
+    public func unescape() {
+        guard sourceHitch != Hitch.empty else { return }
+        sourceHitch.unescape()
     }
 
     @inlinable @inline(__always)

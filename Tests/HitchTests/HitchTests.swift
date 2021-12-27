@@ -397,8 +397,12 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch0[11], 0)
         
         let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch()
+        XCTAssertEqual(hitch1.unescaped(), "A ö Ж € 𝄞")
+        
         hitch1.unescape()
         XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
+        
+        
     }
     
     func testEscaping() {
@@ -424,6 +428,8 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch0[17], 0)
         
         let hitch1 = "A ö Ж € 𝄞".hitch()
+        XCTAssertEqual(hitch1.escaped(), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+        
         hitch1.escape()
         XCTAssertEqual(hitch1, #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
     }

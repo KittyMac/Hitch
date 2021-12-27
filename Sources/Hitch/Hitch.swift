@@ -890,6 +890,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    public func escaped(escapeSingleQuote: Bool = false) -> Hitch {
+        let tmp = Hitch(hitch: self)
+        tmp.escape(escapeSingleQuote: escapeSingleQuote)
+        return tmp
+    }
+
+    @inlinable @inline(__always)
     public func escape(escapeSingleQuote: Bool = false) {
         guard let raw = raw() else { return }
 
@@ -982,6 +989,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
 
         self.replace(with: writer)
+    }
+
+    @inlinable @inline(__always)
+    public func unescaped() -> Hitch {
+        let tmp = Hitch(hitch: self)
+        tmp.unescape()
+        return tmp
     }
 
     @inlinable @inline(__always)
