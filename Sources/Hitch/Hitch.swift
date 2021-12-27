@@ -376,10 +376,13 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         }
     }
 
+    @inlinable @inline(__always)
     public func hash(into hasher: inout Hasher) {
         if let bstr = bstr,
             let data = bstr.pointee.data {
-            hasher.combine(bytes: UnsafeRawBufferPointer(start: data, count: Int(bstr.pointee.slen)))
+            let count = Int(bstr.pointee.slen)
+            hasher.combine(count)
+            hasher.combine(bytes: UnsafeRawBufferPointer(start: data, count: Swift.min(count, 8)))
         } else {
             hasher.combine(0)
         }
