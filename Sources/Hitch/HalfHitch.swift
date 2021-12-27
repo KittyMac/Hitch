@@ -42,7 +42,7 @@ public struct HalfHitchIterator: Sequence, IteratorProtocol {
 /// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like, read-only
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
-public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
+public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatable {
 
     public var description: String {
         guard let source = source else { return "null" }
@@ -142,6 +142,16 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable {
         let hitch = rhs.hitch()
         var lhs = lhs.tagbstr
         return biseq(&lhs, hitch.bstr) == 1
+    }
+
+    public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
+        var rhs = rhs.tagbstr
+        return biseq(lhs.bstr, &rhs) == 1
+    }
+
+    public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
+        var lhs = lhs.tagbstr
+        return biseq(&lhs, rhs.bstr) == 1
     }
 
     @inlinable @inline(__always)

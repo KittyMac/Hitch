@@ -861,11 +861,17 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func halfhitch(_ lhsPos: Int, _ rhsPos: Int) -> HalfHitch? {
-        guard lhsPos >= 0 && lhsPos <= count else { return nil }
-        guard rhsPos >= 0 && rhsPos <= count else { return nil }
-        guard lhsPos <= rhsPos else { return nil }
+    public func halfhitch(_ lhsPos: Int, _ rhsPos: Int) -> HalfHitch {
+        guard lhsPos >= 0 && lhsPos <= count else { return HalfHitch() }
+        guard rhsPos >= 0 && rhsPos <= count else { return HalfHitch() }
+        guard lhsPos <= rhsPos else { return HalfHitch() }
         return HalfHitch(source: self, from: lhsPos, to: rhsPos)
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func halfhitch() -> HalfHitch {
+        return HalfHitch(source: self, from: 0, to: count)
     }
 
     @inlinable @inline(__always)
