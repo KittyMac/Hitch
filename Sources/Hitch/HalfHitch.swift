@@ -46,14 +46,14 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     public static let empty = HalfHitch()
 
     public var description: String {
-        guard let source = source else { return "null" }
+        guard let source = source else { return "" }
         return String(bytesNoCopy: source, length: count, encoding: .utf8, freeWhenDone: false) ?? ""
     }
 
     @inlinable @inline(__always)
     public func toString() -> String {
-        guard let source = source else { return "null" }
-        return String(data: Data(bytesNoCopy: source, count: count, deallocator: .none), encoding: .utf8) ?? "null"
+        guard let source = source else { return "" }
+        return String(data: Data(bytesNoCopy: source, count: count, deallocator: .none), encoding: .utf8) ?? ""
     }
 
     @usableFromInline
