@@ -411,6 +411,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return ""
     }
 
+    @inlinable @inline(__always)
+    public func toString() -> String {
+        return String(data: dataNoCopy(), encoding: .utf8) ?? ""
+    }
+
     deinit {
         bdestroy(bstr)
     }
