@@ -903,8 +903,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                         char == .formFeed ||
                         char == .carriageReturn ||
                         char == .doubleQuote ||
-                        char == .backSlash ||
-                        char == .forwardSlash {
+                        char == .backSlash {
                 return true
             }
         }

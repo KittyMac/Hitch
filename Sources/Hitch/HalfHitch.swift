@@ -236,8 +236,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
                         char == .formFeed ||
                         char == .carriageReturn ||
                         char == .doubleQuote ||
-                        char == .backSlash ||
-                        char == .forwardSlash {
+                        char == .backSlash {
                 return true
             }
         }
