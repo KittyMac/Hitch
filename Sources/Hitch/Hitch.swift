@@ -445,6 +445,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    public init(bytes: UnsafeMutablePointer<UInt8>, offset: Int, count: Int) {
+        self.bstr = blk2bstr(bytes + offset, Int32(count))
+    }
+
+    @inlinable @inline(__always)
     public init(data: Data) {
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)

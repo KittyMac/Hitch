@@ -102,6 +102,14 @@ public struct HalfHitch: CustomStringConvertible, Comparable, Hashable, Equatabl
     }
 
     @inlinable @inline(__always)
+    public func hitch() -> Hitch {
+        if let raw = source {
+            return Hitch(bytes: raw, offset: 0, count: count)
+        }
+        return Hitch()
+    }
+
+    @inlinable @inline(__always)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(count)
         hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: min(count, 8)))
