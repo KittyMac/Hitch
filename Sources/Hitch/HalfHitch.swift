@@ -195,12 +195,18 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
 
     @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
-        return blkequalblk(lhs.raw(), Int32(lhs.count), rhs.source, Int32(rhs.count)) == 1
+        if let bstr = lhs.bstr?.pointee {
+            return blkequalblk(bstr.data, bstr.slen, rhs.source, Int32(rhs.count)) == 1
+        }
+        return false
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
-        return blkequalblk(lhs.source, Int32(lhs.count), rhs.raw(), Int32(rhs.count)) == 1
+        if let bstr = rhs.bstr?.pointee {
+            return blkequalblk(bstr.data, bstr.slen, lhs.source, Int32(lhs.count)) == 1
+        }
+        return false
     }
 
     @inlinable @inline(__always)
