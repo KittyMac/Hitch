@@ -216,6 +216,169 @@ func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
 }
 
 @inlinable @inline(__always)
+func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
+                    count: Int) -> Int {
+    var read = data
+    var write = data
+    let end = data + count
+
+    let append: (UInt8, Int) -> Void = { v, advance in
+        write.pointee = v
+        write += 1
+        read += advance
+    }
+
+    while read < end {
+
+        if read.pointee == UInt8.backSlash {
+            switch read[1] {
+            case .backSlash: append(.backSlash, 2); continue
+            case .singleQuote: append(.singleQuote, 2); continue
+            case .doubleQuote: append(.doubleQuote, 2); continue
+            case .r: append(.carriageReturn, 2); continue
+            case .f: append(.formFeed, 2); continue
+            case .t: append(.tab, 2); continue
+            case .n: append(.newLine, 2); continue
+            case .b: append(.bell, 2); continue
+            case .u:
+                let convert: (() -> Bool) -> Void = { endCondition in
+                    var value: UInt32 = 0
+                    while read < end && endCondition() == false {
+                        guard let byte = hex(read.pointee) else { break }
+                        value &*= 16
+                        value &+= byte
+                        read += 1
+                    }
+                    if let scalar = UnicodeScalar(value) {
+                        for v in Character(scalar).utf8 {
+                            append(v, 0)
+                        }
+                    }
+                }
+
+                if read[2] == .openBracket {
+                    // like: \u{1D11E}
+                    read += 3
+                    convert {
+                        return read.pointee == .closeBracket
+                    }
+                    if read.pointee == .closeBracket {
+                        read += 1
+                    }
+                } else {
+                    // like: \u20AC
+                    read += 2
+                    let start = read
+                    convert {
+                        return read - start >= 4
+                    }
+                }
+                continue
+            default:
+                break
+            }
+        }
+
+        append(read.pointee, 1)
+    }
+
+    return (write - data)
+}
+
+@inlinable @inline(__always)
+func escapeBinary(data: UnsafeMutablePointer<UInt8>,
+                  count: Int,
+                  unicode: Bool,
+                  singleQuotes: Bool) -> Hitch {
+    let writer = Hitch(capacity: count)
+
+    var read = data
+    let end = data + count
+
+    while read < end {
+        let ch = read.pointee
+
+        if unicode && ch > 0x7f {
+            writer.append(UInt8.backSlash)
+            writer.append(UInt8.u)
+
+            var value: UInt32 = 0
+            if ch & 0b11100000 == 0b11000000 {
+                value |= (UInt32(read[0]) & 0b00011111) << 6
+                value |= (UInt32(read[1]) & 0b00111111) << 0
+                read += 1
+            } else if ch & 0b11110000 == 0b11100000 {
+                value |= (UInt32(read[0]) & 0b00001111) << 12
+                value |= (UInt32(read[1]) & 0b00111111) << 6
+                value |= (UInt32(read[2]) & 0b00111111) << 0
+                read += 2
+            } else if ch & 0b11111000 == 0b11110000 {
+                value |= (UInt32(read[0]) & 0b00000111) << 18
+                value |= (UInt32(read[1]) & 0b00111111) << 12
+                value |= (UInt32(read[2]) & 0b00111111) << 6
+                value |= (UInt32(read[3]) & 0b00111111) << 0
+                read += 3
+            }
+
+            if value > 0xFFFF {
+                writer.append(UInt8.openBracket)
+            }
+
+            var hasFoundBits = false
+            for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
+                let hex = hex2((value >> shift) & 0xF)
+                if hex != .zero || shift <= 12 {
+                    hasFoundBits = true
+                }
+                guard hasFoundBits else { continue }
+
+                writer.append(hex)
+            }
+
+            if value > 0xFFFF {
+                writer.append(UInt8.closeBracket)
+            }
+
+        } else {
+            switch ch {
+            case .bell:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.b)
+            case .newLine:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.n)
+            case .tab:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.t)
+            case .formFeed:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.f)
+            case .carriageReturn:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.r)
+            case .singleQuote:
+                if singleQuotes {
+                    writer.append(UInt8.backSlash)
+                }
+                writer.append(UInt8.singleQuote)
+            case .doubleQuote:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.doubleQuote)
+            case .backSlash:
+                writer.append(UInt8.backSlash)
+                writer.append(UInt8.backSlash)
+            default:
+                writer.append(ch)
+            }
+        }
+
+        read += 1
+    }
+
+    return writer
+}
+
+@inlinable @inline(__always)
 func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -920,192 +1083,19 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     public func escaped(unicode: Bool,
                         singleQuotes: Bool) -> Hitch {
-        guard canEscape(unicode: unicode,
-                        singleQuotes: singleQuotes) else { return self }
-        let tmp = Hitch(hitch: self)
-        tmp.escape(unicode: unicode,
-                   singleQuotes: singleQuotes)
-        return tmp
+        guard let raw = raw() else { return self }
+        return escapeBinary(data: raw,
+                            count: count,
+                            unicode: unicode,
+                            singleQuotes: singleQuotes)
     }
 
     @inlinable @inline(__always)
-    public func escape(unicode: Bool,
-                       singleQuotes: Bool) {
-        guard let raw = raw() else { return }
-
-        let writer = Hitch(capacity: count)
-
-        var read = raw
-        let end = raw + count
-
-        while read < end {
-            let ch = read.pointee
-
-            if unicode && ch > 0x7f {
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.u)
-
-                var value: UInt32 = 0
-                if ch & 0b11100000 == 0b11000000 {
-                    value |= (UInt32(read[0]) & 0b00011111) << 6
-                    value |= (UInt32(read[1]) & 0b00111111) << 0
-                    read += 1
-                } else if ch & 0b11110000 == 0b11100000 {
-                    value |= (UInt32(read[0]) & 0b00001111) << 12
-                    value |= (UInt32(read[1]) & 0b00111111) << 6
-                    value |= (UInt32(read[2]) & 0b00111111) << 0
-                    read += 2
-                } else if ch & 0b11111000 == 0b11110000 {
-                    value |= (UInt32(read[0]) & 0b00000111) << 18
-                    value |= (UInt32(read[1]) & 0b00111111) << 12
-                    value |= (UInt32(read[2]) & 0b00111111) << 6
-                    value |= (UInt32(read[3]) & 0b00111111) << 0
-                    read += 3
-                }
-
-                if value > 0xFFFF {
-                    writer.append(UInt8.openBracket)
-                }
-
-                var hasFoundBits = false
-                for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
-                    let hex = hex2((value >> shift) & 0xF)
-                    if hex != .zero || shift <= 12 {
-                        hasFoundBits = true
-                    }
-                    guard hasFoundBits else { continue }
-
-                    writer.append(hex)
-                }
-
-                if value > 0xFFFF {
-                    writer.append(UInt8.closeBracket)
-                }
-
-            } else {
-                switch ch {
-                case .bell:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.b)
-                case .newLine:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.n)
-                case .tab:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.t)
-                case .formFeed:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.f)
-                case .carriageReturn:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.r)
-                case .singleQuote:
-                    if singleQuotes {
-                        writer.append(UInt8.backSlash)
-                    }
-                    writer.append(UInt8.singleQuote)
-                case .doubleQuote:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.doubleQuote)
-                case .backSlash:
-                    writer.append(UInt8.backSlash)
-                    writer.append(UInt8.backSlash)
-                default:
-                    writer.append(ch)
-                }
-            }
-
-            read += 1
-        }
-
-        self.replace(with: writer)
-    }
-
-    @inlinable @inline(__always)
-    public func canUnescape() -> Bool {
-        for char in self where char == .backSlash {
-            return true
-        }
-        return false
-    }
-
-    @inlinable @inline(__always)
-    public func unescaped() -> Hitch {
-        guard canUnescape() else { return self }
-        let tmp = Hitch(hitch: self)
-        tmp.unescape()
-        return tmp
-    }
-
-    @inlinable @inline(__always)
-    public func unescape() {
-        guard let raw = raw() else { return }
-
-        var read = raw
-        var write = raw
-        let end = raw + count
-
-        let append: (UInt8, Int) -> Void = { v, advance in
-            write.pointee = v
-            write += 1
-            read += advance
-        }
-
-        while read < end {
-
-            if read.pointee == UInt8.backSlash {
-                switch read[1] {
-                case .backSlash: append(.backSlash, 2); continue
-                case .singleQuote: append(.singleQuote, 2); continue
-                case .doubleQuote: append(.doubleQuote, 2); continue
-                case .r: append(.carriageReturn, 2); continue
-                case .f: append(.formFeed, 2); continue
-                case .t: append(.tab, 2); continue
-                case .n: append(.newLine, 2); continue
-                case .b: append(.bell, 2); continue
-                case .u:
-                    let convert: (() -> Bool) -> Void = { endCondition in
-                        var value: UInt32 = 0
-                        while read < end && endCondition() == false {
-                            guard let byte = hex(read.pointee) else { break }
-                            value &*= 16
-                            value &+= byte
-                            read += 1
-                        }
-                        if let scalar = UnicodeScalar(value) {
-                            for v in Character(scalar).utf8 {
-                                append(v, 0)
-                            }
-                        }
-                    }
-
-                    if read[2] == .openBracket {
-                        // like: \u{1D11E}
-                        read += 3
-                        convert {
-                            return read.pointee == .closeBracket
-                        }
-                        if read.pointee == .closeBracket {
-                            read += 1
-                        }
-                    } else {
-                        // like: \u20AC
-                        read += 2
-                        let start = read
-                        convert {
-                            return read - start >= 4
-                        }
-                    }
-                    continue
-                default:
-                    break
-                }
-            }
-
-            append(read.pointee, 1)
-        }
-
-        count = (write - raw)
+    public func unescape() -> Hitch {
+        guard let raw = raw() else { return self }
+        count = unescapeBinary(data: raw,
+                               count: count)
+        return self
     }
 
     @inlinable @inline(__always)

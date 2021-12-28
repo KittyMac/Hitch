@@ -63,7 +63,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @usableFromInline
     let source: UnsafeMutablePointer<UInt8>?
 
-    public let count: Int
+    public var count: Int
 
     @inlinable @inline(__always)
     public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
@@ -254,30 +254,20 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    public func canUnescape() -> Bool {
-        for char in self where char == .backSlash {
-            return true
-        }
-        return false
-    }
-
-    @inlinable @inline(__always)
     public func escaped(unicode: Bool,
-                        singleQuotes: Bool) -> HalfHitch {
-        guard canEscape(unicode: unicode,
-                        singleQuotes: singleQuotes) else { return self }
-        let clone = hitch()
-        clone.escape(unicode: unicode,
-                     singleQuotes: singleQuotes)
-        return clone.halfhitch()
+                        singleQuotes: Bool) -> Hitch {
+        guard let raw = raw() else { return Hitch() }
+        return escapeBinary(data: raw,
+                            count: count,
+                            unicode: unicode,
+                            singleQuotes: singleQuotes)
     }
 
     @inlinable @inline(__always)
-    public func unescaped() -> HalfHitch {
-        guard canUnescape() else { return self }
-        let clone = hitch()
-        clone.unescape()
-        return clone.halfhitch()
+    public mutating func unescape() {
+        guard let raw = raw() else { return }
+        count = unescapeBinary(data: raw,
+                               count: count)
     }
 
     @inlinable @inline(__always)

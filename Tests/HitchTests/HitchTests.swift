@@ -463,8 +463,7 @@ final class HitchTests: XCTestCase {
     
     func testUnescaping() {
         // A, ö, Ж, €, 𝄞
-        let hitch0 = #"\\ \' \" \t \n \r"#.hitch()
-        hitch0.unescape()
+        let hitch0 = #"\\ \' \" \t \n \r"#.hitch().unescape()
         XCTAssertEqual(hitch0[0], .backSlash)
         XCTAssertEqual(hitch0[1], .space)
         XCTAssertEqual(hitch0[2], .singleQuote)
@@ -478,20 +477,18 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch0[10], .carriageReturn)
         XCTAssertEqual(hitch0[11], 0)
         
-        let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch()
-        XCTAssertEqual(hitch1.unescaped(), "A ö Ж € 𝄞")
-        XCTAssertEqual(hitch1.halfhitch().unescaped(), "A ö Ж € 𝄞")
-        
-        hitch1.unescape()
+        let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch().unescape()
         XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
         
+        var hitch2 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch().halfhitch()
+        hitch2.unescape()
+        XCTAssertEqual(hitch2, "A ö Ж € 𝄞")
         
     }
     
     func testEscaping() {
-        let hitch0 = "\\ \' \" \t \n \r".hitch()
-        hitch0.escape(unicode: true,
-                      singleQuotes: true)
+        let hitch0 = "\\ \' \" \t \n \r".hitch().escaped(unicode: true,
+                                                        singleQuotes: true)
         XCTAssertEqual(hitch0[0], .backSlash)
         XCTAssertEqual(hitch0[1], .backSlash)
         XCTAssertEqual(hitch0[2], .space)
@@ -516,10 +513,6 @@ final class HitchTests: XCTestCase {
                                       singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
         XCTAssertEqual(hitch1.halfhitch().escaped(unicode: true,
                                                   singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
-        
-        hitch1.escape(unicode: true,
-                      singleQuotes: true)
-        XCTAssertEqual(hitch1, #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
     }
     
     func testInsert() {
