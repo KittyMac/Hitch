@@ -1,6 +1,8 @@
+![](meta/icon.png)
+
 ## Swift wrapper around [bstrlib](http://bstring.sourceforge.net)
 
-Native Swift strings may not be ideal for you; if you are here, then you are probably well aware why.  Hitch provides a simple alternative by wrapping [bstrlib](http://bstring.sourceforge.net) to provide simple, classical high performance strings for use in your Swift programs.
+Native Swift strings may not be ideal for you; if you are here, then you are probably well aware why.  Hitch provides a simple alternative by wrapping [bstrlib](http://bstring.sourceforge.net) to provide simple, high performance strings for use in your Swift programs.
 
 
 
