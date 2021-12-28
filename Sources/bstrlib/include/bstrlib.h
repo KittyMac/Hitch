@@ -86,7 +86,7 @@ extern int biseqcaseless (const_bstring b0, const_bstring b1);
 extern int biseqcaselessblk (const_bstring b, const void * blk, int len);
 extern int bisstemeqcaselessblk (const_bstring b0, const void * blk, int len);
 extern int biequal (const_bstring b0, const_bstring b1);
-extern int blkequalblk (uint8_t * b0, int len0, uint8_t * b1, int len1);
+extern int blkequalblk (unsigned char * b0, int len0, unsigned char * b1, int len1);
 extern int biseq (const_bstring b0, const_bstring b1);
 extern int biseqblk (const_bstring b, const void * blk, int len);
 extern int bisstemeqblk (const_bstring b0, const void * blk, int len);

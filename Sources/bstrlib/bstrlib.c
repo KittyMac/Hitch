@@ -913,7 +913,7 @@ inline int biequal (const_bstring b0, const_bstring b1) {
     return !bstr__memcmp (b0->data, b1->data, b0->slen);
 }
 
-inline int blkequalblk (uint8_t * b0, int len0, uint8_t * b1, int len1) {
+inline int blkequalblk (unsigned char * b0, int len0, unsigned char * b1, int len1) {
     if (b0 == NULL || b1 == NULL || len0 < 0 || len1 < 0) return BSTR_ERR;
     if (len0 != len1) return 0;
     if (b0 == b1 || len0 == 0) return 1;
