@@ -896,6 +896,31 @@ int biseq (const_bstring b0, const_bstring b1) {
 	return !bstr__memcmp (b0->data, b1->data, b0->slen);
 }
 
+/*  int biequal (const_bstring b0, const_bstring b1)
+ *
+ *  Compare the string b0 and b1.  If the strings differ, 0 is returned, if
+ *  the strings are the same, 1 is returned, if there is an error, -1 is
+ *  returned.  If the length of the strings are different, this function is
+ *  O(1).  '\0' termination characters are not treated in any special way.
+ */
+inline int biequal (const_bstring b0, const_bstring b1) {
+    if (b0 == NULL || b1 == NULL || b0->data == NULL || b1->data == NULL ||
+        b0->slen < 0 || b1->slen < 0) return BSTR_ERR;
+    if (b0->slen != b1->slen) return 0;
+    if (b0->data == b1->data || b0->slen == 0) return 1;
+    if (*b0->data != *b1->data) return 0;
+    
+    return !bstr__memcmp (b0->data, b1->data, b0->slen);
+}
+
+inline int blkequalblk (uint8_t * b0, int len0, uint8_t * b1, int len1) {
+    if (b0 == NULL || b1 == NULL || len0 < 0 || len1 < 0) return BSTR_ERR;
+    if (len0 != len1) return 0;
+    if (b0 == b1 || len0 == 0) return 1;
+    if (*b0 != *b1) return 0;
+    return !bstr__memcmp (b0, b1, len0);
+}
+
 /*  int bisstemeqblk (const_bstring b0, const void * blk, int len)
  *
  *  Compare beginning of string b0 with a block of memory of length len for

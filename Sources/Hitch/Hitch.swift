@@ -308,20 +308,24 @@ public struct HitchIterator: Sequence, IteratorProtocol {
 public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
     public static let empty = Hitch()
 
+    @inlinable @inline(__always)
     public static func < (lhs: Hitch, rhs: Hitch) -> Bool {
         return bstrcmp(lhs.bstr, rhs.bstr) < 0
     }
 
+    @inlinable @inline(__always)
     public static func < (lhs: String, rhs: Hitch) -> Bool {
         let hitch = lhs.hitch()
         return bstrcmp(hitch.bstr, rhs.bstr) < 0
     }
 
+    @inlinable @inline(__always)
     public static func < (lhs: Hitch, rhs: String) -> Bool {
         let hitch = rhs.hitch()
         return bstrcmp(lhs.bstr, hitch.bstr) < 0
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
         if lhs === rhs {
             return true
@@ -329,16 +333,19 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return biseq(lhs.bstr, rhs.bstr) == 1
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: String, rhs: Hitch) -> Bool {
         let hitch = lhs.hitch()
         return biseq(hitch.bstr, rhs.bstr) == 1
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: String) -> Bool {
         let hitch = rhs.hitch()
         return biseq(lhs.bstr, hitch.bstr) == 1
     }
 
+    @inlinable @inline(__always)
     public func withBytes(_ callback: (UnsafeMutablePointer<UInt8>) -> Void) {
         if let bstr = bstr,
             let data = bstr.pointee.data {

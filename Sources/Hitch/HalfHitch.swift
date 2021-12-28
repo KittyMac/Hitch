@@ -153,50 +153,54 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
         return tagbstring(mlen: len, slen: len, data: raw)
     }
 
+    @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
         var lhs = lhs.tagbstr
         var rhs = rhs.tagbstr
         return bstrcmp(&lhs, &rhs) < 0
     }
 
+    @inlinable @inline(__always)
     public static func < (lhs: String, rhs: HalfHitch) -> Bool {
         let hitch = lhs.hitch()
         var rhs = rhs.tagbstr
         return bstrcmp(hitch.bstr, &rhs) < 0
     }
 
+    @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: String) -> Bool {
         let hitch = rhs.hitch()
         var lhs = lhs.tagbstr
         return bstrcmp(&lhs, hitch.bstr) < 0
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        var lhsBstr = lhs.tagbstr
-        var rhsBstr = rhs.tagbstr
-        return biseq(&lhsBstr, &rhsBstr) == 1
+        return blkequalblk(lhs.source, Int32(lhs.count), rhs.source, Int32(rhs.count)) == 1
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: String, rhs: HalfHitch) -> Bool {
         let hitch = lhs.hitch()
         var rhs = rhs.tagbstr
-        return biseq(hitch.bstr, &rhs) == 1
+        return biequal(hitch.bstr, &rhs) == 1
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: String) -> Bool {
         let hitch = rhs.hitch()
         var lhs = lhs.tagbstr
-        return biseq(&lhs, hitch.bstr) == 1
+        return biequal(&lhs, hitch.bstr) == 1
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
-        var rhs = rhs.tagbstr
-        return biseq(lhs.bstr, &rhs) == 1
+        return blkequalblk(lhs.raw(), Int32(lhs.count), rhs.source, Int32(rhs.count)) == 1
     }
 
+    @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
-        var lhs = lhs.tagbstr
-        return biseq(&lhs, rhs.bstr) == 1
+        return blkequalblk(lhs.source, Int32(lhs.count), rhs.raw(), Int32(rhs.count)) == 1
     }
 
     @inlinable @inline(__always)

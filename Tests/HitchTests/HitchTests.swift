@@ -303,6 +303,62 @@ final class HitchTests: XCTestCase {
         )
     }
     
+    func testHitchEqualityPerf() {
+        let sourceHitches = [
+            "George the seventh123".hitch(),
+            "John the third1234567".hitch(),
+            "Henry the twelveth123".hitch(),
+            "Dennis the mennis1234".hitch(),
+            "Calvin and the Hobbes".hitch()
+        ]
+        
+        let match = "John the third1234567".hitch()
+        var numMatches = 0
+        
+        // bisec: 0.383
+        
+        // biequal: 0.325
+        measure {
+            for hitch in sourceHitches {
+                for _ in 0..<10000000 {
+                    if hitch == match {
+                        numMatches += 1
+                    }
+                }
+            }
+        }
+        
+        XCTAssertEqual(numMatches, 10000000 * 10)
+    }
+    
+    func testHalfHitchEqualityPerf() {
+        let sourceHitches = [
+            "George the seventh123".hitch().halfhitch(),
+            "John the third1234567".hitch().halfhitch(),
+            "Henry the twelveth123".hitch().halfhitch(),
+            "Dennis the mennis1234".hitch().halfhitch(),
+            "Calvin and the Hobbes".hitch().halfhitch()
+        ]
+        
+        let match = "John the third1234567".hitch().halfhitch()
+        var numMatches = 0
+        
+        // bisec: 0.606
+        
+        // blkequalblk: 0.319
+        measure {
+            for hitch in sourceHitches {
+                for _ in 0..<10000000 {
+                    if hitch == match {
+                        numMatches += 1
+                    }
+                }
+            }
+        }
+        
+        XCTAssertEqual(numMatches, 10000000 * 10)
+    }
+    
     func testHalfHitchFromData0() {
         let data = "Hello world again".data(using: .utf8)!
         HalfHitch.using(data: data, from: 6, to: 11) { hh in
