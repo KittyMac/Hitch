@@ -948,8 +948,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
-    public func trim() {
+    @discardableResult
+    public func trim() -> Self {
         btrimws(bstr)
+        return self
     }
 
     @inlinable @inline(__always)
@@ -1091,6 +1093,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @inlinable @inline(__always)
+    @discardableResult
     public func unescape() -> Hitch {
         guard let raw = raw() else { return self }
         count = unescapeBinary(data: raw,

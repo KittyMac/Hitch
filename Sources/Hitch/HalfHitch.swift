@@ -264,10 +264,12 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    public mutating func unescape() {
-        guard let raw = raw() else { return }
+    @discardableResult
+    public mutating func unescape() -> Self {
+        guard let raw = raw() else { return self }
         count = unescapeBinary(data: raw,
                                count: count)
+        return self
     }
 
     @inlinable @inline(__always)
