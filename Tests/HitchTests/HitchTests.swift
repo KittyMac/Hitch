@@ -152,6 +152,9 @@ final class HitchTests: XCTestCase {
         let swiftLorem = lorem
         let hitchLorem = lorem.hitch()
         
+        XCTAssertTrue(Hitch.empty == Hitch.empty)
+        XCTAssertTrue(HalfHitch.empty == HalfHitch.empty)
+        
         XCTAssertTrue(swiftLorem == swiftLorem)
         XCTAssertTrue(swiftLorem == hitchLorem)
         XCTAssertTrue(hitchLorem == swiftLorem)
