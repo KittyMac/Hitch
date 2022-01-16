@@ -468,6 +468,34 @@ public struct HitchIterator: Sequence, IteratorProtocol {
     }
 }
 
+@usableFromInline
+struct HitchOutputStream: TextOutputStream {
+    @usableFromInline
+    let hitch: Hitch
+
+    @usableFromInline
+    let index: Int?
+
+    @usableFromInline
+    let precision: Int?
+
+    @usableFromInline
+    init(hitch: Hitch, index: Int? = nil, precision: Int? = nil) {
+        self.hitch = hitch
+        self.index = index
+        self.precision = precision
+    }
+
+    @inlinable @inline(__always)
+    mutating func write(_ string: String) {
+        if let index = index {
+            hitch.insert(string, index: index, precision: precision)
+        } else {
+            hitch.append(string, precision: precision)
+        }
+    }
+}
+
 public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
     public static let empty = Hitch()
 
@@ -529,6 +557,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         return nil
     }
 
+    @inlinable @inline(__always)
     public subscript (index: Int) -> UInt8 {
         get {
             if let bstr = bstr,
@@ -721,7 +750,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     public var count: Int {
         get {
-            return Int(bstr?.pointee.slen ?? 0)
+            return bcount(bstr)
         }
         set {
             btrunc(bstr, Int32(newValue))
@@ -814,6 +843,28 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
+    public func append(_ string: String, precision: Int?) -> Self {
+        string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
+            var length = string.count
+            if let precision = precision {
+                var ptr = bytes
+                while ptr.pointee != 0 {
+                    let c = UInt8(ptr.pointee)
+                    if c == .dot {
+                        length = Swift.min(length, ptr - bytes + precision + 1)
+                        break
+                    }
+                    ptr += 1
+                }
+            }
+
+            bcatblk(bstr, bytes, Int32(length))
+        }
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func append(_ char: UInt8) -> Self {
         bconchar(bstr, char)
         return self
@@ -827,8 +878,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func append(double: Double) -> Self {
-        return insert(double: double, index: count)
+    public func append(double: Double, precision: Int? = nil) -> Self {
+        var output = HitchOutputStream(hitch: self, precision: precision)
+        double.write(to: &output)
+        return self
     }
 
     @inlinable @inline(__always)
@@ -861,6 +914,30 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
+    public func insert(_ string: String, index: Int, precision: Int?) -> Self {
+        let position = Swift.max(Swift.min(index, count), 0)
+        return string.withCString { bytes in
+
+            var length = string.count
+            if let precision = precision {
+                var ptr = bytes
+                while ptr.pointee != 0 {
+                    let c = UInt8(ptr.pointee)
+                    if c == .dot {
+                        length = Swift.min(length, ptr - bytes + precision + 1)
+                        break
+                    }
+                    ptr += 1
+                }
+            }
+
+            binsertblk(bstr, Int32(position), bytes, Int32(length), .space)
+            return self
+        }
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func insert(_ char: UInt8, index: Int) -> Self {
         let position = Swift.max(Swift.min(index, count), 0)
         binsertch(bstr, Int32(position), 1, char)
@@ -870,68 +947,17 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
-        if number == 0 {
-            insert(UInt8.zero, index: index)
-        } else {
-            let isNegative = number < 0
-
-            var value = isNegative ? -1 * number : number
-            while value > 0 {
-                let digit = value % 10
-                value /= 10
-                insert(UInt8.zero + UInt8(digit), index: index)
-            }
-
-            if isNegative {
-                insert(UInt8.minus, index: index)
-            }
-        }
+        let position = Swift.max(Swift.min(index, count), 0)
+        binsertint(bstr, Int32(position), Int(number))
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func insert(double: Double, index: Int) -> Self {
-        if double == 0 {
-            insert(UInt8.zero, index: index)
-            insert(UInt8.dot, index: index)
-            insert(UInt8.zero, index: index)
-        } else {
-            let isNegative = double < 0
-            let value = isNegative ? -1 * double : double
-
-            // fractional part
-            var intValue = Int((value.truncatingRemainder(dividingBy: 1) * 1000000000.0).rounded())
-            var skipInitialZeros = true
-            while intValue > 0 {
-                let digit = intValue % 10
-                intValue /= 10
-                if skipInitialZeros {
-                    if digit == 0 {
-                        continue
-                    }
-                    skipInitialZeros = false
-                }
-                insert(UInt8.zero + UInt8(digit), index: index)
-            }
-
-            insert(UInt8.dot, index: index)
-
-            // number part
-            intValue = Int(value)
-            if intValue == 0 {
-                insert(UInt8.zero, index: index)
-            }
-            while intValue > 0 {
-                let digit = intValue % 10
-                intValue /= 10
-                insert(UInt8.zero + UInt8(digit), index: index)
-            }
-
-            if isNegative {
-                insert(UInt8.minus, index: index)
-            }
-        }
+    public func insert(double: Double, index: Int, precision: Int? = nil) -> Self {
+        let position = Swift.max(Swift.min(index, count), 0)
+        var output = HitchOutputStream(hitch: self, index: position, precision: precision)
+        double.write(to: &output)
         return self
     }
 

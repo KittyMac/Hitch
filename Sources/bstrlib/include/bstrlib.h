@@ -71,6 +71,8 @@ extern int bconcat (bstring b0, const_bstring b1);
 extern int bconchar (bstring b0, unsigned char c);
 extern int bcatcstr (bstring b, const char * s);
 extern int bcatblk (bstring b, const void * s, int len);
+extern int binsertint (bstring b, int pos, long n);
+extern int binsertdbl (bstring b, int pos, double n, int precision);
 extern int binsert (bstring s1, int pos, const_bstring s2, unsigned char fill);
 extern int binsertblk (bstring s1, int pos, const void * s2, int len, unsigned char fill);
 extern int binsertch (bstring s1, int pos, int len, unsigned char fill);
@@ -101,6 +103,7 @@ extern int binstrcaseless (const_bstring s1, int pos, const_bstring s2);
 extern int binstrrcaseless (const_bstring s1, int pos, const_bstring s2);
 extern int bstrchrp (const_bstring b, int c, int pos);
 extern int bstrrchrp (const_bstring b, int c, int pos);
+extern long bcount (const_bstring b);
 #define bstrchr(b,c) bstrchrp ((b), (c), 0)
 #define bstrrchr(b,c) bstrrchrp ((b), (c), blength(b)-1)
 extern int binchr (const_bstring b0, int pos, const_bstring b1);

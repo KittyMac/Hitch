@@ -1,7 +1,7 @@
 import XCTest
 
-import IpecacTests
+import HitchTests
 
 var tests = [XCTestCaseEntry]()
-tests += IpecacTests.allTests()
+tests += HitchTests.allTests()
 XCTMain(tests)

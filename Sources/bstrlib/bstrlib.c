@@ -24,6 +24,7 @@
 #include <limits.h>
 #include "bstrlib.h"
 #include <time.h>
+#include <math.h>
 
 /* Optionally include a mechanism for debugging memory */
 
@@ -1461,6 +1462,10 @@ unsigned char * p;
 	return BSTR_ERR;
 }
 
+long bcount (const_bstring b) {
+    return blength(b);
+}
+
 /*  int bstrrchrp (const_bstring b, int c, int pos)
  *
  *  Search for the character c in b backwards from the position pos in string
@@ -1656,6 +1661,129 @@ bstring aux = (bstring) b1;
 	b0->data[newlen] = (unsigned char) '\0';
 
 	return BSTR_OK;
+}
+
+int binsertint (bstring b, int pos, long n) {
+    char s[65] = {0};
+    char * end = s + sizeof(s);
+    char * ptr = end;
+    int len = 0;
+    
+    if (n >= 0 && n <= 9) {
+        *(ptr--) = '0' + n;
+        len = 1;
+    } else {
+        int neg = (n < 0);
+        if (neg) {
+            n = -n;
+        }
+        
+        while (ptr > s && n > 0) {
+            *(ptr--) = '0' + (n % 10);
+            n /= 10;
+        }
+        
+        if (neg) {
+            *(ptr--) = '-';
+        }
+
+        len = (end - ptr);
+    }
+    
+    return binsertblk(b, pos, ptr+1, len, 0);
+}
+
+// https://stackoverflow.com/questions/2302969/convert-a-float-to-a-string
+int binsertdbl (bstring b, int pos, double n, int precisionDigits) {
+    
+    char s[33] = {0};
+    int len = 0;
+    
+    double precision = 1.0 / pow(10.0, precisionDigits);
+    
+    // handle special cases
+    if (isnan(n)) {
+        s[0] = 'n';
+        s[1] = 'a';
+        s[2] = 'n';
+        len = 3;
+    } else if (isinf(n)) {
+        s[0] = 'i';
+        s[1] = 'n';
+        s[2] = 'f';
+        len = 3;
+    } else if (n == 0.0) {
+        s[0] = '0';
+        s[1] = '.';
+        s[2] = '0';
+        len = 3;
+    } else {
+        int digit, m, m1;
+        char *c = s;
+        int neg = (n < 0);
+        if (neg) {
+            n = -n;
+        }
+        
+        // calculate magnitude
+        m = log10(n);
+        int useExp = (m >= 14 || (neg && m >= 9) || m <= -9);
+        if (neg)
+            *(c++) = '-';
+        // set up for scientific notation
+        if (useExp) {
+            if (m < 0)
+               m -= 1.0;
+            n = n / pow(10.0, m);
+            m1 = m;
+            m = 0;
+        }
+        if (m < 1.0) {
+            m = 0;
+        }
+        // convert the number
+        while (n > precision || m >= 0) {
+            double weight = pow(10.0, m);
+            if (weight > 0 && !isinf(weight)) {
+                digit = floor(n / weight);
+                n -= (digit * weight);
+                *(c++) = '0' + digit;
+            }
+            if (m == 0 && n > 0)
+                *(c++) = '.';
+            m--;
+        }
+        if (useExp) {
+            // convert the exponent
+            int i, j;
+            *(c++) = 'e';
+            if (m1 > 0) {
+                *(c++) = '+';
+            } else {
+                *(c++) = '-';
+                m1 = -m1;
+            }
+            m = 0;
+            while (m1 > 0) {
+                *(c++) = '0' + m1 % 10;
+                m1 /= 10;
+                m++;
+            }
+            c -= m;
+            for (i = 0, j = m-1; i<j; i++, j--) {
+                // swap without temporary
+                c[i] ^= c[j];
+                c[j] ^= c[i];
+                c[i] ^= c[j];
+            }
+            c += m;
+        }
+        *(c) = '\0';
+        
+        len = c - s;
+    }
+    
+    return binsertblk(b, pos, s, len, 0);
 }
 
 /*  int binsertblk (bstring b, int pos, const void * blk, int len,

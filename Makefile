@@ -14,6 +14,8 @@ update:
 	swift package update
 
 xcode:
+	-killall Xcode.app
 	swift package generate-xcodeproj
 	meta/addBuildPhase Hitch.xcodeproj/project.pbxproj 'Hitch::Hitch' 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'
+	open ./Hitch.xcodeproj
 

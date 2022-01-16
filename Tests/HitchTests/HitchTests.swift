@@ -1,6 +1,8 @@
 import XCTest
 @testable import Hitch
 
+let lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
 final class HitchTests: XCTestCase {
     
     // Basic tests to confirm the functionality of bstring
@@ -51,59 +53,6 @@ final class HitchTests: XCTestCase {
         
         XCTAssertEqual(c, 2)
         XCTAssertEqual(i, 209)
-    }
-    
-    func testIterationPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
-        XCTAssert(
-            test (1000, #function,
-            {
-                var i = 0
-                for x in swiftLorem.utf8 {
-                    i += Int(x)
-                }
-                //XCTAssertEqual(i, 42248)
-            }, {
-                var i = 0
-                for x in hitchLorem {
-                    i += Int(x)
-                }
-                //XCTAssertEqual(i, 42248)
-            })
-        )
-    }
-    
-    
-    // Performance comparison tests to confirm bstring is faster than Swift strings
-    
-    let lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    
-    private func test(_ iterations: Int,
-                      _ functionName: String,
-                      _ swiftString: () -> (),
-                      _ hitchString: () -> ()) -> Bool {
-        
-        let swiftStart = Date()
-        for _ in 0..<iterations {
-            swiftString()
-        }
-        let swiftTime = abs(swiftStart.timeIntervalSinceNow / Double(iterations))
-        
-        let hitchStart = Date()
-        for _ in 0..<iterations {
-            hitchString()
-        }
-        let hitchTime = abs(hitchStart.timeIntervalSinceNow / Double(iterations))
-        
-        if hitchTime < swiftTime {
-            print("\(functionName) is \(swiftTime/hitchTime)x faster in Hitch" )
-        } else {
-            print("\(functionName) is \(hitchTime/swiftTime)x slower in Hitch" )
-        }
-        
-        return hitchTime < swiftTime
     }
     
     func testDirectAccess() {
@@ -209,32 +158,6 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(test1.extract(#""value4": ""#, "\""), "6.0")
     }
     
-    func testToUpperAndToLowerPerf() {
-        var swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
-        XCTAssert(
-            test (1000, #function,
-            {
-                for x in 1...1000 {
-                    if x % 2 == 0 {
-                        swiftLorem = swiftLorem.lowercased()
-                    } else {
-                        swiftLorem = swiftLorem.uppercased()
-                    }
-                }
-            }, {
-                for x in 1...1000 {
-                    if x % 2 == 0 {
-                        hitchLorem.lowercase()
-                    } else {
-                        hitchLorem.uppercase()
-                    }
-                }
-            })
-        )
-    }
-    
     func testIndexOf() {
         let hitchLorem = lorem.hitch()
         let hitchNeedle = Hitch("nulla pariatur")
@@ -253,141 +176,7 @@ final class HitchTests: XCTestCase {
         let hitchLorem = "/true|false/".hitch()
         XCTAssertEqual(hitchLorem.lastIndex(of: UInt8.forwardSlash), 11)
     }
-    
-    func testContainsPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        let swiftNeedle = "nulla pariatur"
-        let hitchNeedle = swiftNeedle.hitch()
         
-        XCTAssertTrue(swiftLorem.contains(swiftNeedle))
-        XCTAssertTrue(hitchLorem.contains(hitchNeedle))
-        
-        XCTAssert(
-            test (1000, #function,
-            {
-                for _ in 1...1000 {
-                    _ = swiftLorem.contains(swiftNeedle)
-                }
-            }, {
-                for _ in 1...1000 {
-                    hitchLorem.contains(hitchNeedle)
-                }
-            })
-        )
-    }
-        
-    func testAppendStaticMemoryPerf() {
-        var swiftLorem = lorem
-        let hitchLorem = Hitch(capacity: 455682)
-        
-        swiftLorem.reserveCapacity(455682)
-        
-        XCTAssert(
-            test (12, #function,
-            {
-                swiftLorem.append(swiftLorem)
-            }, {
-                hitchLorem.append(hitchLorem)
-            })
-        )
-    }
-    
-    func testAppendDynamicMemoryPerf() {
-        var swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        XCTAssert(
-            test (12, #function,
-            {
-                swiftLorem.append(swiftLorem)
-            }, {
-                hitchLorem.append(hitchLorem)
-            })
-        )
-    }
-    
-    func testHitchEqualityPerf() {
-        let sourceHitches = [
-            "George the seventh123".hitch(),
-            "John the third1234567".hitch(),
-            "Henry the twelveth123".hitch(),
-            "Dennis the mennis1234".hitch(),
-            "Calvin and the Hobbes".hitch()
-        ]
-        
-        let match = "John the third1234567".hitch()
-        var numMatches = 0
-        
-        // bisec: 0.383
-        
-        // biequal: 0.325
-        measure {
-            for hitch in sourceHitches {
-                for _ in 0..<10000000 {
-                    if hitch == match {
-                        numMatches += 1
-                    }
-                }
-            }
-        }
-        
-        XCTAssertEqual(numMatches, 10000000 * 10)
-    }
-    
-    func testHalfHitchEqualityPerf() {
-        let sourceHitches = [
-            "George the seventh123".hitch().halfhitch(),
-            "John the third1234567".hitch().halfhitch(),
-            "Henry the twelveth123".hitch().halfhitch(),
-            "Dennis the mennis1234".hitch().halfhitch(),
-            "Calvin and the Hobbes".hitch().halfhitch()
-        ]
-        
-        let match = "John the third1234567".hitch().halfhitch()
-        var numMatches = 0
-        
-        // bisec: 0.606
-        
-        // blkequalblk: 0.319
-        measure {
-            for hitch in sourceHitches {
-                for _ in 0..<10000000 {
-                    if hitch == match {
-                        numMatches += 1
-                    }
-                }
-            }
-        }
-        
-        XCTAssertEqual(numMatches, 10000000 * 10)
-    }
-    
-    func testHitchToHalfHitchEqualityPerf() {
-        let sourceHitches = [
-            "George the seventh123".hitch().halfhitch(),
-            "John the third1234567".hitch().halfhitch(),
-            "Henry the twelveth123".hitch().halfhitch(),
-            "Dennis the mennis1234".hitch().halfhitch(),
-            "Calvin and the Hobbes".hitch().halfhitch()
-        ]
-        
-        let match = "John the third1234567".hitch()
-        var numMatches = 0
-                
-        // blkequalblk: 0.298
-        measure {
-            for hitch in sourceHitches {
-                for _ in 0..<10000000 {
-                    if hitch == match {
-                        numMatches += 1
-                    }
-                }
-            }
-        }
-        
-        XCTAssertEqual(numMatches, 10000000 * 10)
-    }
-    
     func testHalfHitchFromData0() {
         let data = "Hello world again".data(using: .utf8)!
         HalfHitch.using(data: data, from: 6, to: 11) { hh in
@@ -567,10 +356,13 @@ final class HitchTests: XCTestCase {
     
     func testAppendDouble() {
         let values = [
-            12345.12345,
+            12345.012345,
             0,
             0.5,
-            -12345.12345
+            -12345.012345,
+            8.01234567890123456789,
+            8.0123456789,
+            12345.12345
         ]
         for value in values {
             XCTAssertEqual("hello: ".hitch().append(double: value), "hello: \(value)".hitch())
@@ -579,10 +371,13 @@ final class HitchTests: XCTestCase {
     
     func testInsertDouble() {
         let values = [
-            12345.12345,
+            12345.012345,
             0,
             0.5,
-            -12345.12345
+            -12345.012345,
+            8.01234567890123456789,
+            8.0123456789,
+            12345.12345
         ]
         for value in values {
             XCTAssertEqual("hello  world".hitch().insert(double: value, index: 6), "hello \(value) world".hitch())
@@ -695,6 +490,88 @@ final class HitchTests: XCTestCase {
         }
         
         let _ = halfHitch[1]
+    }
+    
+    func testHitchEqualityPerf() {
+        let sourceHitches = [
+            "George the seventh123".hitch(),
+            "John the third1234567".hitch(),
+            "Henry the twelveth123".hitch(),
+            "Dennis the mennis1234".hitch(),
+            "Calvin and the Hobbes".hitch()
+        ]
+        
+        let match = "John the third1234567".hitch()
+        var numMatches = 0
+        
+        // bisec: 0.383
+        
+        // biequal: 0.325
+        measure {
+            for hitch in sourceHitches {
+                for _ in 0..<10000000 {
+                    if hitch == match {
+                        numMatches += 1
+                    }
+                }
+            }
+        }
+        
+        XCTAssertEqual(numMatches, 10000000 * 10)
+    }
+    
+    func testHalfHitchEqualityPerf() {
+        let sourceHitches = [
+            "George the seventh123".hitch().halfhitch(),
+            "John the third1234567".hitch().halfhitch(),
+            "Henry the twelveth123".hitch().halfhitch(),
+            "Dennis the mennis1234".hitch().halfhitch(),
+            "Calvin and the Hobbes".hitch().halfhitch()
+        ]
+        
+        let match = "John the third1234567".hitch().halfhitch()
+        var numMatches = 0
+        
+        // bisec: 0.606
+        
+        // blkequalblk: 0.319
+        measure {
+            for hitch in sourceHitches {
+                for _ in 0..<10000000 {
+                    if hitch == match {
+                        numMatches += 1
+                    }
+                }
+            }
+        }
+        
+        XCTAssertEqual(numMatches, 10000000 * 10)
+    }
+    
+    func testHitchToHalfHitchEqualityPerf() {
+        let sourceHitches = [
+            "George the seventh123".hitch().halfhitch(),
+            "John the third1234567".hitch().halfhitch(),
+            "Henry the twelveth123".hitch().halfhitch(),
+            "Dennis the mennis1234".hitch().halfhitch(),
+            "Calvin and the Hobbes".hitch().halfhitch()
+        ]
+        
+        let match = "John the third1234567".hitch()
+        var numMatches = 0
+                
+        // blkequalblk: 0.298
+        measure {
+            for hitch in sourceHitches {
+                for _ in 0..<10000000 {
+                    if hitch == match {
+                        numMatches += 1
+                    }
+                }
+            }
+        }
+        
+        XCTAssertEqual(numMatches, 10000000 * 10)
     }
 
     static var allTests = [

@@ -1,10 +1,84 @@
 ![](meta/icon.png)
 
-## Swift wrapper around [bstrlib](http://bstring.sourceforge.net)
+## High Performance UTF8 for Swift
 
-Native Swift strings may not be ideal for you; if you are here, then you are probably well aware why.  Hitch provides a simple alternative by wrapping [bstrlib](http://bstring.sourceforge.net) to provide simple, high performance strings for use in your Swift programs.
+Consider Hitch as an alternative to String when performance and memory usage is more important than convenience.
 
+```
++-------------------------------+--------------------------+
+|HitchPerformanceTests.swift    |    Faster than String    |
++-------------------------------+--------------------------+
+|string iterator                |         3298.74x         |
+|utf8 iterator                  |          65.11x          |
+|contains                       |          9.56x           |
+|append (w/ capacity)           |          2.36x           |
+|uppercase/lowercase            |          2.29x           |
+|append (w/ capacity)           |          2.22x           |
++-------------------------------+--------------------------+
+```
 
+## Format Strings
+
+Hitch has its own high performance string formatted strings.  It works like this:
+
+**Example:**
+
+```swift
+let value = Hitch("""
+    {0}
+    +----------+----------+----------+
+    |{-??     }|{~?      }|{?       }|
+    |{-?      }|{~?      }|{+?      }|
+    |{-?.2    }|{~8.3    }|{+?.1    }|
+    |{-1      }|{~2      }|{1       }|
+    +----------+----------+----------+
+    {{we no longer escape braces}}
+    {These don't need to be escaped because they contain invalid characters}
+    """, "This is an unbounded field", "Hello", "World", 27, 1, 2, 3, 1.0/3.0, 543.0/23.0, 99999.99999)
+print(value)
+```
+
+**Output:**
+
+```
+This is an unbounded field
++----------+----------+----------+
+|Hello     |  World   |        27|
+|1         |    2     |         3|
+|0.33      |  23.608  |      23.6|
+|Hello     |  World   |     Hello|
++----------+----------+----------+
+{{we no longer escape braces}}
+{These don't need to be escaped because they contain invalid characters}
+```
+
+**An unbounded field**  
+is defined by ```{0}``` with no spaces or other formatting.
+
+**Field width**  
+is defined by the amount of space between the opening ```{``` and the closing ```}```. As you can see in the example above, this makes everything visually line up in the format string.
+
+**Left justification**  
+is defined by a ```-``` sign, such as ```{-0     }```. The sign can appear anywhere in the field, such as ```{  0  -  }```
+
+**Center justification**  
+is defined by a ```~``` sign, such as ```{~0     }``` The sign can appear anywhere in the field, such as ```{~    0  }```
+
+**Right justification**  
+is defined by a ```+``` sign, such as ```{+0     }``` The sign can appear anywhere in the field, such as ```{  0    +}```
+
+**Unnamed value indexes**  
+are allowed by using a ```?```.  This value starts at 0, and is incremented after every ```?``` encountered inside of a ```{}```. So ```"{???     }"``` is valid, you will get the ```2``` indexed value in this field.
+
+**Braces can still be used normally;**  
+if illegal characters exist inside of a brace, or the braces fail to contain the required information for formatting, then they are interpretted as is.
+
+**Floating point precision**  
+is defined by placing ```.``` after the value index, followed by the number of precision digits. For example, ```{-?.4  }``` means "left aligned using the next value index with four points of decimal precision with a field width of 8"
+
+## Implementation
+
+Hitch uses [bstrlib](http://bstring.sourceforge.net) under the hood.
 
 ## Hitch License
 
