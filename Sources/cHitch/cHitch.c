@@ -127,19 +127,46 @@ void chitch_concat_char(CHitch * c0, const int8_t rhs) {
 }
 
 void chitch_insert(CHitch * c0, long position, CHitch * c1) {
-    exit(127);
+    return chitch_insert_raw(c0, position, c1->data, c1->count);
 }
 
 void chitch_insert_raw(CHitch * c0, long position, const int8_t * rhs, long rhs_count) {
-    exit(127);
+    if (position < 0) { position = 0; }
+    if (position >= c0->count) {
+        return chitch_concat_raw(c0, rhs, rhs_count);
+    }
+    
+    CHITCH_SANITY(c0, c0->count + rhs_count);
+    
+    // Start at end and copy back until old count + rhs_count to make room
+    // for simultaneous copy operation
+    int8_t * ptr = c0->data + c0->count;
+    int8_t * start = c0->data + position + rhs_count;
+    while (ptr >= start) {
+        ptr[rhs_count] = *ptr;
+        ptr--;
+    }
+    
+    // simulataneous insert and copy
+    const int8_t * src_ptr = rhs;
+    int8_t * dst_ptr = c0->data + position;
+    int8_t * end = dst_ptr + rhs_count;
+    while (dst_ptr < end) {
+        dst_ptr[rhs_count] = *dst_ptr;
+        *dst_ptr = *src_ptr;
+        dst_ptr++;
+        src_ptr++;
+    }
+    
+    c0->count += rhs_count;
 }
 
 void chitch_insert_cstring(CHitch * c0, long position, const int8_t * rhs) {
-    exit(127);
+    return chitch_insert_raw(c0, position, rhs, strlen((const char *)rhs));
 }
 
 void chitch_insert_char(CHitch * c0, long position, const int8_t rhs) {
-    exit(127);
+    return chitch_insert_raw(c0, position, &rhs, 1);
 }
 
 void chitch_insert_int(CHitch * c0, long position, const long rhs) {
@@ -147,7 +174,7 @@ void chitch_insert_int(CHitch * c0, long position, const long rhs) {
 }
 
 long chitch_cmp (CHitch * c0, CHitch * c1) {
-    exit(127);
+    return chitch_cmp_raw(c0->data, c0->count, c1->data, c1->count);
 }
 
 bool chitch_equal(CHitch * c0, CHitch * c1) {
@@ -159,6 +186,7 @@ void chitch_copy_raw(const int8_t * lhs, const int8_t * rhs, long rhs_count) {
 }
 
 long chitch_cmp_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
+    //return memcmp(c0->data, c1->data, c0->count)
     exit(127);
 }
 

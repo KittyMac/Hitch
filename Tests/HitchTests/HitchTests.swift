@@ -326,6 +326,17 @@ final class HitchTests: XCTestCase {
     }
     
     func testInsert2() {
+        let hitch = "".hitch()
+        let values: [Int8] = [53, 52, 51, 50, 49]
+        
+        for value in values {
+            hitch.insert(value, index: 99)
+        }
+        
+        XCTAssertEqual(hitch, "54321")
+    }
+    
+    func testInsert3() {
         let hitch = "store.book".hitch()
         XCTAssertEqual(hitch.insert("$.", index: 0), "$.store.book")
         XCTAssertEqual(hitch.insert("$.", index: -99), "$.$.store.book")
