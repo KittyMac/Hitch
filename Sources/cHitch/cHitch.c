@@ -186,8 +186,10 @@ void chitch_copy_raw(const int8_t * lhs, const int8_t * rhs, long rhs_count) {
 }
 
 long chitch_cmp_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
-    //return memcmp(c0->data, c1->data, c0->count)
-    exit(127);
+    if (lhs_count < rhs_count) {
+        return strncmp((const char *)lhs, (const char *)rhs, lhs_count - 1);
+    }
+    return strncmp((const char *)lhs, (const char *)rhs, rhs_count - 1);
 }
 
 bool chitch_equal_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
