@@ -174,7 +174,7 @@ final class HitchTests: XCTestCase {
     
     func testLastIndexOf2() {
         let hitchLorem = "/true|false/".hitch()
-        XCTAssertEqual(hitchLorem.lastIndex(of: Int8.forwardSlash), 11)
+        XCTAssertEqual(hitchLorem.lastIndex(of: UInt8.forwardSlash), 11)
     }
     
     func testIndexOf3() {
@@ -316,7 +316,7 @@ final class HitchTests: XCTestCase {
     
     func testInsert() {
         let hitch = "".hitch()
-        let values: [Int8] = [53, 52, 51, 50, 49]
+        let values: [UInt8] = [53, 52, 51, 50, 49]
         
         for value in values {
             hitch.insert(value, index: 0)
@@ -327,7 +327,7 @@ final class HitchTests: XCTestCase {
     
     func testInsert2() {
         let hitch = "".hitch()
-        let values: [Int8] = [53, 52, 51, 50, 49]
+        let values: [UInt8] = [53, 52, 51, 50, 49]
         
         for value in values {
             hitch.insert(value, index: 99)
@@ -402,10 +402,11 @@ final class HitchTests: XCTestCase {
         }
     }
     
-    func testTrim() {
-        let hitch = "   \t\n\r  Hello   \t\n\r  ".hitch()
-        hitch.trim()
-        XCTAssertEqual(hitch, "Hello")
+    func testTrim() {        
+        XCTAssertEqual(Hitch("Hello   \t\n\r  ").trim(), "Hello")
+        XCTAssertEqual(Hitch("   \t\n\r  Hello").trim(), "Hello")
+        XCTAssertEqual(Hitch("   \t\n\r  Hello   \t\n\r  ").trim(), "Hello")
+        XCTAssertEqual(Hitch("Hello").trim(), "Hello")
     }
     
     func testInitFromHitch() {
@@ -414,8 +415,6 @@ final class HitchTests: XCTestCase {
     }
     
     func testSplitToInt() {
-        fatalError("TODO")
-        /*
         let hitch = "1,2,3,4,52345,-6,7,8134,9,-72,  5  ,  2  4  ".hitch()
         var array = [Int]()
             
@@ -426,7 +425,7 @@ final class HitchTests: XCTestCase {
         }
         
         let result = array.map { String($0) }.joined(separator: ",").hitch()
-        XCTAssertEqual(result, "1,2,3,4,52345,-6,7,8134,9,-72,5".hitch())*/
+        XCTAssertEqual(result, "1,2,3,4,52345,-6,7,8134,9,-72,5".hitch())
     }
     
     func testToInt() {

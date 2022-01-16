@@ -206,7 +206,7 @@ final class HitchPerformanceTests: XCTestCase {
         let hitchNeedle = swiftNeedle.hitch()
                 
         XCTAssert(
-            test (1000, "first index of",
+            test (1000, "last index of",
             {
                 for _ in 1...1000 {
                     _ = swiftLorem.range(of: swiftNeedle)
@@ -226,11 +226,11 @@ final class HitchPerformanceTests: XCTestCase {
         var swiftCombined = ""
         let hitchCombined = Hitch()
         
-        swiftCombined.reserveCapacity(swiftLorem.count * 1000)
-        hitchCombined.reserveCapacity(hitchLorem.count * 1000)
-        
+        swiftCombined.reserveCapacity(swiftLorem.count * 100000)
+        hitchCombined.reserveCapacity(hitchLorem.count * 100000)
+
         XCTAssert(
-            test (1000, "append (w/ capacity)",
+            test (100000, "append (static capacity)",
             {
                 swiftCombined.append(swiftLorem)
             }, {
@@ -247,7 +247,7 @@ final class HitchPerformanceTests: XCTestCase {
         let hitchCombined = Hitch()
                 
         XCTAssert(
-            test (1000, "append (w/ capacity)",
+            test (1000, "append (dynamic capacity)",
             {
                 swiftCombined.append(swiftLorem)
             }, {

@@ -12,15 +12,19 @@
 
 #define TOUPPER(x) ((x >= 'a' && x <= 'z') ? x - 0x20 : x)
 #define TOLOWER(x) ((x >= 'A' && x <= 'Z') ? x + 0x20 : x)
-#define WHITESPACE(c) (x == '\t' || x == '\n' || x == '\v' || x == '\f' || x == '\r' || x == ' ')
+#define WHITESPACE(x) (x == '\t' || x == '\n' || x == '\r' || x == ' ')
 
 // Ensure chitch is not empty and is of a minimum capacity
 #define CHITCH_SANITY(C,MINSIZE)                                                                             \
-if (C->data == 0) { C->capacity = (MINSIZE); C->data = malloc(C->capacity); }                           \
-if (C->capacity < MINSIZE) { C->capacity = (MINSIZE); C->data = realloc(C->data, C->capacity); }        \
+if (C->data == 0) { C->capacity = (MINSIZE); C->data = malloc(C->capacity); }                               \
+if (C->capacity < MINSIZE) { C->capacity = (MINSIZE); C->data = realloc(C->data, C->capacity); }            \
 
-uint8_t * chitch_to_uint8(int8_t * ptr) {
+uint8_t * chitch_to_uint8(const int8_t * ptr) {
     return (uint8_t *)ptr;
+}
+
+int8_t * chitch_to_int8(const uint8_t * ptr) {
+    return (int8_t *)ptr;
 }
 
 CHitch chitch_empty() {
@@ -36,16 +40,16 @@ CHitch chitch_init_capacity(long capacity) {
     return c;
 }
 
-CHitch chitch_init_raw(const int8_t * bytes, long capacity, long count) {
+CHitch chitch_init_raw(const uint8_t * bytes, long capacity, long count) {
     CHitch c = {0};
     c.capacity = capacity;
     c.count = count;
     c.data = malloc(capacity);
-    memcpy(c.data, bytes, count);
+    memmove(c.data, bytes, count);
     return c;
 }
 
-CHitch chitch_init_cstring(const int8_t * bytes) {
+CHitch chitch_init_cstring(const uint8_t * bytes) {
     long count = strlen((const char *)bytes);
     return chitch_init_raw(bytes, count, count);
 }
@@ -73,16 +77,17 @@ void chitch_realloc(CHitch * c0, long newCount) {
     }
 }
 
-inline void chitch_resize(CHitch * c0, long newCount) {
+void chitch_resize(CHitch * c0, long newCount) {
     if (newCount > c0->capacity) {
         chitch_realloc(c0, newCount);
+    } else {
+        c0->count = newCount;
     }
-    c0->count = newCount;
 }
 
 void chitch_tolower(CHitch * c0) {
-    int8_t * ptr = c0->data;
-    int8_t * end = c0->data + c0->count;
+    uint8_t * ptr = c0->data;
+    uint8_t * end = c0->data + c0->count;
     while (ptr < end) {
         *ptr = TOLOWER(*ptr);
         ptr++;
@@ -90,8 +95,8 @@ void chitch_tolower(CHitch * c0) {
 }
 
 void chitch_toupper(CHitch * c0) {
-    int8_t * ptr = c0->data;
-    int8_t * end = c0->data + c0->count;
+    uint8_t * ptr = c0->data;
+    uint8_t * end = c0->data + c0->count;
     while (ptr < end) {
         *ptr = TOUPPER(*ptr);
         ptr++;
@@ -99,28 +104,52 @@ void chitch_toupper(CHitch * c0) {
 }
 
 void chitch_trim(CHitch * c0) {
-    exit(127);
+    uint8_t * start = c0->data;
+    uint8_t * end = c0->data + c0->count - 1;
+    
+    uint8_t c = *start;
+    while (start < end && WHITESPACE(c)) {
+        start++;
+        c = *start;
+    }
+    
+    c = *end;
+    while (end > start && WHITESPACE(c)) {
+        end--;
+        c = *end;
+    }
+    
+    c0->count = end - start + 1;
+    if (start == c0->data) {
+        return;
+    }
+    memmove(c0->data, start, c0->count);
 }
 
 void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCase) {
-    exit(127);
+    //exit(127);
 }
 
 void chitch_concat(CHitch * c0, CHitch * c1) {
-    return chitch_concat_raw(c0, c1->data, c1->count);
+    long c1_count = c1->count;
+    if (c1_count <= 0) { return; }
+    CHITCH_SANITY(c0, c0->count + c1_count);
+    memmove(c0->data + c0->count, c1->data, c1_count);
+    c0->count += c1_count;
 }
 
-void chitch_concat_raw(CHitch * c0, const int8_t * rhs, long rhs_count) {
+void chitch_concat_raw(CHitch * c0, const uint8_t * rhs, long rhs_count) {
+    if (rhs_count <= 0) { return; }
     CHITCH_SANITY(c0, c0->count + rhs_count);
-    memcpy(c0->data + c0->count, rhs, rhs_count);
+    memmove(c0->data + c0->count, rhs, rhs_count);
     c0->count += rhs_count;
 }
 
-void chitch_concat_cstring(CHitch * c0, const int8_t * rhs) {
+void chitch_concat_cstring(CHitch * c0, const uint8_t * rhs) {
     chitch_concat_raw(c0, rhs, strlen((const char *)rhs));
 }
 
-void chitch_concat_char(CHitch * c0, const int8_t rhs) {
+void chitch_concat_char(CHitch * c0, const uint8_t rhs) {
     CHITCH_SANITY(c0, c0->count + 1);
     c0->data[c0->count] = rhs;
     c0->count++;
@@ -130,7 +159,7 @@ void chitch_insert(CHitch * c0, long position, CHitch * c1) {
     return chitch_insert_raw(c0, position, c1->data, c1->count);
 }
 
-void chitch_insert_raw(CHitch * c0, long position, const int8_t * rhs, long rhs_count) {
+void chitch_insert_raw(CHitch * c0, long position, const uint8_t * rhs, long rhs_count) {
     if (position < 0) { position = 0; }
     if (position >= c0->count) {
         return chitch_concat_raw(c0, rhs, rhs_count);
@@ -140,17 +169,17 @@ void chitch_insert_raw(CHitch * c0, long position, const int8_t * rhs, long rhs_
     
     // Start at end and copy back until old count + rhs_count to make room
     // for simultaneous copy operation
-    int8_t * ptr = c0->data + c0->count;
-    int8_t * start = c0->data + position + rhs_count;
+    uint8_t * ptr = c0->data + c0->count;
+    uint8_t * start = c0->data + position + rhs_count;
     while (ptr >= start) {
         ptr[rhs_count] = *ptr;
         ptr--;
     }
     
     // simulataneous insert and copy
-    const int8_t * src_ptr = rhs;
-    int8_t * dst_ptr = c0->data + position;
-    int8_t * end = dst_ptr + rhs_count;
+    const uint8_t * src_ptr = rhs;
+    uint8_t * dst_ptr = c0->data + position;
+    uint8_t * end = dst_ptr + rhs_count;
     while (dst_ptr < end) {
         dst_ptr[rhs_count] = *dst_ptr;
         *dst_ptr = *src_ptr;
@@ -161,16 +190,55 @@ void chitch_insert_raw(CHitch * c0, long position, const int8_t * rhs, long rhs_
     c0->count += rhs_count;
 }
 
-void chitch_insert_cstring(CHitch * c0, long position, const int8_t * rhs) {
+void chitch_insert_cstring(CHitch * c0, long position, const uint8_t * rhs) {
     return chitch_insert_raw(c0, position, rhs, strlen((const char *)rhs));
 }
 
-void chitch_insert_char(CHitch * c0, long position, const int8_t rhs) {
+void chitch_insert_char(CHitch * c0, long position, const uint8_t rhs) {
     return chitch_insert_raw(c0, position, &rhs, 1);
 }
 
-void chitch_insert_int(CHitch * c0, long position, const long rhs) {
-    exit(127);
+void chitch_insert_int(CHitch * c0, long position, long rhs) {
+    switch(rhs) {
+        case 0: return chitch_insert_char(c0, position, '0');
+        case 1: return chitch_insert_char(c0, position, '1');
+        case 2: return chitch_insert_char(c0, position, '2');
+        case 3: return chitch_insert_char(c0, position, '3');
+        case 4: return chitch_insert_char(c0, position, '4');
+        case 5: return chitch_insert_char(c0, position, '5');
+        case 6: return chitch_insert_char(c0, position, '6');
+        case 7: return chitch_insert_char(c0, position, '7');
+        case 8: return chitch_insert_char(c0, position, '8');
+        case 9: return chitch_insert_char(c0, position, '9');
+    }
+    
+    uint8_t s[128] = {0};
+    uint8_t * end = s + sizeof(s);
+    uint8_t * ptr = end;
+    int len = 0;
+    
+    if (rhs >= 0 && rhs <= 9) {
+        *(ptr--) = '0' + rhs;
+        len = 1;
+    } else {
+        int neg = (rhs < 0);
+        if (neg) {
+            rhs = -rhs;
+        }
+        
+        while (ptr > s && rhs > 0) {
+            *(ptr--) = '0' + (rhs % 10);
+            rhs /= 10;
+        }
+        
+        if (neg) {
+            *(ptr--) = '-';
+        }
+
+        len = (end - ptr);
+    }
+    
+    return chitch_insert_raw(c0, position, ptr+1, len);
 }
 
 long chitch_cmp (CHitch * c0, CHitch * c1) {
@@ -181,18 +249,18 @@ bool chitch_equal(CHitch * c0, CHitch * c1) {
     return chitch_equal_raw(c0->data, c0->count, c1->data, c1->count);
 }
 
-void chitch_copy_raw(const int8_t * lhs, const int8_t * rhs, long rhs_count) {
-    memcpy((void *)lhs, rhs, rhs_count);
+void chitch_copy_raw(const uint8_t * lhs, const uint8_t * rhs, long rhs_count) {
+    memmove((void *)lhs, rhs, rhs_count);
 }
 
-long chitch_cmp_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
+long chitch_cmp_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, long rhs_count) {
     if (lhs_count < rhs_count) {
         return strncmp((const char *)lhs, (const char *)rhs, lhs_count - 1);
     }
     return strncmp((const char *)lhs, (const char *)rhs, rhs_count - 1);
 }
 
-bool chitch_equal_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
+bool chitch_equal_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, long rhs_count) {
     if (lhs == NULL && rhs == NULL) { return true; }
     if (lhs == NULL || rhs == NULL) { return false; }
     if (lhs_count != rhs_count) { return false; }
@@ -200,11 +268,11 @@ bool chitch_equal_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, lo
     return memcmp(lhs, rhs, rhs_count) == 0;
 }
 
-bool chitch_contains_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+bool chitch_contains_raw(const uint8_t * haystack, long haystack_count, const uint8_t * needle, long needle_count) {
     return chitch_firstof_raw(haystack, haystack_count, needle, needle_count) >= 0;
 }
 
-long chitch_firstof_raw_offset(const int8_t * haystack, long haystack_offset, long haystack_count, const int8_t * needle, long needle_count) {
+long chitch_firstof_raw_offset(const uint8_t * haystack, long haystack_offset, long haystack_count, const uint8_t * needle, long needle_count) {
     haystack_count -= haystack_offset;
     haystack += haystack_offset;
     long result = chitch_firstof_raw(haystack, haystack_count, needle, needle_count);
@@ -214,16 +282,16 @@ long chitch_firstof_raw_offset(const int8_t * haystack, long haystack_offset, lo
     return result + haystack_offset;
 }
 
-long chitch_firstof_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+long chitch_firstof_raw(const uint8_t * haystack, long haystack_count, const uint8_t * needle, long needle_count) {
     if (haystack_count < 0) { return -1; }
     if (needle_count == 0) { return 0; }
     if (needle == NULL && haystack == NULL) { return 0; }
     if (needle == NULL || haystack == NULL) { return -1; }
     if (needle_count > haystack_count) { return -1; }
     
-    const int8_t * ptr = haystack;
-    const int8_t * end = haystack + haystack_count - needle_count;
-    const int8_t needle_start = needle[0];
+    const uint8_t * ptr = haystack;
+    const uint8_t * end = haystack + haystack_count - needle_count;
+    const uint8_t needle_start = needle[0];
     
     bool found = true;
     
@@ -260,16 +328,16 @@ long chitch_firstof_raw(const int8_t * haystack, long haystack_count, const int8
     return -1;
 }
 
-long chitch_lastof_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+long chitch_lastof_raw(const uint8_t * haystack, long haystack_count, const uint8_t * needle, long needle_count) {
     if (needle_count == 0) { return 0; }
     if (needle == NULL && haystack == NULL) { return 0; }
     if (needle == NULL || haystack == NULL) { return -1; }
     if (needle_count > haystack_count) { return -1; }
     
-    const int8_t * start = haystack;
-    const int8_t * end = haystack + haystack_count - needle_count;
-    const int8_t * ptr = end;
-    const int8_t needle_start = needle[0];
+    const uint8_t * start = haystack;
+    const uint8_t * end = haystack + haystack_count - needle_count;
+    const uint8_t * ptr = end;
+    const uint8_t needle_start = needle[0];
     
     bool found = true;
     

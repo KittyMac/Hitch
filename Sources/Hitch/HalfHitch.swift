@@ -5,9 +5,9 @@ import cHitch
 
 public struct HalfHitchIterator: Sequence, IteratorProtocol {
     @usableFromInline
-    internal var ptr: UnsafeMutablePointer<Int8>
+    internal var ptr: UnsafeMutablePointer<UInt8>
     @usableFromInline
-    internal let end: UnsafeMutablePointer<Int8>
+    internal let end: UnsafeMutablePointer<UInt8>
 
     @inlinable @inline(__always)
     internal init(halfHitch: HalfHitch) {
@@ -32,7 +32,7 @@ public struct HalfHitchIterator: Sequence, IteratorProtocol {
     }
 
     @inlinable @inline(__always)
-    public mutating func next() -> Int8? {
+    public mutating func next() -> UInt8? {
         if ptr >= end { return nil }
         ptr += 1
         return ptr.pointee
@@ -61,7 +61,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     let sourceHitch: Hitch
 
     @usableFromInline
-    let source: UnsafeMutablePointer<Int8>?
+    let source: UnsafeMutablePointer<UInt8>?
 
     public var count: Int
 
@@ -69,7 +69,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
         var data2 = data
         return data2.withUnsafeMutableBytes { unsafeRawBufferPointer in
-            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: Int8.self)
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
             return callback(HalfHitch(raw: bytes,
                                       count: data.count,
@@ -79,7 +79,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    init(raw: UnsafeMutablePointer<Int8>, count: Int, from: Int, to: Int) {
+    init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceHitch = Hitch.empty
         self.source = raw + from
         self.count = to - from
@@ -160,14 +160,14 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @inlinable @inline(__always)
     public static func < (lhs: String, rhs: HalfHitch) -> Bool {
         return lhs.withCString { bytes in
-            return chitch_cmp_raw(bytes, lhs.count, rhs.source, rhs.count) < 0
+            return chitch_cmp_raw(chitch_to_uint8(bytes), lhs.count, rhs.source, rhs.count) < 0
         }
     }
 
     @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: String) -> Bool {
         return rhs.withCString { bytes in
-            return chitch_cmp_raw(lhs.source, lhs.count, bytes, rhs.count) < 0
+            return chitch_cmp_raw(lhs.source, lhs.count, chitch_to_uint8(bytes), rhs.count) < 0
         }
     }
 
@@ -179,14 +179,14 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @inlinable @inline(__always)
     public static func == (lhs: String, rhs: HalfHitch) -> Bool {
         return lhs.withCString { bytes in
-            return chitch_equal_raw(bytes, lhs.count, rhs.source, rhs.count)
+            return chitch_equal_raw(chitch_to_uint8(bytes), lhs.count, rhs.source, rhs.count)
         }
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: String) -> Bool {
         return rhs.withCString { bytes in
-            return chitch_equal_raw(lhs.source, lhs.count, bytes, rhs.count)
+            return chitch_equal_raw(lhs.source, lhs.count, chitch_to_uint8(bytes), rhs.count)
         }
     }
 
@@ -211,17 +211,12 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    public func raw() -> UnsafeMutablePointer<Int8>? {
+    public func raw() -> UnsafeMutablePointer<UInt8>? {
         return source
     }
 
     @inlinable @inline(__always)
-    public func uraw() -> UnsafeMutablePointer<UInt8>? {
-        return chitch_to_uint8(source)
-    }
-
-    @inlinable @inline(__always)
-    public subscript (index: Int) -> Int8 {
+    public subscript (index: Int) -> UInt8 {
         get {
             guard index >= 0 && index < count else { return 0 }
             return source?[index] ?? 0
@@ -252,7 +247,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @inlinable @inline(__always)
     public func escaped(unicode: Bool,
                         singleQuotes: Bool) -> Hitch {
-        guard let raw = uraw() else { return Hitch() }
+        guard let raw = raw() else { return Hitch() }
         return escapeBinary(data: raw,
                             count: count,
                             unicode: unicode,
@@ -262,7 +257,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @inlinable @inline(__always)
     @discardableResult
     public mutating func unescape() -> Self {
-        guard let raw = uraw() else { return self }
+        guard let raw = raw() else { return self }
         count = unescapeBinary(data: raw,
                                count: count)
         return self
