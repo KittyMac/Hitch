@@ -12,11 +12,11 @@ let package = Package(
     dependencies: [ ],
     targets: [
         .target(
-            name: "bstrlib"
+            name: "cHitch"
         ),
         .target(
             name: "Hitch",
-            dependencies: [ "bstrlib" ]),
+            dependencies: [ "cHitch" ]),
         .testTarget(
             name: "HitchTests",
             dependencies: ["Hitch"]),

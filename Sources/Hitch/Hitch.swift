@@ -1,7 +1,7 @@
 // swiftlint:disable type_body_length
 
 import Foundation
-import bstrlib
+import cHitch
 
 @inlinable @inline(__always)
 func roundToPlaces(value: Double, places: Int) -> Double {
@@ -20,9 +20,9 @@ func intFromBinary(data: UnsafeRawBufferPointer,
 
     var skipping = true
     while skipping && idx < count {
-        let char = data[idx]
+        let char = Int8(data[idx])
         switch char {
-        case UInt8.zero, UInt8.one, UInt8.two, UInt8.three, UInt8.four, UInt8.five, UInt8.six, UInt8.seven, UInt8.eight, UInt8.nine, UInt8.minus:
+        case Int8.zero, Int8.one, Int8.two, Int8.three, Int8.four, Int8.five, Int8.six, Int8.seven, Int8.eight, Int8.nine, Int8.minus:
             skipping = false
             break
         default:
@@ -32,10 +32,10 @@ func intFromBinary(data: UnsafeRawBufferPointer,
     }
 
     while idx < count {
-        let char = data[idx]
+        let char = Int8(data[idx])
         if endedOnlyAllowsWhitespace == true {
             switch char {
-            case UInt8.space, UInt8.tab, UInt8.newLine, UInt8.carriageReturn:
+            case Int8.space, Int8.tab, Int8.newLine, Int8.carriageReturn:
                 break
             default:
                 return nil
@@ -71,7 +71,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
     // skip leading whitespace
     while idx < count {
         let char = data[idx]
-        if char == UInt8.space || char == UInt8.tab || char == UInt8.newLine || char == UInt8.carriageReturn {
+        if char == Int8.space || char == Int8.tab || char == Int8.newLine || char == Int8.carriageReturn {
             idx += 1
         } else {
             break
@@ -82,7 +82,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
     while idx < count {
         let char = data[idx]
         if endedOnlyAllowsWhitespace == true {
-            if char != UInt8.space && char != UInt8.tab && char != UInt8.newLine && char != UInt8.carriageReturn {
+            if char != Int8.space && char != Int8.tab && char != Int8.newLine && char != Int8.carriageReturn {
                 return nil
             }
         } else if char == .minus && value == 0 {
@@ -107,7 +107,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
         while idx < count {
             let char = data[idx]
             if endedOnlyAllowsWhitespace == true {
-                if char != UInt8.space && char != UInt8.tab && char != UInt8.newLine && char != UInt8.carriageReturn {
+                if char != Int8.space && char != Int8.tab && char != Int8.newLine && char != Int8.carriageReturn {
                     return nil
                 }
             } else if char >= .zero && char <= .nine {
@@ -216,13 +216,13 @@ func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
 }
 
 @inlinable @inline(__always)
-func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
+func unescapeBinary(data: UnsafeMutablePointer<Int8>,
                     count: Int) -> Int {
     var read = data
     var write = data
     let end = data + count
 
-    let append: (UInt8, Int) -> Void = { v, advance in
+    let append: (Int8, Int) -> Void = { v, advance in
         write.pointee = v
         write += 1
         read += advance
@@ -230,7 +230,7 @@ func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
 
     while read < end {
 
-        if read.pointee == UInt8.backSlash {
+        if read.pointee == Int8.backSlash {
             switch read[1] {
             case .backSlash: append(.backSlash, 2); continue
             case .singleQuote: append(.singleQuote, 2); continue
@@ -251,7 +251,7 @@ func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
                     }
                     if let scalar = UnicodeScalar(value) {
                         for v in Character(scalar).utf8 {
-                            append(v, 0)
+                            append(Int8(v), 0)
                         }
                     }
                 }
@@ -286,7 +286,7 @@ func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
-func escapeBinary(data: UnsafeMutablePointer<UInt8>,
+func escapeBinary(data: UnsafeMutablePointer<Int8>,
                   count: Int,
                   unicode: Bool,
                   singleQuotes: Bool) -> Hitch {
@@ -297,22 +297,23 @@ func escapeBinary(data: UnsafeMutablePointer<UInt8>,
 
     while read < end {
         let ch = read.pointee
+        let uch = UInt8(ch)
 
         if unicode && ch > 0x7f {
-            writer.append(UInt8.backSlash)
-            writer.append(UInt8.u)
+            writer.append(Int8.backSlash)
+            writer.append(Int8.u)
 
             var value: UInt32 = 0
-            if ch & 0b11100000 == 0b11000000 {
+            if uch & 0b11100000 == 0b11000000 {
                 value |= (UInt32(read[0]) & 0b00011111) << 6
                 value |= (UInt32(read[1]) & 0b00111111) << 0
                 read += 1
-            } else if ch & 0b11110000 == 0b11100000 {
+            } else if uch & 0b11110000 == 0b11100000 {
                 value |= (UInt32(read[0]) & 0b00001111) << 12
                 value |= (UInt32(read[1]) & 0b00111111) << 6
                 value |= (UInt32(read[2]) & 0b00111111) << 0
                 read += 2
-            } else if ch & 0b11111000 == 0b11110000 {
+            } else if uch & 0b11111000 == 0b11110000 {
                 value |= (UInt32(read[0]) & 0b00000111) << 18
                 value |= (UInt32(read[1]) & 0b00111111) << 12
                 value |= (UInt32(read[2]) & 0b00111111) << 6
@@ -321,7 +322,7 @@ func escapeBinary(data: UnsafeMutablePointer<UInt8>,
             }
 
             if value > 0xFFFF {
-                writer.append(UInt8.openBracket)
+                writer.append(Int8.openBracket)
             }
 
             var hasFoundBits = false
@@ -336,39 +337,39 @@ func escapeBinary(data: UnsafeMutablePointer<UInt8>,
             }
 
             if value > 0xFFFF {
-                writer.append(UInt8.closeBracket)
+                writer.append(Int8.closeBracket)
             }
 
         } else {
             switch ch {
             case .bell:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.b)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.b)
             case .newLine:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.n)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.n)
             case .tab:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.t)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.t)
             case .formFeed:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.f)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.f)
             case .carriageReturn:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.r)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.r)
             case .singleQuote:
                 if singleQuotes {
-                    writer.append(UInt8.backSlash)
+                    writer.append(Int8.backSlash)
                 }
-                writer.append(UInt8.singleQuote)
+                writer.append(Int8.singleQuote)
             case .doubleQuote:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.doubleQuote)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.doubleQuote)
             case .backSlash:
-                writer.append(UInt8.backSlash)
-                writer.append(UInt8.backSlash)
+                writer.append(Int8.backSlash)
+                writer.append(Int8.backSlash)
             default:
-                writer.append(ch)
+                writer.append(Int8(ch))
             }
         }
 
@@ -379,7 +380,7 @@ func escapeBinary(data: UnsafeMutablePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
-func hex(_ v: UInt8) -> UInt32? {
+func hex(_ v: Int8) -> UInt32? {
     switch v {
     case .zero: return 0
     case .one: return 1
@@ -402,7 +403,7 @@ func hex(_ v: UInt8) -> UInt32? {
 }
 
 @inlinable @inline(__always)
-func hex2(_ v: UInt32) -> UInt8 {
+func hex2(_ v: UInt32) -> Int8 {
     switch v {
     case 0: return .zero
     case 1: return .one
@@ -424,7 +425,7 @@ func hex2(_ v: UInt32) -> UInt8 {
     }
 }
 
-public let nullptr = UnsafeMutablePointer<UInt8>(bitPattern: 1)!
+public let nullptr = UnsafeMutablePointer<Int8>(bitPattern: 1)!
 
 public extension String {
     func hitch() -> Hitch {
@@ -434,9 +435,9 @@ public extension String {
 
 public struct HitchIterator: Sequence, IteratorProtocol {
     @usableFromInline
-    internal var ptr: UnsafeMutablePointer<UInt8>
+    internal var ptr: UnsafeMutablePointer<Int8>
     @usableFromInline
-    internal let end: UnsafeMutablePointer<UInt8>
+    internal let end: UnsafeMutablePointer<Int8>
 
     @inlinable @inline(__always)
     internal init(hitch: Hitch) {
@@ -461,7 +462,7 @@ public struct HitchIterator: Sequence, IteratorProtocol {
     }
 
     @inlinable @inline(__always)
-    public mutating func next() -> UInt8? {
+    public mutating func next() -> Int8? {
         if ptr >= end { return nil }
         ptr += 1
         return ptr.pointee
@@ -501,19 +502,21 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     public static func < (lhs: Hitch, rhs: Hitch) -> Bool {
-        return bstrcmp(lhs.bstr, rhs.bstr) < 0
+        return chitch_cmp_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count) < 0
     }
 
     @inlinable @inline(__always)
     public static func < (lhs: String, rhs: Hitch) -> Bool {
-        let hitch = lhs.hitch()
-        return bstrcmp(hitch.bstr, rhs.bstr) < 0
+        lhs.withCString { bytes in
+            return chitch_cmp_raw(bytes, lhs.count, rhs.raw(), rhs.count) < 0
+        }
     }
 
     @inlinable @inline(__always)
     public static func < (lhs: Hitch, rhs: String) -> Bool {
-        let hitch = rhs.hitch()
-        return bstrcmp(lhs.bstr, hitch.bstr) < 0
+        rhs.withCString { bytes in
+            return chitch_cmp_raw(lhs.raw(), lhs.count, bytes, rhs.count) < 0
+        }
     }
 
     @inlinable @inline(__always)
@@ -521,56 +524,55 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         if lhs === rhs {
             return true
         }
-        return biseq(lhs.bstr, rhs.bstr) == 1
+        return chitch_equal(&lhs.chitch, &rhs.chitch)
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: String, rhs: Hitch) -> Bool {
-        let hitch = lhs.hitch()
-        return biseq(hitch.bstr, rhs.bstr) == 1
-    }
-
-    @inlinable @inline(__always)
-    public static func == (lhs: Hitch, rhs: String) -> Bool {
-        let hitch = rhs.hitch()
-        return biseq(lhs.bstr, hitch.bstr) == 1
-    }
-
-    @inlinable @inline(__always)
-    public func withBytes(_ callback: (UnsafeMutablePointer<UInt8>) -> Void) {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            callback(data)
+        return lhs.withCString { bytes in
+            return chitch_equal_raw(bytes, strlen(bytes), rhs.raw(), rhs.count)
         }
     }
 
     @inlinable @inline(__always)
-    public func raw() -> UnsafeMutablePointer<UInt8>? {
-        return bstr?.pointee.data
+    public static func == (lhs: Hitch, rhs: String) -> Bool {
+        return rhs.withCString { bytes in
+            return chitch_equal_raw(lhs.raw(), lhs.count, bytes, strlen(bytes))
+        }
     }
 
     @inlinable @inline(__always)
-    public func using<T>(_ callback: (UnsafeMutablePointer<UInt8>) -> T?) -> T? {
-        if let raw = bstr?.pointee.data {
+    public func withBytes(_ callback: (UnsafeMutablePointer<Int8>) -> Void) {
+        if let bytes = chitch.data {
+            callback(bytes)
+        }
+    }
+
+    @inlinable @inline(__always)
+    public func raw() -> UnsafeMutablePointer<Int8>? {
+        return chitch.data
+    }
+
+    @inlinable @inline(__always)
+    public func using<T>(_ callback: (UnsafeMutablePointer<Int8>) -> T?) -> T? {
+        if let raw = chitch.data {
             return callback(raw)
         }
         return nil
     }
 
     @inlinable @inline(__always)
-    public subscript (index: Int) -> UInt8 {
+    public subscript (index: Int) -> Int8 {
         get {
-            if let bstr = bstr,
-                let data = bstr.pointee.data,
-                index < bstr.pointee.slen {
+            if let data = chitch.data,
+               index < chitch.count {
                 return data[index]
             }
             return 0
         }
         set(newValue) {
-            if let bstr = bstr,
-                let data = bstr.pointee.data,
-                index < bstr.pointee.slen {
+            if let data = chitch.data,
+               index < chitch.count {
                 data[index] = newValue
             }
         }
@@ -578,11 +580,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     public func hash(into hasher: inout Hasher) {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            let count = Int(bstr.pointee.slen)
-            hasher.combine(count)
-            hasher.combine(bytes: UnsafeRawBufferPointer(start: data, count: Swift.min(count, 8)))
+        if let data = chitch.data {
+            hasher.combine(chitch.count)
+            hasher.combine(bytes: UnsafeRawBufferPointer(start: data, count: Swift.min(chitch.count, 8)))
         } else {
             hasher.combine(0)
         }
@@ -600,13 +600,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     @usableFromInline
-    var bstr: bstring?
+    var chitch: CHitch
 
     @inlinable @inline(__always)
     public var description: String {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            return String(bytesNoCopy: data, length: Int(bstr.pointee.slen), encoding: .utf8, freeWhenDone: false) ?? ""
+        if let data = chitch.data {
+            return String(bytesNoCopy: data, length: chitch.count, encoding: .utf8, freeWhenDone: false) ?? ""
         }
         return ""
     }
@@ -617,7 +616,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     deinit {
-        bdestroy(bstr)
+        chitch_dealloc(&chitch)
     }
 
     @inlinable @inline(__always)
@@ -631,52 +630,49 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     }
 
     required public init (stringLiteral: String) {
+        chitch = chitch_empty()
         stringLiteral.withCString { (bytes: UnsafePointer<Int8>) -> Void in
-            self.bstr = bfromcstr(bytes)
+            chitch = chitch_init_cstring(bytes)
         }
     }
 
     @inlinable @inline(__always)
     public init(hitch: Hitch) {
-        if let other = hitch.bstr,
-            let data = other.pointee.data {
-            bstr = blk2bstr(data, Int32(other.pointee.slen))
-        }
+        chitch = chitch_init_raw(hitch.raw(), hitch.count, hitch.capacity)
     }
 
     @inlinable @inline(__always)
     public init(bytes: UnsafePointer<Int8>, offset: Int, count: Int) {
-        self.bstr = blk2bstr(bytes + offset, Int32(count))
+        chitch = chitch_init_raw(bytes + offset, count, count)
     }
 
     @inlinable @inline(__always)
-    public init(bytes: UnsafeMutablePointer<UInt8>, offset: Int, count: Int) {
-        self.bstr = blk2bstr(bytes + offset, Int32(count))
+    public init(bytes: UnsafeMutablePointer<Int8>, offset: Int, count: Int) {
+        chitch = chitch_init_raw(bytes + offset, count, count)
     }
 
     @inlinable @inline(__always)
     public init(data: Data) {
+        chitch = chitch_empty()
         data.withUnsafeBytes { unsafeRawBufferPointer in
-            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: Int8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
-            bstr = blk2bstr(bytes, Int32(data.count))
+            chitch = chitch_init_raw(bytes, data.count, data.count)
         }
     }
 
     @inlinable @inline(__always)
     public func dataNoCopy() -> Data {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            return Data(bytesNoCopy: data, count: Int(bstr.pointee.slen), deallocator: .none)
+        if let data = chitch.data {
+            return Data(bytesNoCopy: data, count: count, deallocator: .none)
         }
         return Data()
     }
 
     @inlinable @inline(__always)
     public func dataCopy() -> Data {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            return Data(bytes: data, count: Int(bstr.pointee.slen))
+        if let data = chitch.data {
+            return Data(bytes: data, count: count)
         }
         return Data()
     }
@@ -684,10 +680,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     public func dataNoCopy(start inStart: Int = -1,
                            end inEnd: Int = -1) -> Data {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
+        if let data = chitch.data {
 
-            let max = Int(bstr.pointee.slen)
+            let max = chitch.count
             var start = inStart
             var end = inEnd
 
@@ -709,10 +704,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     public func dataCopy(start inStart: Int,
                          end inEnd: Int) -> Data {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
+        if let data = chitch.data {
 
-            let max = Int(bstr.pointee.slen)
+            let max = count
             var start = inStart
             var end = inEnd
 
@@ -733,44 +727,50 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     public init(capacity: Int) {
-        bstr = bempty()
-        reserveCapacity(capacity)
+        chitch = chitch_init_capacity(capacity)
     }
 
     @inlinable @inline(__always)
     public init() {
-        bstr = bempty()
+        chitch = chitch_init_capacity(0)
     }
 
     @usableFromInline
-    internal init(bstr: bstring) {
-        self.bstr = bstr
+    internal init(chitch: CHitch) {
+        self.chitch = chitch
     }
 
     @inlinable @inline(__always)
     public var count: Int {
         get {
-            return bcount(bstr)
+            return chitch.count
         }
         set {
-            btrunc(bstr, Int32(newValue))
+            chitch_resize(&chitch, newValue)
+        }
+    }
+
+    @inlinable @inline(__always)
+    public var capacity: Int {
+        get {
+            return chitch.capacity
         }
     }
 
     @inlinable @inline(__always)
     public func compare(other: Hitch) -> Int {
-        return Int(bstrcmp(bstr, other.bstr))
+        return chitch_cmp(&chitch, &other.chitch)
     }
 
     @inlinable @inline(__always)
     public func clear() {
-        btrunc(bstr, Int32(0))
+        chitch_resize(&chitch, 0)
     }
 
     @inlinable @inline(__always)
     public func release() {
-        bdestroy(bstr)
-        bstr = bempty()
+        chitch_dealloc(&chitch)
+        chitch = chitch_init_capacity(0)
     }
 
     @inlinable @inline(__always)
@@ -788,47 +788,44 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
-        if ignoreCase == false {
-            bfindreplace(bstr, hitch.bstr, with.bstr, 0)
-        } else {
-            bfindreplacecaseless(bstr, hitch.bstr, with.bstr, 0)
-        }
+        chitch_replace(&chitch, &hitch.chitch, &with.chitch, ignoreCase)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func reserveCapacity(_ newCapacity: Int) -> Self {
-        balloc(bstr, Int32(newCapacity))
+        if newCapacity > chitch.capacity {
+            chitch_resize(&chitch, newCapacity)
+        }
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func lowercase() -> Self {
-        btolower(bstr)
+        chitch_tolower(&chitch)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func uppercase() -> Self {
-        btoupper(bstr)
+        chitch_toupper(&chitch)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: Hitch) -> Self {
-        bconcat(bstr, hitch.bstr)
+        chitch_concat(&chitch, &hitch.chitch)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: HalfHitch) -> Self {
-        var tagbstr = hitch.tagbstr
-        bconcat(bstr, &tagbstr)
+        chitch_concat_raw(&chitch, hitch.source, hitch.count)
         return self
     }
 
@@ -836,7 +833,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func append(_ string: String) -> Self {
         string.withCString { (bytes: UnsafePointer<Int8>) -> Void in
-            bcatcstr(bstr, bytes)
+            chitch_concat_cstring(&chitch, bytes)
         }
         return self
     }
@@ -849,7 +846,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             if let precision = precision {
                 var ptr = bytes
                 while ptr.pointee != 0 {
-                    let c = UInt8(ptr.pointee)
+                    let c = Int8(ptr.pointee)
                     if c == .dot {
                         length = Swift.min(length, ptr - bytes + precision + 1)
                         break
@@ -858,15 +855,15 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                 }
             }
 
-            bcatblk(bstr, bytes, Int32(length))
+            chitch_concat_raw(&chitch, bytes, length)
         }
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func append(_ char: UInt8) -> Self {
-        bconchar(bstr, char)
+    public func append(_ char: Int8) -> Self {
+        chitch_concat_char(&chitch, char)
         return self
     }
 
@@ -888,9 +885,9 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func append(_ data: Data) -> Self {
         data.withUnsafeBytes { unsafeRawBufferPointer in
-            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: Int8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
-            bcatblk(bstr, bytes, Int32(data.count))
+            chitch_concat_raw(&chitch, bytes, data.count)
         }
         return self
     }
@@ -898,31 +895,27 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
-        let position = Swift.max(Swift.min(index, count), 0)
-        binsert(bstr, Int32(position), hitch.bstr, .space)
+        chitch_insert_raw(&chitch, index, hitch.raw(), hitch.count)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
-        let hitch = string.hitch()
-        let position = Swift.max(Swift.min(index, count), 0)
-        binsert(bstr, Int32(position), hitch.bstr, .space)
+        chitch_insert_cstring(&chitch, index, string)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int, precision: Int?) -> Self {
-        let position = Swift.max(Swift.min(index, count), 0)
         return string.withCString { bytes in
 
             var length = string.count
             if let precision = precision {
                 var ptr = bytes
                 while ptr.pointee != 0 {
-                    let c = UInt8(ptr.pointee)
+                    let c = Int8(ptr.pointee)
                     if c == .dot {
                         length = Swift.min(length, ptr - bytes + precision + 1)
                         break
@@ -931,32 +924,29 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
                 }
             }
 
-            binsertblk(bstr, Int32(position), bytes, Int32(length), .space)
+            chitch_insert_cstring(&chitch, index, bytes)
             return self
         }
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func insert(_ char: UInt8, index: Int) -> Self {
-        let position = Swift.max(Swift.min(index, count), 0)
-        binsertch(bstr, Int32(position), 1, char)
+    public func insert(_ char: Int8, index: Int) -> Self {
+        chitch_insert_char(&chitch, index, char)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
-        let position = Swift.max(Swift.min(index, count), 0)
-        binsertint(bstr, Int32(position), Int(number))
+        chitch_insert_int(&chitch, index, Int(number))
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert(double: Double, index: Int, precision: Int? = nil) -> Self {
-        let position = Swift.max(Swift.min(index, count), 0)
-        var output = HitchOutputStream(hitch: self, index: position, precision: precision)
+        var output = HitchOutputStream(hitch: self, index: index, precision: precision)
         double.write(to: &output)
         return self
     }
@@ -964,11 +954,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
-        let position = Swift.max(Swift.min(index, count), 0)
         data.withUnsafeBytes { unsafeRawBufferPointer in
-            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: Int8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
-            binsertblk(bstr, Int32(position), bytes, Int32(data.count), .space)
+            chitch_insert_raw(&chitch, index, bytes, data.count)
         }
         return self
     }
@@ -976,91 +965,103 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func trim() -> Self {
-        btrimws(bstr)
+        chitch_trim(&chitch)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func starts(with hitch: Hitch) -> Bool {
-        return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
+        guard chitch.count > hitch.count else { return false }
+        return chitch_equal_raw(raw(), hitch.count, hitch.raw(), hitch.count)
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func starts(with string: String) -> Bool {
-        let hitch = string.hitch()
-        return bstrncmp(bstr, hitch.bstr, Int32(hitch.count)) == BSTR_OK
+        return string.withCString { bytes in
+            let bytes_count = strlen(bytes)
+            guard chitch.count > string.count else { return false }
+            return chitch_equal_raw(raw(), bytes_count, bytes, bytes_count)
+        }
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func contains(_ hitch: Hitch) -> Bool {
-        return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
+        return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func contains(_ halfHitch: HalfHitch) -> Bool {
-        var tagbstr = halfHitch.tagbstr
-        return binstr(bstr, 0, &tagbstr) != BSTR_ERR
+        return chitch_contains_raw(raw(), count, halfHitch.source, halfHitch.count)
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func contains(_ string: String) -> Bool {
-        let hitch = string.hitch()
-        return binstr(bstr, 0, hitch.bstr) != BSTR_ERR
+        return string.withCString { bytes in
+            let bytes_count = strlen(bytes)
+            return chitch_contains_raw(raw(), count, bytes, bytes_count)
+        }
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func contains<T: FixedWidthInteger>(_ char: T) -> Bool {
-        return bstrchrp(bstr, Int32(char), 0) != BSTR_ERR
+    public func contains(char: Int8) -> Bool {
+        var local = char
+        return chitch_contains_raw(raw(), count, &local, 1)
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of hitch: Hitch, offset: Int = 0) -> Int? {
-        let index = binstr(bstr, Int32(offset), hitch.bstr)
-        return index != BSTR_ERR ? Int(index) : nil
+        let index = chitch_firstof_raw(raw(), count, hitch.raw(), hitch.count)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of string: String, offset: Int = 0) -> Int? {
-        let hitch = string.hitch()
-        let index = binstr(bstr, Int32(offset), hitch.bstr)
-        return index != BSTR_ERR ? Int(index) : nil
+        return string.withCString { bytes in
+            let bytes_count = strlen(bytes)
+            let index = chitch_firstof_raw(raw(), count, bytes, bytes_count)
+            return index >= 0 ? index : nil
+        }
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func firstIndex<T: FixedWidthInteger>(of char: T, offset: Int = 0) -> Int? {
-        let index = bstrchrp(bstr, Int32(char), Int32(offset))
-        return index != BSTR_ERR ? Int(index) : nil
+    public func firstIndex(of char: Int8, offset: Int = 0) -> Int? {
+        var local = char
+        let index = chitch_firstof_raw(raw(), count, &local, 1)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func lastIndex(of hitch: Hitch) -> Int? {
-        let index = binstrr(bstr, Int32(count-1), hitch.bstr)
-        return index != BSTR_ERR ? Int(index) : nil
+        let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func lastIndex(of string: String) -> Int? {
-        let hitch = string.hitch()
-        let index = binstrr(bstr, Int32(count-1), hitch.bstr)
-        return index != BSTR_ERR ? Int(index) : nil
+        return string.withCString { bytes in
+            let bytes_count = strlen(bytes)
+            let index = chitch_lastof_raw(raw(), count, bytes, bytes_count)
+            return index >= 0 ? index : nil
+        }
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func lastIndex<T: FixedWidthInteger>(of char: T) -> Int? {
-        let index = bstrrchrp(bstr, Int32(char), Int32(count-1))
-        return index != BSTR_ERR ? Int(index) : nil
+    public func lastIndex(of char: Int8) -> Int? {
+        var local = char
+        let index = chitch_lastof_raw(raw(), count, &local, 1)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
@@ -1069,7 +1070,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         guard lhsPos >= 0 && lhsPos <= count else { return nil }
         guard rhsPos >= 0 && rhsPos <= count else { return nil }
         guard lhsPos <= rhsPos else { return nil }
-        return Hitch(bstr: bmidstr(bstr, Int32(lhsPos), Int32(rhsPos - lhsPos)))
+        return Hitch(chitch: chitch_init_substring(&chitch, lhsPos, rhsPos))
     }
 
     @inlinable @inline(__always)
@@ -1130,14 +1131,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
-        guard let bstr = bstr else { return nil }
-        var lhsPos = binstr(bstr, 0, lhs.bstr)
-        guard lhsPos != BSTR_ERR else { return nil }
-
-        lhsPos += Int32(lhs.count)
-        let rhsPos = binstr(bstr, lhsPos, rhs.bstr)
-        guard rhsPos != BSTR_ERR else { return Hitch(bstr: bmidstr(bstr, lhsPos, bstr.pointee.slen)) }
-        return Hitch(bstr: bmidstr(bstr, lhsPos, (rhsPos - lhsPos)))
+        guard let lhsPos = firstIndex(of: lhs) else { return nil }
+        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos) else {
+            return substring(lhsPos, count)
+        }
+        return substring(lhsPos, rhsPos)
     }
 
     @inlinable @inline(__always)
@@ -1161,9 +1159,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func toInt(fuzzy: Bool = false) -> Int? {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            let count = Int(bstr.pointee.slen)
+        if let data = chitch.data {
             if fuzzy {
                 return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: data, count: count),
                                           count: count)
@@ -1177,9 +1173,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func toDouble(fuzzy: Bool = false) -> Double? {
-        if let bstr = bstr,
-            let data = bstr.pointee.data {
-            let count = Int(bstr.pointee.slen)
+        if let data = chitch.data {
             if fuzzy {
                 return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: data, count: count),
                                              count: count)
@@ -1193,6 +1187,6 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func toEpoch() -> Int {
-        return Int(btoepoch(bstr))
+        return chitch_toepoch(&chitch)
     }
 }

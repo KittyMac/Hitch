@@ -1,13 +1,13 @@
 // swiftlint:disable type_body_length
 
 import Foundation
-import bstrlib
+import cHitch
 
 public struct HalfHitchIterator: Sequence, IteratorProtocol {
     @usableFromInline
-    internal var ptr: UnsafeMutablePointer<UInt8>
+    internal var ptr: UnsafeMutablePointer<Int8>
     @usableFromInline
-    internal let end: UnsafeMutablePointer<UInt8>
+    internal let end: UnsafeMutablePointer<Int8>
 
     @inlinable @inline(__always)
     internal init(halfHitch: HalfHitch) {
@@ -32,7 +32,7 @@ public struct HalfHitchIterator: Sequence, IteratorProtocol {
     }
 
     @inlinable @inline(__always)
-    public mutating func next() -> UInt8? {
+    public mutating func next() -> Int8? {
         if ptr >= end { return nil }
         ptr += 1
         return ptr.pointee
@@ -61,7 +61,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     let sourceHitch: Hitch
 
     @usableFromInline
-    let source: UnsafeMutablePointer<UInt8>?
+    let source: UnsafeMutablePointer<Int8>?
 
     public var count: Int
 
@@ -69,7 +69,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
         var data2 = data
         return data2.withUnsafeMutableBytes { unsafeRawBufferPointer in
-            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: Int8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
             return callback(HalfHitch(raw: bytes,
                                       count: data.count,
@@ -79,7 +79,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
+    init(raw: UnsafeMutablePointer<Int8>, count: Int, from: Int, to: Int) {
         self.sourceHitch = Hitch.empty
         self.source = raw + from
         self.count = to - from
@@ -143,70 +143,61 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
         hasher.combine(count)
         hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: Swift.min(count, 8)))
     }
-
-    @usableFromInline
-    internal var tagbstr: tagbstring {
-        guard let raw = source else {
-            return tagbstring(mlen: 0, slen: 0, data: nil)
-        }
-        let len = Int32(count)
-        return tagbstring(mlen: len, slen: len, data: raw)
-    }
-
+    /*
+     @usableFromInline
+     internal var tempCHitch: CHitch {
+     guard let raw = source else {
+     return CHitch(capacity: 0, count: 0, data: nil)
+     }
+     return CHitch(capacity: count, count: count, data: raw)
+     }
+     */
     @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        var lhs = lhs.tagbstr
-        var rhs = rhs.tagbstr
-        return bstrcmp(&lhs, &rhs) < 0
+        return chitch_cmp_raw(lhs.source, lhs.count, rhs.source, rhs.count) < 0
     }
 
     @inlinable @inline(__always)
     public static func < (lhs: String, rhs: HalfHitch) -> Bool {
-        let hitch = lhs.hitch()
-        var rhs = rhs.tagbstr
-        return bstrcmp(hitch.bstr, &rhs) < 0
+        return lhs.withCString { bytes in
+            return chitch_cmp_raw(bytes, lhs.count, rhs.source, rhs.count) < 0
+        }
     }
 
     @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: String) -> Bool {
-        let hitch = rhs.hitch()
-        var lhs = lhs.tagbstr
-        return bstrcmp(&lhs, hitch.bstr) < 0
+        return rhs.withCString { bytes in
+            return chitch_cmp_raw(lhs.source, lhs.count, bytes, rhs.count) < 0
+        }
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        return blkequalblk(lhs.source, Int32(lhs.count), rhs.source, Int32(rhs.count)) == 1
+        return chitch_equal_raw(lhs.source, lhs.count, rhs.source, rhs.count)
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: String, rhs: HalfHitch) -> Bool {
-        let hitch = lhs.hitch()
-        var rhs = rhs.tagbstr
-        return biequal(hitch.bstr, &rhs) == 1
+        return lhs.withCString { bytes in
+            return chitch_equal_raw(bytes, lhs.count, rhs.source, rhs.count)
+        }
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: String) -> Bool {
-        let hitch = rhs.hitch()
-        var lhs = lhs.tagbstr
-        return biequal(&lhs, hitch.bstr) == 1
+        return rhs.withCString { bytes in
+            return chitch_equal_raw(lhs.source, lhs.count, bytes, rhs.count)
+        }
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
-        if let bstr = lhs.bstr?.pointee {
-            return blkequalblk(bstr.data, bstr.slen, rhs.source, Int32(rhs.count)) == 1
-        }
-        return false
+        return chitch_equal_raw(lhs.raw(), lhs.count, rhs.source, rhs.count)
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
-        if let bstr = rhs.bstr?.pointee {
-            return blkequalblk(bstr.data, bstr.slen, lhs.source, Int32(lhs.count)) == 1
-        }
-        return false
+        return chitch_equal_raw(rhs.raw(), rhs.count, lhs.source, lhs.count)
     }
 
     @inlinable @inline(__always)
@@ -220,12 +211,12 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    public func raw() -> UnsafeMutablePointer<UInt8>? {
+    public func raw() -> UnsafeMutablePointer<Int8>? {
         return source
     }
 
     @inlinable @inline(__always)
-    public subscript (index: Int) -> UInt8 {
+    public subscript (index: Int) -> Int8 {
         get {
             guard index >= 0 && index < count else { return 0 }
             return source?[index] ?? 0
