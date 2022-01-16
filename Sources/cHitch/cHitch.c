@@ -14,6 +14,15 @@
 #define TOLOWER(x) ((x >= 'A' && x <= 'Z') ? x + 0x20 : x)
 #define WHITESPACE(c) (x == '\t' || x == '\n' || x == '\v' || x == '\f' || x == '\r' || x == ' ')
 
+// Ensure chitch is not empty and is of a minimum capacity
+#define CHITCH_SANITY(C,MINSIZE)                                                                             \
+if (C->data == 0) { C->capacity = (MINSIZE); C->data = malloc(C->capacity); }                           \
+if (C->capacity < MINSIZE) { C->capacity = (MINSIZE); C->data = realloc(C->data, C->capacity); }        \
+
+uint8_t * chitch_to_uint8(int8_t * ptr) {
+    return (uint8_t *)ptr;
+}
+
 CHitch chitch_empty() {
     CHitch c = {0};
     return c;
@@ -57,10 +66,14 @@ void chitch_dealloc(CHitch * c0) {
 }
 
 void chitch_realloc(CHitch * c0, long newCount) {
-    c0->data = realloc(c0->data, newCount);
+    c0->capacity = newCount;
+    c0->data = realloc(c0->data, c0->capacity);
+    if (c0->count > c0->capacity) {
+        c0->count = c0->capacity;
+    }
 }
 
-void chitch_resize(CHitch * c0, long newCount) {
+inline void chitch_resize(CHitch * c0, long newCount) {
     if (newCount > c0->capacity) {
         chitch_realloc(c0, newCount);
     }
@@ -94,19 +107,23 @@ void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCas
 }
 
 void chitch_concat(CHitch * c0, CHitch * c1) {
-    exit(127);
+    return chitch_concat_raw(c0, c1->data, c1->count);
 }
 
 void chitch_concat_raw(CHitch * c0, const int8_t * rhs, long rhs_count) {
-    exit(127);
+    CHITCH_SANITY(c0, c0->count + rhs_count);
+    memcpy(c0->data + c0->count, rhs, rhs_count);
+    c0->count += rhs_count;
 }
 
 void chitch_concat_cstring(CHitch * c0, const int8_t * rhs) {
-    exit(127);
+    chitch_concat_raw(c0, rhs, strlen((const char *)rhs));
 }
 
 void chitch_concat_char(CHitch * c0, const int8_t rhs) {
-    exit(127);
+    CHITCH_SANITY(c0, c0->count + 1);
+    c0->data[c0->count] = rhs;
+    c0->count++;
 }
 
 void chitch_insert(CHitch * c0, long position, CHitch * c1) {
@@ -157,7 +174,18 @@ bool chitch_contains_raw(const int8_t * haystack, long haystack_count, const int
     return chitch_firstof_raw(haystack, haystack_count, needle, needle_count) >= 0;
 }
 
+long chitch_firstof_raw_offset(const int8_t * haystack, long haystack_offset, long haystack_count, const int8_t * needle, long needle_count) {
+    haystack_count -= haystack_offset;
+    haystack += haystack_offset;
+    long result = chitch_firstof_raw(haystack, haystack_count, needle, needle_count);
+    if (result < 0) {
+        return result;
+    }
+    return result + haystack_offset;
+}
+
 long chitch_firstof_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+    if (haystack_count < 0) { return -1; }
     if (needle_count == 0) { return 0; }
     if (needle == NULL && haystack == NULL) { return 0; }
     if (needle == NULL || haystack == NULL) { return -1; }

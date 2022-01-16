@@ -13,7 +13,9 @@ typedef struct {
     int8_t * data;
 }CHitch;
 
-CHitch chitch_empty();
+extern uint8_t * chitch_to_uint8(int8_t * c0);
+
+extern CHitch chitch_empty();
 
 extern CHitch chitch_init_capacity(long capacity);
 extern CHitch chitch_init_raw(const int8_t * bytes, long capacity, long count);
@@ -48,6 +50,7 @@ extern bool chitch_equal(CHitch * c0, CHitch * c1);
 extern long chitch_cmp_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count);
 extern bool chitch_equal_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count);
 extern bool chitch_contains_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count);
+extern long chitch_firstof_raw_offset(const int8_t * haystack, long haystack_offset, long haystack_count, const int8_t * needle, long needle_count);
 extern long chitch_firstof_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count);
 extern long chitch_lastof_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count);
 

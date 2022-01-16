@@ -216,13 +216,13 @@ func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
 }
 
 @inlinable @inline(__always)
-func unescapeBinary(data: UnsafeMutablePointer<Int8>,
+func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     var read = data
     var write = data
     let end = data + count
 
-    let append: (Int8, Int) -> Void = { v, advance in
+    let append: (UInt8, Int) -> Void = { v, advance in
         write.pointee = v
         write += 1
         read += advance
@@ -251,7 +251,7 @@ func unescapeBinary(data: UnsafeMutablePointer<Int8>,
                     }
                     if let scalar = UnicodeScalar(value) {
                         for v in Character(scalar).utf8 {
-                            append(Int8(v), 0)
+                            append(v, 0)
                         }
                     }
                 }
@@ -286,7 +286,7 @@ func unescapeBinary(data: UnsafeMutablePointer<Int8>,
 }
 
 @inlinable @inline(__always)
-func escapeBinary(data: UnsafeMutablePointer<Int8>,
+func escapeBinary(data: UnsafeMutablePointer<UInt8>,
                   count: Int,
                   unicode: Bool,
                   singleQuotes: Bool) -> Hitch {
@@ -297,23 +297,22 @@ func escapeBinary(data: UnsafeMutablePointer<Int8>,
 
     while read < end {
         let ch = read.pointee
-        let uch = UInt8(ch)
 
         if unicode && ch > 0x7f {
             writer.append(Int8.backSlash)
             writer.append(Int8.u)
 
             var value: UInt32 = 0
-            if uch & 0b11100000 == 0b11000000 {
+            if ch & 0b11100000 == 0b11000000 {
                 value |= (UInt32(read[0]) & 0b00011111) << 6
                 value |= (UInt32(read[1]) & 0b00111111) << 0
                 read += 1
-            } else if uch & 0b11110000 == 0b11100000 {
+            } else if ch & 0b11110000 == 0b11100000 {
                 value |= (UInt32(read[0]) & 0b00001111) << 12
                 value |= (UInt32(read[1]) & 0b00111111) << 6
                 value |= (UInt32(read[2]) & 0b00111111) << 0
                 read += 2
-            } else if uch & 0b11111000 == 0b11110000 {
+            } else if ch & 0b11111000 == 0b11110000 {
                 value |= (UInt32(read[0]) & 0b00000111) << 18
                 value |= (UInt32(read[1]) & 0b00111111) << 12
                 value |= (UInt32(read[2]) & 0b00111111) << 6
@@ -380,7 +379,7 @@ func escapeBinary(data: UnsafeMutablePointer<Int8>,
 }
 
 @inlinable @inline(__always)
-func hex(_ v: Int8) -> UInt32? {
+func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
     case .one: return 1
@@ -551,6 +550,11 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     public func raw() -> UnsafeMutablePointer<Int8>? {
         return chitch.data
+    }
+
+    @inlinable @inline(__always)
+    public func uraw() -> UnsafeMutablePointer<UInt8>? {
+        return chitch_to_uint8(chitch.data)
     }
 
     @inlinable @inline(__always)
@@ -1017,7 +1021,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of hitch: Hitch, offset: Int = 0) -> Int? {
-        let index = chitch_firstof_raw(raw(), count, hitch.raw(), hitch.count)
+        let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
 
@@ -1026,7 +1030,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func firstIndex(of string: String, offset: Int = 0) -> Int? {
         return string.withCString { bytes in
             let bytes_count = strlen(bytes)
-            let index = chitch_firstof_raw(raw(), count, bytes, bytes_count)
+            let index = chitch_firstof_raw_offset(raw(), offset, count, bytes, bytes_count)
             return index >= 0 ? index : nil
         }
     }
@@ -1035,7 +1039,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func firstIndex(of char: Int8, offset: Int = 0) -> Int? {
         var local = char
-        let index = chitch_firstof_raw(raw(), count, &local, 1)
+        let index = chitch_firstof_raw_offset(raw(), offset, count, &local, 1)
         return index >= 0 ? index : nil
     }
 
@@ -1112,7 +1116,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     public func escaped(unicode: Bool,
                         singleQuotes: Bool) -> Hitch {
-        guard let raw = raw() else { return self }
+        guard let raw = uraw() else { return self }
         return escapeBinary(data: raw,
                             count: count,
                             unicode: unicode,
@@ -1122,7 +1126,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func unescape() -> Hitch {
-        guard let raw = raw() else { return self }
+        guard let raw = uraw() else { return self }
         count = unescapeBinary(data: raw,
                                count: count)
         return self

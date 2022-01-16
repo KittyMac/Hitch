@@ -216,6 +216,11 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
+    public func uraw() -> UnsafeMutablePointer<UInt8>? {
+        return chitch_to_uint8(source)
+    }
+
+    @inlinable @inline(__always)
     public subscript (index: Int) -> Int8 {
         get {
             guard index >= 0 && index < count else { return 0 }
@@ -247,7 +252,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @inlinable @inline(__always)
     public func escaped(unicode: Bool,
                         singleQuotes: Bool) -> Hitch {
-        guard let raw = raw() else { return Hitch() }
+        guard let raw = uraw() else { return Hitch() }
         return escapeBinary(data: raw,
                             count: count,
                             unicode: unicode,
@@ -257,7 +262,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     @inlinable @inline(__always)
     @discardableResult
     public mutating func unescape() -> Self {
-        guard let raw = raw() else { return self }
+        guard let raw = uraw() else { return self }
         count = unescapeBinary(data: raw,
                                count: count)
         return self
