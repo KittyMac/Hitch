@@ -152,9 +152,9 @@ final class HitchTests: XCTestCase {
         "value4": "6.0",
         """.hitch()
         
-        XCTAssertEqual(test1.extract(#""value1""#, ",")?.toInt() ?? 0, 27)
-        XCTAssertEqual(test1.extract(#""value2""#, ",")?.toInt() ?? 0, 27)
-        XCTAssertEqual(test1.extract(#"value3"#, ",")?.toInt() ?? 0, 27)
+        XCTAssertEqual(test1.extract(#""value1""#, ",")?.toInt(fuzzy: true) ?? 0, 27)
+        XCTAssertEqual(test1.extract(#""value2""#, ",")?.toInt(fuzzy: true) ?? 0, 27)
+        XCTAssertEqual(test1.extract(#"value3"#, ",")?.toInt(fuzzy: true) ?? 0, 27)
         XCTAssertEqual(test1.extract(#""value4": ""#, "\""), "6.0")
     }
     
@@ -175,6 +175,13 @@ final class HitchTests: XCTestCase {
     func testLastIndexOf2() {
         let hitchLorem = "/true|false/".hitch()
         XCTAssertEqual(hitchLorem.lastIndex(of: Int8.forwardSlash), 11)
+    }
+    
+    func testIndexOf3() {
+        let hitchLorem = lorem.hitch()
+        let hitchNeedle = Hitch("nulla pariatur")
+        
+        XCTAssertEqual(hitchLorem.lastIndex(of: hitchNeedle), 319)
     }
         
     func testHalfHitchFromData0() {

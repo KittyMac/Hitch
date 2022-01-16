@@ -1132,10 +1132,10 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos) else {
-            return substring(lhsPos, count)
+        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
+            return substring(lhsPos + lhs.count, count)
         }
-        return substring(lhsPos, rhsPos)
+        return substring(lhsPos + lhs.count, rhsPos)
     }
 
     @inlinable @inline(__always)

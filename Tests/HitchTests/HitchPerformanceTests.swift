@@ -41,6 +41,8 @@ final class HitchPerformanceTests: XCTestCase {
         testIterationPerf()
         testToUpperAndToLowerPerf()
         testContainsPerf()
+        testFirstIndexOfPerf()
+        testLastIndexOfPerf()
         
         
         let chart = Hitch()
@@ -172,6 +174,46 @@ final class HitchPerformanceTests: XCTestCase {
             }, {
                 for _ in 1...1000 {
                     hitchLorem.contains(hitchNeedle)
+                }
+            })
+        )
+    }
+    
+    func testFirstIndexOfPerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        let swiftNeedle = "nulla pariatur"
+        let hitchNeedle = swiftNeedle.hitch()
+                
+        XCTAssert(
+            test (1000, "first index of",
+            {
+                for _ in 1...1000 {
+                    _ = swiftLorem.range(of: swiftNeedle)
+                }
+            }, {
+                for _ in 1...1000 {
+                    hitchLorem.firstIndex(of: hitchNeedle)
+                }
+            })
+        )
+    }
+    
+    func testLastIndexOfPerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        let swiftNeedle = "nulla pariatur"
+        let hitchNeedle = swiftNeedle.hitch()
+                
+        XCTAssert(
+            test (1000, "first index of",
+            {
+                for _ in 1...1000 {
+                    _ = swiftLorem.range(of: swiftNeedle)
+                }
+            }, {
+                for _ in 1...1000 {
+                    hitchLorem.lastIndex(of: hitchNeedle)
                 }
             })
         )

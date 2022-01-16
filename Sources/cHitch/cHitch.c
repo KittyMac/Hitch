@@ -153,16 +153,99 @@ bool chitch_equal_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, lo
     return memcmp(lhs, rhs, rhs_count) == 0;
 }
 
-bool chitch_contains_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
-    exit(127);
+bool chitch_contains_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+    return chitch_firstof_raw(haystack, haystack_count, needle, needle_count) >= 0;
 }
 
-long chitch_firstof_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
-    exit(127);
+long chitch_firstof_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+    if (needle_count == 0) { return 0; }
+    if (needle == NULL && haystack == NULL) { return 0; }
+    if (needle == NULL || haystack == NULL) { return -1; }
+    if (needle_count > haystack_count) { return -1; }
+    
+    const int8_t * ptr = haystack;
+    const int8_t * end = haystack + haystack_count - needle_count;
+    const int8_t needle_start = needle[0];
+    
+    bool found = true;
+    
+    while (ptr < end) {
+        if (*ptr == needle_start) {
+            switch (needle_count) {
+                case 1: return (ptr - haystack);
+                case 2: if (ptr[1] == needle[1]) { return (ptr - haystack); } break;
+                case 3: if (ptr[1] == needle[1] && ptr[2] == needle[2]) { return (ptr - haystack); } break;
+                case 4: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3]) { return (ptr - haystack); } break;
+                case 5: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4]) { return (ptr - haystack); } break;
+                case 6: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5]) { return (ptr - haystack); } break;
+                case 7: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6]) { return (ptr - haystack); } break;
+                case 8: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6] && ptr[7] == needle[7]) { return (ptr - haystack); } break;
+                case 9: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6] && ptr[7] == needle[7] && ptr[8] == needle[8]) { return (ptr - haystack); } break;
+                case 10: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6] && ptr[7] == needle[7] && ptr[8] == needle[8] && ptr[9] == needle[9]) { return (ptr - haystack); } break;
+                default:
+                    found = true;
+                    for (int idx = 1; idx < needle_count; idx++) {
+                        if (ptr[idx] != needle[idx]) {
+                            found = false;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        return (ptr - haystack);
+                    }
+                    break;
+            }
+        }
+        ptr++;
+    }
+    
+    return -1;
 }
 
-long chitch_lastof_raw(const int8_t * lhs, long lhs_count, const int8_t * rhs, long rhs_count) {
-    exit(127);
+long chitch_lastof_raw(const int8_t * haystack, long haystack_count, const int8_t * needle, long needle_count) {
+    if (needle_count == 0) { return 0; }
+    if (needle == NULL && haystack == NULL) { return 0; }
+    if (needle == NULL || haystack == NULL) { return -1; }
+    if (needle_count > haystack_count) { return -1; }
+    
+    const int8_t * start = haystack;
+    const int8_t * end = haystack + haystack_count - needle_count;
+    const int8_t * ptr = end;
+    const int8_t needle_start = needle[0];
+    
+    bool found = true;
+    
+    while (ptr > start) {
+        if (*ptr == needle_start) {
+            switch (needle_count) {
+                case 1: return (ptr - haystack);
+                case 2: if (ptr[1] == needle[1]) { return (ptr - haystack); } break;
+                case 3: if (ptr[1] == needle[1] && ptr[2] == needle[2]) { return (ptr - haystack); } break;
+                case 4: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3]) { return (ptr - haystack); } break;
+                case 5: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4]) { return (ptr - haystack); } break;
+                case 6: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5]) { return (ptr - haystack); } break;
+                case 7: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6]) { return (ptr - haystack); } break;
+                case 8: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6] && ptr[7] == needle[7]) { return (ptr - haystack); } break;
+                case 9: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6] && ptr[7] == needle[7] && ptr[8] == needle[8]) { return (ptr - haystack); } break;
+                case 10: if (ptr[1] == needle[1] && ptr[2] == needle[2] && ptr[3] == needle[3] && ptr[4] == needle[4] && ptr[5] == needle[5] && ptr[6] == needle[6] && ptr[7] == needle[7] && ptr[8] == needle[8] && ptr[9] == needle[9]) { return (ptr - haystack); } break;
+                default:
+                    found = true;
+                    for (int idx = 1; idx < needle_count; idx++) {
+                        if (ptr[idx] != needle[idx]) {
+                            found = false;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        return (ptr - haystack);
+                    }
+                    break;
+            }
+        }
+        ptr--;
+    }
+    
+    return -1;
 }
 
 long chitch_toepoch(CHitch * c0) {
