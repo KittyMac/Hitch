@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef struct {
     long capacity;
