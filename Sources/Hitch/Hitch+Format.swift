@@ -92,7 +92,7 @@ extension Hitch {
     }
 
     @inlinable @inline(__always)
-    convenience init(_ format: Hitch, _ values: Any?...) {
+    public convenience init(_ format: Hitch, _ values: Any?...) {
         self.init()
         self.insert(format: format, index: count, values: values)
     }
