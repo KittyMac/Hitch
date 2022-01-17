@@ -390,7 +390,9 @@ void chitch_copy_raw(const uint8_t * lhs, const uint8_t * rhs, long rhs_count) {
 
 long chitch_cmp_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, long rhs_count) {
     if (lhs_count < rhs_count) {
-        return strncmp((const char *)lhs, (const char *)rhs, lhs_count);
+        return -1;
+    } else if (lhs_count > rhs_count) {
+        return 1;
     }
     return strncmp((const char *)lhs, (const char *)rhs, rhs_count);
 }

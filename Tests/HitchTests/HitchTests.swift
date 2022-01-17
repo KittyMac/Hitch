@@ -348,6 +348,9 @@ final class HitchTests: XCTestCase {
         let hitch2 = "apple".hitch()
         
         XCTAssertEqual(hitch1 < hitch2, "Apple" < "apple")
+        
+        XCTAssertEqual(Hitch("5") < Hitch("5.1.2"), "5" < "5.1.2")
+        XCTAssertEqual(Hitch("5") > Hitch("5.1.2"), "5" > "5.1.2")
     }
     
     func testAppendValue() {
