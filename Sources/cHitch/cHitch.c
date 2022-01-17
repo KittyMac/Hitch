@@ -16,8 +16,8 @@
 
 // Ensure chitch is not empty and is of a minimum capacity
 #define CHITCH_SANITY(C,MINSIZE)                                                                             \
-if (C->data == 0) { C->capacity = (MINSIZE); C->data = malloc(C->capacity); }                               \
-if (C->capacity < MINSIZE) { C->capacity = (MINSIZE); C->data = realloc(C->data, C->capacity); }            \
+if (C->data == 0) { C->capacity = (MINSIZE); C->data = malloc(C->capacity + 1); }                            \
+if (C->capacity < MINSIZE) { C->capacity = (MINSIZE); C->data = realloc(C->data, C->capacity + 1); }         \
 
 uint8_t * chitch_to_uint8(const int8_t * ptr) {
     return (uint8_t *)ptr;
@@ -36,7 +36,7 @@ CHitch chitch_init_capacity(long capacity) {
     CHitch c = {0};
     c.count = 0;
     c.capacity = capacity;
-    c.data = malloc(capacity);
+    c.data = malloc(capacity + 1);
     return c;
 }
 
@@ -44,7 +44,7 @@ CHitch chitch_init_raw(const uint8_t * bytes, long capacity, long count) {
     CHitch c = {0};
     c.capacity = capacity;
     c.count = count;
-    c.data = malloc(capacity);
+    c.data = malloc(capacity + 1);
     memmove(c.data, bytes, count);
     return c;
 }
@@ -71,7 +71,7 @@ void chitch_dealloc(CHitch * c0) {
 
 void chitch_realloc(CHitch * c0, long newCount) {
     c0->capacity = newCount;
-    c0->data = realloc(c0->data, c0->capacity);
+    c0->data = realloc(c0->data, c0->capacity + 1);
     if (c0->count > c0->capacity) {
         c0->count = c0->capacity;
     }
@@ -79,7 +79,7 @@ void chitch_realloc(CHitch * c0, long newCount) {
 
 void chitch_resize(CHitch * c0, long newCount) {
     if (newCount > c0->capacity) {
-        chitch_realloc(c0, newCount);
+        chitch_realloc(c0, newCount + 1);
     } else {
         c0->count = newCount;
     }
@@ -127,7 +127,98 @@ void chitch_trim(CHitch * c0) {
 }
 
 void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCase) {
-    //exit(127);
+    long c0_count = c0->count;
+    long find_count = find->count;
+    long replace_count = replace->count;
+    
+    // Expansion: our array is going to need to grow before we can perform the replacement
+    if (replace_count > find_count) {
+        // Figure out how big out final array needs to be, then resize c0
+        long num_occurences = 0;
+        long nextOffset = 0;
+        while (true) {
+            nextOffset = chitch_firstof_raw_offset(c0->data, nextOffset, c0_count, find->data, find_count);
+            if (nextOffset < 0) {
+                break;
+            }
+            nextOffset += find_count;
+            num_occurences++;
+        }
+        
+        long capacity_required = c0_count + (replace_count - find_count) * num_occurences;
+        
+        CHITCH_SANITY(c0, capacity_required);
+        
+        // work our way from back to front, copying and replacing as we go
+        uint8_t * start = c0->data;
+        uint8_t * old_end = c0->data + c0_count;
+        uint8_t * new_end = c0->data + capacity_required;
+        
+        uint8_t * old_ptr_a = old_end;
+        uint8_t * old_ptr_b = old_end;
+        uint8_t * new_ptr = new_end;
+        
+        const uint8_t find_start = find->data[0];
+        
+        long fix_count = 0;
+        
+        while (old_ptr_a >= start) {
+            // is this the thing we need to replace?
+            if (*old_ptr_a == find_start &&
+                old_ptr_a + find_count <= old_end &&
+                memcmp(old_ptr_a, find->data, find_count) == 0) {
+                fix_count = old_ptr_b - (old_ptr_a + find_count);
+                if (fix_count > 0) {
+                    memmove(new_ptr - fix_count, (old_ptr_a + find_count), fix_count);
+                    new_ptr -= fix_count;
+                }
+                
+                new_ptr -= replace_count;
+                memmove(new_ptr, replace->data, replace_count);
+                old_ptr_b = old_ptr_a;
+            }
+            
+            old_ptr_a--;
+        }
+        
+        // final copy
+        fix_count = old_ptr_b - (old_ptr_a + find_count);
+        if (fix_count > 0) {
+            memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count);
+        }
+        
+        c0->count = capacity_required;
+    } else {
+        // Our array can stay the same size as we perform the replacement. Since we can go front to
+        // back we don't need to know the number of occurrences a priori.
+        
+        // work our way from back to front, copying and replacing as we go
+        uint8_t * start = c0->data;
+        uint8_t * old_end = c0->data + c0_count;
+        
+        uint8_t * old_ptr = start;
+        uint8_t * new_ptr = start;
+        
+        const uint8_t find_start = find->data[0];
+        
+        while (old_ptr <= old_end) {
+            // is this the thing we need to replace?
+            if (*old_ptr == find_start &&
+                old_ptr + find_count <= old_end &&
+                memcmp(old_ptr, find->data, find_count) == 0) {
+                old_ptr += find_count;
+                
+                memmove(new_ptr, replace->data, replace_count);
+                new_ptr += replace_count;
+            } else {
+                *new_ptr = *old_ptr;
+                new_ptr++;
+                old_ptr++;
+            }
+        }
+                
+        c0->count = (new_ptr - start) - 1;
+    }
 }
 
 void chitch_concat(CHitch * c0, CHitch * c1) {
@@ -150,7 +241,7 @@ void chitch_concat_cstring(CHitch * c0, const uint8_t * rhs) {
 }
 
 void chitch_concat_char(CHitch * c0, const uint8_t rhs) {
-    CHITCH_SANITY(c0, c0->count + 1);
+    CHITCH_SANITY(c0, c0->count);
     c0->data[c0->count] = rhs;
     c0->count++;
 }
@@ -170,7 +261,7 @@ void chitch_insert_raw(CHitch * c0, long position, const uint8_t * rhs, long rhs
     // Start at end and copy back until old count + rhs_count to make room
     // for simultaneous copy operation
     uint8_t * ptr = c0->data + c0->count;
-    uint8_t * start = c0->data + position + rhs_count;
+    uint8_t * start = c0->data + position;
     while (ptr >= start) {
         ptr[rhs_count] = *ptr;
         ptr--;
@@ -181,7 +272,6 @@ void chitch_insert_raw(CHitch * c0, long position, const uint8_t * rhs, long rhs
     uint8_t * dst_ptr = c0->data + position;
     uint8_t * end = dst_ptr + rhs_count;
     while (dst_ptr < end) {
-        dst_ptr[rhs_count] = *dst_ptr;
         *dst_ptr = *src_ptr;
         dst_ptr++;
         src_ptr++;
@@ -213,7 +303,7 @@ void chitch_insert_int(CHitch * c0, long position, long rhs) {
     }
     
     uint8_t s[128] = {0};
-    uint8_t * end = s + sizeof(s);
+    uint8_t * end = s + sizeof(s) - 1;
     uint8_t * ptr = end;
     int len = 0;
     
@@ -234,7 +324,7 @@ void chitch_insert_int(CHitch * c0, long position, long rhs) {
         if (neg) {
             *(ptr--) = '-';
         }
-
+        
         len = (end - ptr);
     }
     
@@ -255,9 +345,9 @@ void chitch_copy_raw(const uint8_t * lhs, const uint8_t * rhs, long rhs_count) {
 
 long chitch_cmp_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, long rhs_count) {
     if (lhs_count < rhs_count) {
-        return strncmp((const char *)lhs, (const char *)rhs, lhs_count - 1);
+        return strncmp((const char *)lhs, (const char *)rhs, lhs_count);
     }
-    return strncmp((const char *)lhs, (const char *)rhs, rhs_count - 1);
+    return strncmp((const char *)lhs, (const char *)rhs, rhs_count);
 }
 
 bool chitch_equal_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, long rhs_count) {
@@ -295,7 +385,7 @@ long chitch_firstof_raw(const uint8_t * haystack, long haystack_count, const uin
     
     bool found = true;
     
-    while (ptr < end) {
+    while (ptr <= end) {
         if (*ptr == needle_start) {
             switch (needle_count) {
                 case 1: return (ptr - haystack);
@@ -341,7 +431,7 @@ long chitch_lastof_raw(const uint8_t * haystack, long haystack_count, const uint
     
     bool found = true;
     
-    while (ptr > start) {
+    while (ptr >= start) {
         if (*ptr == needle_start) {
             switch (needle_count) {
                 case 1: return (ptr - haystack);
@@ -382,6 +472,7 @@ long chitch_toepoch(CHitch * c0) {
     struct tm ti = {0};
     
     if (c0->data[c0->count-2] == 'A') {
+        c0->data[c0->count] = 0;
         if (sscanf((const char *)c0->data, "%d/%d/%d %d:%d:%d",
                    &ti.tm_mon,
                    &ti.tm_mday,
@@ -397,6 +488,7 @@ long chitch_toepoch(CHitch * c0) {
         }
         
     } else {
+        c0->data[c0->count] = 0;
         if (sscanf((const char *)c0->data, "%d/%d/%d %d:%d:%d",
                    &ti.tm_mon,
                    &ti.tm_mday,
@@ -416,13 +508,13 @@ long chitch_toepoch(CHitch * c0) {
     
     ti.tm_year -= 1900;
     ti.tm_mon -= 1;
-
+    
     // struct tm to seconds since Unix epoch
     register long year;
     register time_t result;
     static const int cumdays[12] =
-        { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
-
+    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+    
     year = 1900 + ti.tm_year + ti.tm_mon / 12;
     result = (year - 1970) * 365 + cumdays[ti.tm_mon % 12];
     result += (year - 1968) / 4;

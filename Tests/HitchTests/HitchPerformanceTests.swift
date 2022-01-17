@@ -43,6 +43,7 @@ final class HitchPerformanceTests: XCTestCase {
         testContainsPerf()
         testFirstIndexOfPerf()
         testLastIndexOfPerf()
+        testReplacePerf()
         
         
         let chart = Hitch()
@@ -214,6 +215,29 @@ final class HitchPerformanceTests: XCTestCase {
             }, {
                 for _ in 1...1000 {
                     hitchLorem.lastIndex(of: hitchNeedle)
+                }
+            })
+        )
+    }
+    
+    func testReplacePerf() {
+        let swiftLorem = lorem
+        let hitchLorem = lorem.hitch()
+        let swiftNeedle = "nulla pariatur"
+        let hitchNeedle = swiftNeedle.hitch()
+        let hitchReplacement = Hitch("hello world, goodbye world")
+                
+        XCTAssert(
+            test (1000, "replace occurrences of",
+            {
+                for _ in 1...1000 {
+                    var replace0 = swiftLorem.replacingOccurrences(of: "nulla pariatur", with: "hello world, goodbye world")
+                    replace0 = replace0.replacingOccurrences(of: "hello world, goodbye world", with: "nulla pariatur")
+                }
+            }, {
+                for _ in 1...1000 {
+                    hitchLorem.replace(occurencesOf: hitchNeedle, with: hitchReplacement)
+                    hitchLorem.replace(occurencesOf: hitchReplacement, with: hitchNeedle)
                 }
             })
         )

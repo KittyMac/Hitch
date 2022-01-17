@@ -479,13 +479,27 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch.toDouble(), 5.2567)
     }
     
-    func testReplace() {
+    func testReplace1() {
         // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
         let hitch = "Hello CrUeL world".hitch()
         
         XCTAssertEqual(hitch.replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
         
         XCTAssertEqual(hitch.replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
+    }
+    
+    func testReplace2() {
+        // reduction
+        XCTAssertEqual(Hitch("Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello", with: "Bye"), "Bye Bye Bye Bye Bye Bye Bye Bye")
+        XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "Bye"), "   Bye Bye Bye Bye Bye Bye Bye Bye   ")
+        
+        // expansion
+        XCTAssertEqual(Hitch("Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello", with: "Goodbye", ignoreCase: true), "Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye")
+        XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "Goodbye", ignoreCase: true), "   Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye   ")
+        
+        // same size
+        XCTAssertEqual(Hitch("Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello", with: "12345"), "12345 12345 12345 12345 12345 12345 12345 12345")
+        XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "12345"), "   12345 12345 12345 12345 12345 12345 12345 12345   ")
     }
     
     func testHitchAsKeys() {
