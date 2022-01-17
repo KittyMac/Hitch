@@ -22,6 +22,9 @@ static inline int memcasecmp(const void * ptr1, const void * ptr2, size_t count,
     return memcmp(ptr1, ptr2, count);
 }
 
+#define CHITCH_SANITY_EMPTY(C)                                                                             \
+if (C->data == 0) { return; }                                                                               \
+
 // Ensure chitch is not empty and is of a minimum capacity
 #define CHITCH_SANITY(C,MINSIZE)                                                                             \
 if (C->data == 0) { C->capacity = (MINSIZE); C->data = malloc(C->capacity + 1); }                            \
@@ -94,6 +97,8 @@ void chitch_resize(CHitch * c0, long newCount) {
 }
 
 void chitch_tolower(CHitch * c0) {
+    CHITCH_SANITY_EMPTY(c0);
+    
     uint8_t * ptr = c0->data;
     uint8_t * end = c0->data + c0->count;
     while (ptr < end) {
@@ -103,6 +108,8 @@ void chitch_tolower(CHitch * c0) {
 }
 
 void chitch_toupper(CHitch * c0) {
+    CHITCH_SANITY_EMPTY(c0);
+    
     uint8_t * ptr = c0->data;
     uint8_t * end = c0->data + c0->count;
     while (ptr < end) {
@@ -112,6 +119,8 @@ void chitch_toupper(CHitch * c0) {
 }
 
 void chitch_trim(CHitch * c0) {
+    CHITCH_SANITY_EMPTY(c0);
+    
     uint8_t * start = c0->data;
     uint8_t * end = c0->data + c0->count - 1;
     
@@ -135,6 +144,8 @@ void chitch_trim(CHitch * c0) {
 }
 
 void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCase) {
+    CHITCH_SANITY_EMPTY(c0);
+    
     long c0_count = c0->count;
     long find_count = find->count;
     long replace_count = replace->count;
@@ -522,7 +533,7 @@ long chitch_lastof_raw(const uint8_t * haystack, long haystack_count, const uint
 long chitch_toepoch(CHitch * c0) {
     // Handles just this one date format. Timezone is always considered to be UTC
     // 4/30/2021 8:19:27 AM
-    if (c0 == NULL || c0->count < 0) { return 0; }
+    if (c0 == NULL || c0->data == NULL || c0->count < 0) { return 0; }
     
     struct tm ti = {0};
     
