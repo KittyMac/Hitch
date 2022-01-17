@@ -24,8 +24,8 @@ final class HitchFormatTests: XCTestCase {
     }
     
     func testFloatFormat() {
-        let hello = Hitch("{        ~0.4         }", 8.0123456789)
-        XCTAssertEqual(hello, "        8.0123         ")
+        XCTAssertEqual(Hitch("{        ~0.4         }", 8.0123456789), "        8.0123         ")
+        XCTAssertEqual(Hitch("{        ~0.4         }", "8.0123456789x"), "        8.0123x        ")
     }
     
     func testExample() {

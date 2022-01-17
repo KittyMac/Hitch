@@ -128,7 +128,7 @@ extension Hitch {
             case .null: scratch.append(nullHitch)
             case .int: scratch.append(number: value.int ?? 0)
             case .double: scratch.append(double: value.double ?? 0.0, precision: fieldPrecision)
-            case .hitch: scratch.append(value.hitch ?? Hitch.empty)
+            case .hitch: scratch.append(value.hitch ?? Hitch.empty, precision: fieldPrecision)
             }
         }
 
@@ -148,7 +148,9 @@ extension Hitch {
                 valueScratch.append(double: value.double ?? 0.0, precision: fieldPrecision)
                 valueAsHitch = valueScratch
             case .hitch:
-                valueAsHitch = value.hitch ?? Hitch.empty
+                valueScratch.clear()
+                valueScratch.append(value.hitch ?? Hitch.empty, precision: fieldPrecision)
+                valueAsHitch = valueScratch
             }
 
             let valueWidth = valueAsHitch.count

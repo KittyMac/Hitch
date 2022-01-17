@@ -38,6 +38,7 @@ extern void chitch_concat(CHitch * c0, CHitch * c1);
 extern void chitch_concat_raw(CHitch * c0, const uint8_t * rhs, long rhs_count);
 extern void chitch_concat_cstring(CHitch * c0, const uint8_t * rhs);
 extern void chitch_concat_char(CHitch * c0, const uint8_t rhs);
+extern void chitch_concat_raw_precision(CHitch * c0, const uint8_t * rhs, long rhs_count, long precision);
 
 extern void chitch_insert(CHitch * c0, long position, CHitch * c1);
 extern void chitch_insert_raw(CHitch * c0, long position, const uint8_t * rhs, long rhs_count);

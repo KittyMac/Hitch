@@ -10,9 +10,17 @@
 #include <time.h>
 #include <math.h>
 
+#define DIGIT(x) (x >= '0' && x <= '9')
 #define TOUPPER(x) ((x >= 'a' && x <= 'z') ? x - 0x20 : x)
 #define TOLOWER(x) ((x >= 'A' && x <= 'Z') ? x + 0x20 : x)
 #define WHITESPACE(x) (x == '\t' || x == '\n' || x == '\r' || x == ' ')
+
+static inline int memcasecmp(const void * ptr1, const void * ptr2, size_t count, bool ignoreCase) {
+    if (ignoreCase) {
+        return strncasecmp(ptr1, ptr2, count);
+    }
+    return memcmp(ptr1, ptr2, count);
+}
 
 // Ensure chitch is not empty and is of a minimum capacity
 #define CHITCH_SANITY(C,MINSIZE)                                                                             \
@@ -130,6 +138,9 @@ void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCas
     long c0_count = c0->count;
     long find_count = find->count;
     long replace_count = replace->count;
+        
+    const uint8_t find_start_lower = TOLOWER(find->data[0]);
+    const uint8_t find_start_upper = TOUPPER(find->data[0]);
     
     // Expansion: our array is going to need to grow before we can perform the replacement
     if (replace_count > find_count) {
@@ -157,16 +168,14 @@ void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCas
         uint8_t * old_ptr_a = old_end;
         uint8_t * old_ptr_b = old_end;
         uint8_t * new_ptr = new_end;
-        
-        const uint8_t find_start = find->data[0];
-        
+                
         long fix_count = 0;
         
         while (old_ptr_a >= start) {
             // is this the thing we need to replace?
-            if (*old_ptr_a == find_start &&
+            if ((*old_ptr_a == find_start_lower || *old_ptr_a == find_start_upper) &&
                 old_ptr_a + find_count <= old_end &&
-                memcmp(old_ptr_a, find->data, find_count) == 0) {
+                memcasecmp(old_ptr_a, find->data, find_count, ignoreCase) == 0) {
                 fix_count = old_ptr_b - (old_ptr_a + find_count);
                 if (fix_count > 0) {
                     memmove(new_ptr - fix_count, (old_ptr_a + find_count), fix_count);
@@ -198,14 +207,12 @@ void chitch_replace(CHitch * c0, CHitch * find, CHitch * replace, bool ignoreCas
         
         uint8_t * old_ptr = start;
         uint8_t * new_ptr = start;
-        
-        const uint8_t find_start = find->data[0];
-        
+                
         while (old_ptr <= old_end) {
             // is this the thing we need to replace?
-            if (*old_ptr == find_start &&
+            if ((*old_ptr == find_start_lower || *old_ptr == find_start_upper) &&
                 old_ptr + find_count <= old_end &&
-                memcmp(old_ptr, find->data, find_count) == 0) {
+                memcasecmp(old_ptr, find->data, find_count, ignoreCase) == 0) {
                 old_ptr += find_count;
                 
                 memmove(new_ptr, replace->data, replace_count);
@@ -244,6 +251,44 @@ void chitch_concat_char(CHitch * c0, const uint8_t rhs) {
     CHITCH_SANITY(c0, c0->count);
     c0->data[c0->count] = rhs;
     c0->count++;
+}
+
+void chitch_concat_raw_precision(CHitch * c0, const uint8_t * rhs, long rhs_count, long precision) {
+    if (rhs_count <= 0) { return; }
+    CHITCH_SANITY(c0, c0->count + rhs_count);
+    
+    // treat each '.' found with digits on boths sides as if it were a double, include only precision number of decimal places
+    uint8_t * ptr = c0->data + c0->count;
+    const uint8_t * end = rhs + rhs_count;
+    
+    *(ptr++) = *(rhs++);
+    
+    while (rhs < end) {
+        if (*rhs == '.' && DIGIT(rhs[-1]) && DIGIT(rhs[1])) {
+            *(ptr++) = *(rhs++);
+            
+            // copy over the precisions
+            long precisionCount = precision;
+            while (rhs < end && precisionCount > 0) {
+                precisionCount--;
+                
+                if (DIGIT(*rhs) == false) {
+                    break;
+                }
+                *(ptr++) = *(rhs++);
+            }
+            
+            // skip any more digits
+            while (precisionCount == 0 && rhs < end && DIGIT(*rhs)) {
+                rhs++;
+            }
+            
+        } else {
+            *(ptr++) = *(rhs++);
+        }
+    }
+    
+    c0->count = ptr - c0->data;
 }
 
 void chitch_insert(CHitch * c0, long position, CHitch * c1) {
@@ -356,6 +401,14 @@ bool chitch_equal_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, 
     if (lhs_count != rhs_count) { return false; }
     if (lhs == rhs) { return true; }
     return memcmp(lhs, rhs, rhs_count) == 0;
+}
+
+bool chitch_equal_caseless_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, long rhs_count) {
+    if (lhs == NULL && rhs == NULL) { return true; }
+    if (lhs == NULL || rhs == NULL) { return false; }
+    if (lhs_count != rhs_count) { return false; }
+    if (lhs == rhs) { return true; }
+    return strncasecmp((const char *)lhs, (const char *)rhs, rhs_count) == 0;
 }
 
 bool chitch_contains_raw(const uint8_t * haystack, long haystack_count, const uint8_t * needle, long needle_count) {

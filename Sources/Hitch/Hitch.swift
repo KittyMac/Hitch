@@ -731,7 +731,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     public init() {
-        chitch = chitch_init_capacity(0)
+        chitch = chitch_empty()
     }
 
     @usableFromInline
@@ -816,8 +816,12 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
 
     @inlinable @inline(__always)
     @discardableResult
-    public func append(_ hitch: Hitch) -> Self {
-        chitch_concat(&chitch, &hitch.chitch)
+    public func append(_ hitch: Hitch, precision: Int? = nil) -> Self {
+        if let precision = precision {
+            chitch_concat_raw_precision(&chitch, hitch.raw(), hitch.count, precision)
+        } else {
+            chitch_concat_raw(&chitch, hitch.raw(), hitch.count)
+        }
         return self
     }
 
@@ -840,23 +844,15 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ string: String, precision: Int?) -> Self {
-        string.withCString { bytes in
-            var length = string.count
+        return string.withCString { bytes in
+            let length = strlen(bytes)
             if let precision = precision {
-                var ptr = bytes
-                while ptr.pointee != 0 {
-                    let c = UInt8(ptr.pointee)
-                    if c == .dot {
-                        length = Swift.min(length, ptr - bytes + precision + 1)
-                        break
-                    }
-                    ptr += 1
-                }
+                chitch_concat_raw_precision(&chitch, chitch_to_uint8(bytes), length, precision)
+            } else {
+                chitch_concat_raw(&chitch, chitch_to_uint8(bytes), length)
             }
-
-            chitch_concat_raw(&chitch, chitch_to_uint8(bytes), length)
+            return self
         }
-        return self
     }
 
     @inlinable @inline(__always)

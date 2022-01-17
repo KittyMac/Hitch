@@ -2,18 +2,21 @@
 
 ## High Performance UTF8 for Swift
 
-Consider Hitch as an alternative to String when performance and memory usage is more important than convenience.
+Consider Hitch as an alternative to String.
 
 ```
 +-------------------------------+--------------------------+
-|HitchPerformanceTests.swift    |    Faster than String    |
+| HitchPerformanceTests.swift   |    Faster than String    |
 +-------------------------------+--------------------------+
-|string iterator                |         3298.74x         |
-|utf8 iterator                  |          65.11x          |
-|contains                       |          9.56x           |
-|append (w/ capacity)           |          2.36x           |
-|uppercase/lowercase            |          2.29x           |
-|append (w/ capacity)           |          2.22x           |
+|string iterator                |         4002.57x         |
+|utf8 iterator                  |          75.31x          |
+|last index of                  |          21.36x          |
+|first index of                 |          11.23x          |
+|contains                       |          11.18x          |
+|replace occurrences of         |          8.93x           |
+|append (dynamic capacity)      |          5.24x           |
+|uppercase/lowercase            |          2.32x           |
+|append (static capacity)       |          1.14x           |
 +-------------------------------+--------------------------+
 ```
 

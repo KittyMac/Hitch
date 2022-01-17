@@ -481,11 +481,8 @@ final class HitchTests: XCTestCase {
     
     func testReplace1() {
         // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
-        let hitch = "Hello CrUeL world".hitch()
-        
-        XCTAssertEqual(hitch.replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
-        
-        XCTAssertEqual(hitch.replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
+        XCTAssertEqual(Hitch("Hello CrUeL world").replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
+        XCTAssertEqual(Hitch("Hello CrUeL world").replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
     }
     
     func testReplace2() {
