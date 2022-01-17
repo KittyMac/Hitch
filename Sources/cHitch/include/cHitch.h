@@ -19,7 +19,7 @@ extern int8_t * chitch_to_int8(const uint8_t * c0);
 extern CHitch chitch_empty();
 
 extern CHitch chitch_init_capacity(long capacity);
-extern CHitch chitch_init_raw(const uint8_t * bytes, long capacity, long count);
+extern CHitch chitch_init_raw(const uint8_t * bytes, long count, long capacity);
 extern CHitch chitch_init_cstring(const uint8_t * bytes);
 
 extern CHitch chitch_init_substring(CHitch * c0, long lhs_positions, long rhs_positions);

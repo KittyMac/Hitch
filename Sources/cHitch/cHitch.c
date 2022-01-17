@@ -48,7 +48,7 @@ CHitch chitch_init_capacity(long capacity) {
     return c;
 }
 
-CHitch chitch_init_raw(const uint8_t * bytes, long capacity, long count) {
+CHitch chitch_init_raw(const uint8_t * bytes, long count, long capacity) {
     CHitch c = {0};
     c.capacity = capacity;
     c.count = count;
