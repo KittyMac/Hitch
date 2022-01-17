@@ -28,6 +28,11 @@ final class HitchFormatTests: XCTestCase {
         XCTAssertEqual(Hitch("{        ~0.4         }", "8.0123456789x"), "        8.0123x        ")
     }
     
+    func testBooleanFormat() {
+        let hello = Hitch("{0} {1}", true, false)
+        XCTAssertEqual(hello, "true false")
+    }
+    
     func testExample() {
         
         let value = Hitch("""

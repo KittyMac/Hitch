@@ -81,12 +81,12 @@ extension Hitch {
         case let value as Int: return(TypedValue(int: value))
         case let value as Double: return(TypedValue(double: value))
         case let value as Float: return(TypedValue(double: Double(value)))
-        case let value as NSNumber: return(TypedValue(double: Double(value.doubleValue)))
         case let value as Bool: return value ? TypedValue(hitch: trueHitch) : TypedValue(hitch: falseHitch)
         case let value as Hitch: return(TypedValue(hitch: value))
         case let value as HalfHitch: return(TypedValue(hitch: value.hitch()))
         case let value as String: return(TypedValue(hitch: Hitch(stringLiteral: value)))
         case let value as CustomStringConvertible: return(TypedValue(hitch: Hitch(stringLiteral: value.description)))
+        case let value as NSNumber: return(TypedValue(double: Double(value.doubleValue)))
         default: return(TypedValue())
         }
     }
