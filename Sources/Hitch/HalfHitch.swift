@@ -39,7 +39,7 @@ public struct HalfHitchIterator: Sequence, IteratorProtocol {
     }
 }
 
-/// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like, read-only
+/// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
 public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable {
@@ -143,15 +143,7 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
         hasher.combine(count)
         hasher.combine(bytes: UnsafeRawBufferPointer(start: source, count: Swift.min(count, 8)))
     }
-    /*
-     @usableFromInline
-     internal var tempCHitch: CHitch {
-     guard let raw = source else {
-     return CHitch(capacity: 0, count: 0, data: nil)
-     }
-     return CHitch(capacity: count, count: count, data: raw)
-     }
-     */
+
     @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
         return chitch_cmp_raw(lhs.source, lhs.count, rhs.source, rhs.count) < 0

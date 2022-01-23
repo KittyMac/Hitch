@@ -413,6 +413,7 @@ bool chitch_equal_raw(const uint8_t * lhs, long lhs_count, const uint8_t * rhs, 
     if (lhs == NULL || rhs == NULL) { return false; }
     if (lhs_count != rhs_count) { return false; }
     if (lhs == rhs) { return true; }
+    if (lhs_count > 0 && lhs[0] != rhs[0]) { return false; }
     return memcmp(lhs, rhs, rhs_count) == 0;
 }
 
