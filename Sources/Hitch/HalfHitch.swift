@@ -79,9 +79,17 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
     }
 
     @inlinable @inline(__always)
-    init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
+    public init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceHitch = Hitch.empty
         self.source = raw + from
+        self.count = to - from
+    }
+
+    @inlinable @inline(__always)
+    public init(raw: UnsafeMutableRawPointer, count: Int, from: Int, to: Int) {
+        let tempRaw = raw.bindMemory(to: UInt8.self, capacity: count)
+        self.sourceHitch = Hitch.empty
+        self.source = tempRaw + from
         self.count = to - from
     }
 
