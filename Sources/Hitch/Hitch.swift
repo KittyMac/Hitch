@@ -808,7 +808,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             // TODO: chitch_concat_raw_precision
             // chitch_concat_raw_precision(&chitch, hitch.raw(), hitch.count, precision)
         } else {
-            chitch_concat_raw(chitch.data, chitch.count, hitch.raw(), hitch.count)
+            chitch_concat(&chitch, hitch.raw(), hitch.count)
         }
         return self
     }
@@ -816,7 +816,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: HalfHitch) -> Self {
-        chitch_concat_raw(chitch.data, chitch.count, hitch.source, hitch.count)
+        chitch_concat(&chitch, hitch.source, hitch.count)
         return self
     }
 
@@ -824,7 +824,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func append(_ string: String) -> Self {
         chitch_using(string) { string_raw, string_count in
-            chitch_concat_raw(chitch.data, chitch.count, string_raw, string_count)
+            chitch_concat(&chitch, string_raw, string_count)
         }
         return self
     }
@@ -836,7 +836,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             if let precision = precision {
                 // chitch_concat_raw_precision(&chitch, string_raw, string_count, precision)
             } else {
-                chitch_concat_raw(chitch.data, chitch.count, string_raw, string_count)
+                chitch_concat(&chitch, string_raw, string_count)
             }
             return self
         }
