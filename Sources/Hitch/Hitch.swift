@@ -773,8 +773,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
-        // TODO: chitch_replace
-        // chitch_replace(&chitch, &hitch.chitch, &with.chitch, ignoreCase)
+        chitch_replace(&chitch, hitch.chitch, with.chitch, ignoreCase)
         return self
     }
 
@@ -955,8 +954,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func trim() -> Self {
-        // TODO: chitch_trim
-        // chitch_trim(&chitch)
+        chitch_trim(&chitch)
         return self
     }
 
@@ -1014,20 +1012,16 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of hitch: Hitch, offset: Int = 0) -> Int? {
-        // TODO: chitch_firstof_raw_offset
-        return nil
-        // let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
-        // return index >= 0 ? index : nil
+        let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func firstIndex(of string: String, offset: Int = 0) -> Int? {
-        return chitch_using(string) { _, _ in
-            // TODO: chitch_firstof_raw_offset
-            return nil
-            // let index = chitch_firstof_raw_offset(raw(), offset, count, chitch_to_uint8(bytes), bytes_count)
-            // return index >= 0 ? index : nil
+        return chitch_using(string) { string_raw, string_count in
+            let index = chitch_firstof_raw_offset(raw(), offset, count, string_raw, string_count)
+            return index >= 0 ? index : nil
         }
     }
 
@@ -1035,28 +1029,23 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func firstIndex(of char: UInt8, offset: Int = 0) -> Int? {
         var local = char
-        // TODO: chitch_firstof_raw_offset
-        return nil
-        // let index = chitch_firstof_raw_offset(raw(), offset, count, &local, 1)
-        // return index >= 0 ? index : nil
+        let index = chitch_firstof_raw_offset(raw(), offset, count, &local, 1)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func lastIndex(of hitch: Hitch) -> Int? {
-        return nil
-        // let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
-        // return index >= 0 ? index : nil
+        let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func lastIndex(of string: String) -> Int? {
-        return chitch_using(string) { _, _ in
-            // TODO: chitch_lastof_raw
-            return nil
-            // let index = chitch_lastof_raw(raw(), count, chitch_to_uint8(bytes), bytes_count)
-            // return index >= 0 ? index : nil
+        return chitch_using(string) { string_raw, string_count in
+            let index = chitch_lastof_raw(raw(), count, string_raw, string_count)
+            return index >= 0 ? index : nil
         }
     }
 
@@ -1064,10 +1053,8 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func lastIndex(of char: UInt8) -> Int? {
         var local = char
-        // TODO: chitch_lastof_raw
-        return nil
-        // let index = chitch_lastof_raw(raw(), count, &local, 1)
-        // return index >= 0 ? index : nil
+        let index = chitch_lastof_raw(raw(), count, &local, 1)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
@@ -1193,8 +1180,6 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func toEpoch() -> Int {
-        // TODO: chitch_toepoch
-        return 0
-        // return chitch_toepoch(&chitch)
+        return chitch_toepoch(&chitch)
     }
 }
