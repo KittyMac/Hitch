@@ -630,12 +630,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public init(hitch: Hitch) {
         chitch = chitch_init_raw(hitch.raw(), hitch.count)
     }
-/*
-    @inlinable @inline(__always)
-    public init(bytes: UnsafePointer<UInt8>, offset: Int, count: Int) {
-        chitch = chitch_init_raw(bytes + offset, count, count)
-    }
-*/
+
     @inlinable @inline(__always)
     public init(bytes: UnsafeMutablePointer<UInt8>, offset: Int, count: Int) {
         chitch = chitch_init_raw(bytes + offset, count)
@@ -795,16 +790,14 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func lowercase() -> Self {
-        // TODO: chitch_tolower
-        // chitch_tolower(&chitch)
+        chitch_tolower_raw(chitch.data, chitch.count)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func uppercase() -> Self {
-        // TODO: chitch_toupper
-        // chitch_toupper(&chitch)
+        chitch_toupper_raw(chitch.data, chitch.count)
         return self
     }
 

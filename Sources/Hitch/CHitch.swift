@@ -87,6 +87,36 @@ func chitch_resize(_ c0: inout CHitch, _ newCount: Int) {
 }
 
 @usableFromInline
+func chitch_tolower_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int) {
+    guard lhs_count > 0 else { return }
+    guard let lhs = lhs else { return }
+
+    var ptr = lhs
+    let end = lhs + lhs_count
+    var c: UInt8 = 0
+    while ptr < end {
+        c = ptr.pointee
+        ptr.pointee = ((c >= .A && c <= .Z) ? c + 0x20 : c)
+        ptr += 1
+    }
+}
+
+@usableFromInline
+func chitch_toupper_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int) {
+    guard lhs_count > 0 else { return }
+    guard let lhs = lhs else { return }
+
+    var ptr = lhs
+    let end = lhs + lhs_count
+    var c: UInt8 = 0
+    while ptr < end {
+        c = ptr.pointee
+        ptr.pointee = ((c >= .a && c <= .z) ? c - 0x20 : c)
+        ptr += 1
+    }
+}
+
+@usableFromInline
 func chitch_concat_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int, _ rhs: UnsafeMutablePointer<UInt8>?, _ rhs_count: Int) {
     guard rhs_count > 0 else { return }
     guard let lhs = lhs else { return }
