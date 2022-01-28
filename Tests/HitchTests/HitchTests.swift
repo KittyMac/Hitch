@@ -56,7 +56,7 @@ final class HitchTests: XCTestCase {
     }
     
     func testDirectAccess() {
-        lorem.hitch().withBytes { (bytes) in
+        lorem.hitch().using { (bytes) in
             XCTAssertEqual(bytes[6], 105)
             XCTAssertEqual(bytes[3], 101)
         }

@@ -1,7 +1,6 @@
 // swiftlint:disable type_body_length
 
 import Foundation
-import cHitch
 
 public struct HalfHitchIterator: Sequence, IteratorProtocol {
     @usableFromInline
@@ -159,15 +158,15 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
 
     @inlinable @inline(__always)
     public static func < (lhs: String, rhs: HalfHitch) -> Bool {
-        return lhs.withCString { bytes in
-            return chitch_cmp_raw(chitch_to_uint8(bytes), lhs.count, rhs.source, rhs.count) < 0
+        return chitch_using(lhs) { string_raw, string_count in
+            return chitch_cmp_raw(string_raw, string_count, rhs.source, rhs.count) < 0
         }
     }
 
     @inlinable @inline(__always)
     public static func < (lhs: HalfHitch, rhs: String) -> Bool {
-        return rhs.withCString { bytes in
-            return chitch_cmp_raw(lhs.source, lhs.count, chitch_to_uint8(bytes), rhs.count) < 0
+        return chitch_using(rhs) { string_raw, string_count in
+            return chitch_cmp_raw(lhs.source, lhs.count, string_raw, string_count) < 0
         }
     }
 
@@ -178,15 +177,15 @@ public struct HalfHitch: CustomStringConvertible, ExpressibleByStringLiteral, Se
 
     @inlinable @inline(__always)
     public static func == (lhs: String, rhs: HalfHitch) -> Bool {
-        return lhs.withCString { bytes in
-            return chitch_equal_raw(chitch_to_uint8(bytes), lhs.count, rhs.source, rhs.count)
+        return chitch_using(lhs) { string_raw, string_count in
+            return chitch_equal_raw(string_raw, string_count, rhs.source, rhs.count)
         }
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: String) -> Bool {
-        return rhs.withCString { bytes in
-            return chitch_equal_raw(lhs.source, lhs.count, chitch_to_uint8(bytes), rhs.count)
+        return chitch_using(rhs) { string_raw, string_count in
+            return chitch_equal_raw(lhs.source, lhs.count, string_raw, string_count)
         }
     }
 
