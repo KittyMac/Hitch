@@ -441,7 +441,7 @@ public struct HitchIterator: Sequence, IteratorProtocol {
 
     @inlinable @inline(__always)
     internal init(hitch: Hitch) {
-        if let data = hitch.raw() {
+        if let data = hitch.chitch.data {
             ptr = data - 1
             end = data + hitch.count - 1
         } else {
@@ -452,7 +452,7 @@ public struct HitchIterator: Sequence, IteratorProtocol {
 
     @inlinable @inline(__always)
     internal init(hitch: Hitch, from: Int, to: Int) {
-        if let data = hitch.raw() {
+        if let data = hitch.chitch.data {
             ptr = data + from - 1
             end = data + to - 1
         } else {

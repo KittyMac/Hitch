@@ -8,14 +8,14 @@ Consider Hitch as an alternative to String.
 +-------------------------------+--------------------------+
 |HitchPerformanceTests.swift    |    Faster than String    |
 +-------------------------------+--------------------------+
-|string iterator                |         3592.65x         |
-|utf8 iterator                  |          72.91x          |
-|last index of                  |          53.60x          |
+|string iterator                |         3654.05x         |
+|utf8 iterator                  |          76.35x          |
+|last index of                  |          54.28x          |
 |first index of                 |          24.14x          |
 |contains                       |          22.79x          |
-|uppercase/lowercase            |          15.37x          |
-|replace occurrences of         |          11.04x          |
-|append (dynamic capacity)      |          6.79x           |
+|uppercase/lowercase            |          15.62x          |
+|replace occurrences of         |          11.53x          |
+|append (dynamic capacity)      |          8.21x           |
 |append (static capacity)       |          1.15x           |
 +-------------------------------+--------------------------+
 ```

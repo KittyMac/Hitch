@@ -66,7 +66,7 @@ final class HitchPerformanceTests: XCTestCase {
         let hitchLorem = lorem.hitch()
         
         XCTAssert(
-            test (10000, "utf8 iterator",
+            test (100000, "utf8 iterator",
             {
                 var i = 0
                 for x in swiftLorem.utf8 {
@@ -86,7 +86,7 @@ final class HitchPerformanceTests: XCTestCase {
         let hitchLorem = lorem.hitch()
         
         XCTAssert(
-            test (10000, "string iterator",
+            test (100000, "string iterator",
             {
                 var i = 0
                 for x in swiftLorem {
