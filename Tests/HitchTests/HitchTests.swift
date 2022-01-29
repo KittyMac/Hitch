@@ -12,6 +12,16 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hello.hitch().description, hello)
     }
     
+    func testAppendToEmpty() {
+        let hello = Hitch()
+        hello.append(.h)
+        hello.append(.e)
+        hello.append(.l)
+        hello.append(.l)
+        hello.append(.o)
+        XCTAssertEqual(hello.description, "hello")
+    }
+    
     func testToLower() {
         let hello = "Hello"
         XCTAssertEqual(hello.hitch().lowercase().description, hello.lowercased())

@@ -804,8 +804,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func append(_ hitch: Hitch, precision: Int? = nil) -> Self {
         if let precision = precision {
-            // TODO: chitch_concat_raw_precision
-            // chitch_concat_raw_precision(&chitch, hitch.raw(), hitch.count, precision)
+            chitch_concat_precision(&chitch, hitch.raw(), hitch.count, precision)
         } else {
             chitch_concat(&chitch, hitch.raw(), hitch.count)
         }
@@ -833,7 +832,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     public func append(_ string: String, precision: Int?) -> Self {
         chitch_using(string) { string_raw, string_count in
             if let precision = precision {
-                // chitch_concat_raw_precision(&chitch, string_raw, string_count, precision)
+                chitch_concat_precision(&chitch, string_raw, string_count, precision)
             } else {
                 chitch_concat(&chitch, string_raw, string_count)
             }
@@ -844,8 +843,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ char: UInt8) -> Self {
-        // TODO: chitch_concat_char
-        // chitch_concat_char(&chitch, char)
+        chitch_concat_char(&chitch, char)
         return self
     }
 
@@ -869,8 +867,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
-            // TODO: fix pointer mangling
-            // chitch_concat_raw(chitch.data, chitch.count, bytes, data.count)
+            chitch_concat(&chitch, bytes, data.count)
         }
         return self
     }
@@ -878,56 +875,49 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
-        // TODO: chitch_insert_raw
-        // chitch_insert_raw(&chitch, index, hitch.raw(), hitch.count)
+        chitch_insert_raw(&chitch, index, hitch.raw(), hitch.count)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
-        // TODO: chitch_insert_cstring
-        // chitch_insert_cstring(&chitch, index, string)
+        chitch_insert_cstring(&chitch, index, string)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int, precision: Int?) -> Self {
-        return string.withCString { bytes in
-
+        chitch_using(string) { string_raw, _ in
             var length = string.count
             if let precision = precision {
-                var ptr = bytes
+                var ptr = string_raw
                 while ptr.pointee != 0 {
                     let c = UInt8(ptr.pointee)
                     if c == .dot {
-                        length = Swift.min(length, ptr - bytes + precision + 1)
+                        length = Swift.min(length, ptr - string_raw + precision + 1)
                         break
                     }
                     ptr += 1
                 }
             }
-
-            // TODO: chitch_insert_cstring
-            // chitch_insert_cstring(&chitch, index, chitch_to_uint8(bytes))
-            return self
+            chitch_insert_raw(&chitch, index, string_raw, length)
         }
+        return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ char: UInt8, index: Int) -> Self {
-        // TODO: chitch_insert_char
-        // chitch_insert_char(&chitch, index, char)
+        chitch_insert_char(&chitch, index, char)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
-        // TODO: chitch_insert_int
-        // chitch_insert_int(&chitch, index, Int(number))
+        chitch_insert_int(&chitch, index, Int(number))
         return self
     }
 
@@ -945,8 +935,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
-            // TODO: chitch_insert_raw
-            // chitch_insert_raw(&chitch, index, bytes, data.count)
+            chitch_insert_raw(&chitch, index, bytes, data.count)
         }
         return self
     }
@@ -977,26 +966,20 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @inlinable @inline(__always)
     @discardableResult
     public func contains(_ hitch: Hitch) -> Bool {
-        // TODO: chitch_contains_raw
-        return false
-        // return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
+        return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func contains(_ halfHitch: HalfHitch) -> Bool {
-        // TODO: chitch_contains_raw
-        return false
-        // return chitch_contains_raw(raw(), count, halfHitch.source, halfHitch.count)
+        return chitch_contains_raw(raw(), count, halfHitch.source, halfHitch.count)
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func contains(_ string: String) -> Bool {
-        return chitch_using(string) { _, _ in
-            // TODO: chitch_contains_raw
-            return false
-            // return chitch_contains_raw(raw(), count, string_raw, string_count)
+        return chitch_using(string) { string_raw, string_count in
+            return chitch_contains_raw(raw(), count, string_raw, string_count)
         }
     }
 
@@ -1004,9 +987,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
     @discardableResult
     public func contains(char: UInt8) -> Bool {
         var local = char
-        // TODO: chitch_contains_raw
-        return false
-        // return chitch_contains_raw(raw(), count, &local, 1)
+        return chitch_contains_raw(raw(), count, &local, 1)
     }
 
     @inlinable @inline(__always)

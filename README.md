@@ -6,17 +6,17 @@ Consider Hitch as an alternative to String.
 
 ```
 +-------------------------------+--------------------------+
-| HitchPerformanceTests.swift   |    Faster than String    |
+|HitchPerformanceTests.swift    |    Faster than String    |
 +-------------------------------+--------------------------+
-|string iterator                |         4002.57x         |
-|utf8 iterator                  |          75.31x          |
-|last index of                  |          21.36x          |
-|first index of                 |          11.23x          |
-|contains                       |          11.18x          |
-|replace occurrences of         |          8.93x           |
-|append (dynamic capacity)      |          5.24x           |
-|uppercase/lowercase            |          2.32x           |
-|append (static capacity)       |          1.14x           |
+|string iterator                |         3592.65x         |
+|utf8 iterator                  |          72.91x          |
+|last index of                  |          53.60x          |
+|first index of                 |          24.14x          |
+|contains                       |          22.79x          |
+|uppercase/lowercase            |          15.37x          |
+|replace occurrences of         |          11.04x          |
+|append (dynamic capacity)      |          6.79x           |
+|append (static capacity)       |          1.15x           |
 +-------------------------------+--------------------------+
 ```
 

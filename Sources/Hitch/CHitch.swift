@@ -253,7 +253,6 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         let capacity_required = c0_count + (replace_count - find_count) * num_occurences
 
         chitch_sanity(&c0, capacity_required)
-
         guard let c0_data = c0.data else { return }
 
         // work our way from back to front, copying and replacing as we go
@@ -332,10 +331,191 @@ func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafeMutablePointer<UInt8>?, _ rh
     guard let rhs = rhs else { return }
 
     chitch_sanity(&c0, c0.count + rhs_count)
-
     guard let c0_data = c0.data else { return }
+
     (c0_data + c0.count).assign(from: rhs, count: rhs_count)
     c0.count += rhs_count
+}
+
+@usableFromInline
+func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafePointer<UInt8>?, _ rhs_count: Int) {
+    guard rhs_count > 0 else { return }
+    guard let rhs = rhs else { return }
+
+    chitch_sanity(&c0, c0.count + rhs_count)
+    guard let c0_data = c0.data else { return }
+
+    (c0_data + c0.count).assign(from: rhs, count: rhs_count)
+    c0.count += rhs_count
+}
+
+@usableFromInline
+func chitch_concat_char(_ c0: inout CHitch, _ rhs: UInt8) {
+
+    chitch_sanity(&c0, c0.count + 1)
+    guard let c0_data = c0.data else { return }
+
+    c0_data[c0.count] = rhs
+    c0.count += 1
+}
+
+@usableFromInline
+func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafeMutablePointer<UInt8>?, _ rhs_count: Int, _ precision: Int) {
+    guard rhs_count > 0 else { return }
+    guard var rhs = rhs_in else { return }
+
+    chitch_sanity(&c0, c0.count + rhs_count)
+    guard let c0_data = c0.data else { return }
+
+    // treat each '.' found with digits on boths sides as if it were a double, include only precision number of decimal places
+    var ptr = c0_data + c0.count
+    let end = rhs + rhs_count
+
+    ptr.pointee = rhs.pointee
+    ptr += 1
+    rhs += 1
+
+    while rhs < end {
+        if rhs.pointee == .dot && isDigit(rhs[-1]) && isDigit(rhs[1]) {
+            ptr.pointee = rhs.pointee
+            ptr += 1; rhs += 1
+
+            // copy over the precisions
+            var precisionCount = precision
+            while rhs < end && precisionCount > 0 {
+                precisionCount -= 1
+
+                if isDigit(rhs.pointee) == false {
+                    break
+                }
+
+                ptr.pointee = rhs.pointee
+                ptr += 1; rhs += 1
+            }
+
+            // skip any more digits
+            while precisionCount == 0 && rhs < end && isDigit(rhs.pointee) {
+                rhs += 1
+            }
+
+        } else {
+            ptr.pointee = rhs.pointee
+            ptr += 1; rhs += 1
+        }
+    }
+
+    c0.count = ptr - c0_data
+}
+
+@usableFromInline
+func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafeMutablePointer<UInt8>?, _ rhs_count: Int) {
+    guard let rhs = rhs else { return }
+
+    var position = position_in
+
+    if position < 0 { position = 0 }
+    if position >= c0.count {
+        return chitch_concat(&c0, rhs, rhs_count)
+    }
+
+    chitch_sanity(&c0, c0.count + rhs_count)
+    guard let c0_data = c0.data else { return }
+
+    // Start at end and copy back until old count + rhs_count to make room
+    // for simultaneous copy operation
+    var ptr = c0_data + c0.count
+    let start = c0_data + position
+    while ptr >= start {
+        ptr[rhs_count] = ptr.pointee
+        ptr -= 1
+    }
+
+    // simulataneous insert and copy
+    var src_ptr = rhs
+    var dst_ptr = c0_data + position
+    let end = dst_ptr + rhs_count
+    while dst_ptr < end {
+        dst_ptr.pointee = src_ptr.pointee
+        dst_ptr += 1
+        src_ptr += 1
+    }
+
+    c0.count += rhs_count
+}
+
+@usableFromInline
+func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafeRawPointer?, _ rhs_count: Int) {
+    let raw = UnsafeMutableRawPointer(mutating: rhs)
+    chitch_insert_raw(&c0,
+                      position_in,
+                      raw?.bindMemory(to: UInt8.self, capacity: rhs_count),
+                      rhs_count)
+}
+
+@usableFromInline
+func chitch_insert_cstring(_ c0: inout CHitch, _ position: Int, _ string: String) {
+    return chitch_using(string) { string_raw, string_count in
+        return chitch_insert_raw(&c0, position, string_raw, string_count)
+    }
+}
+
+@usableFromInline
+func chitch_insert_char(_ c0: inout CHitch, _ position: Int, _ rhs: UInt8) {
+    return chitch_insert_raw(&c0, position, [rhs], 1)
+}
+
+@usableFromInline
+func chitch_insert_int(_ c0: inout CHitch, _ position: Int, _ rhs_in: Int) {
+    switch rhs_in {
+    case 0: return chitch_insert_char(&c0, position, .zero)
+    case 1: return chitch_insert_char(&c0, position, .one)
+    case 2: return chitch_insert_char(&c0, position, .two)
+    case 3: return chitch_insert_char(&c0, position, .three)
+    case 4: return chitch_insert_char(&c0, position, .four)
+    case 5: return chitch_insert_char(&c0, position, .five)
+    case 6: return chitch_insert_char(&c0, position, .six)
+    case 7: return chitch_insert_char(&c0, position, .seven)
+    case 8: return chitch_insert_char(&c0, position, .eight)
+    case 9: return chitch_insert_char(&c0, position, .nine)
+    default: break
+    }
+
+    var s = [UInt8](repeating: 0, count: 128)
+    return s.withUnsafeMutableBytes { buffer in
+        guard let raw = buffer.baseAddress?.bindMemory(to: UInt8.self, capacity: 128) else { return }
+
+        let end = raw + 128 - 1
+        var ptr = end
+        var len = 0
+        var rhs = rhs_in
+
+        if rhs >= 0 && rhs <= 9 {
+            ptr.pointee = .zero + UInt8(rhs)
+            ptr -= 1
+            len = 1
+        } else {
+            let neg = (rhs < 0)
+            if neg {
+                rhs = -rhs
+            }
+
+            while ptr > raw && rhs > 0 {
+                ptr.pointee = .zero + UInt8(rhs % 10)
+                ptr -= 1
+                rhs /= 10
+            }
+
+            if neg {
+                ptr.pointee = .minus
+                ptr -= 1
+            }
+
+            len = end - ptr
+        }
+
+        return chitch_insert_raw(&c0, position, ptr+1, len)
+    }
+
 }
 
 // MARK: - IMMUTABLE METHODS
@@ -385,6 +565,14 @@ func chitch_equal_raw(_ lhs: UnsafeMutablePointer<UInt8>?,
     guard lhs != rhs else { return true }
     if lhs_count > 0 && lhs[0] != rhs[0] { return false }
     return memcmp(lhs, rhs, rhs_count) == 0
+}
+
+@usableFromInline
+func chitch_contains_raw(_ haystack: UnsafeMutablePointer<UInt8>?,
+                         _ haystack_count: Int,
+                         _ needle: UnsafeMutablePointer<UInt8>?,
+                         _ needle_count: Int) -> Bool {
+    return chitch_firstof_raw(haystack, haystack_count, needle, needle_count) >= 0
 }
 
 @usableFromInline
