@@ -17,6 +17,7 @@ xcode:
 	-killall Xcode.app
 	swift package generate-xcodeproj
 	meta/addBuildPhase Hitch.xcodeproj/project.pbxproj 'Hitch::Hitch' 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'
+	sleep 2
 	open ./Hitch.xcodeproj
 
 docker:
