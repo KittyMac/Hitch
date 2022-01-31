@@ -548,8 +548,9 @@ final class HitchTests: XCTestCase {
         var numMatches = 0
         
         // bisec: 0.383
-        
         // biequal: 0.325
+        // CHitch.swift: 0.175
+        
         measure {
             for hitch in sourceHitches {
                 for _ in 0..<10000000 {
@@ -576,8 +577,9 @@ final class HitchTests: XCTestCase {
         var numMatches = 0
         
         // bisec: 0.606
-        
         // blkequalblk: 0.319
+        // CHitch.swift: 0.160
+        
         measure {
             for hitch in sourceHitches {
                 for _ in 0..<10000000 {
