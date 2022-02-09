@@ -731,7 +731,7 @@ public final class Hitch: CustomStringConvertible, ExpressibleByStringLiteral, S
             return chitch.count
         }
         set {
-            chitch_resize(&chitch, newValue)
+            chitch_resize(&chitch, Swift.max(0, newValue))
         }
     }
 
