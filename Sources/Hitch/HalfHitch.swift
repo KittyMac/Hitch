@@ -10,7 +10,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     public static let empty = HalfHitch()
 
     @usableFromInline
-    let sourceHitch: Hitch
+    let sourceObject: AnyObject?
 
     @usableFromInline
     let source: UnsafeMutablePointer<UInt8>?
@@ -32,7 +32,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     public init(raw: UnsafeMutablePointer<UInt8>, count: Int, from: Int, to: Int) {
-        self.sourceHitch = Hitch.empty
+        self.sourceObject = nil
         self.source = raw + from
         self.count = to - from
     }
@@ -40,7 +40,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     public init(raw: UnsafeMutableRawPointer, count: Int, from: Int, to: Int) {
         let tempRaw = raw.bindMemory(to: UInt8.self, capacity: count)
-        self.sourceHitch = Hitch.empty
+        self.sourceObject = nil
         self.source = tempRaw + from
         self.count = to - from
     }
@@ -48,11 +48,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     public init(source: Hitch, from: Int, to: Int) {
         if let raw = source.raw() {
-            self.sourceHitch = source
+            self.sourceObject = source
             self.source = raw + from
             self.count = to - from
         } else {
-            self.sourceHitch = Hitch.empty
+            self.sourceObject = nil
             self.source = nil
             self.count = 0
         }
@@ -60,12 +60,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     public init(source: HalfHitch, from: Int, to: Int) {
+        self.sourceObject = nil
         if let raw = source.source {
-            self.sourceHitch = Hitch.empty
             self.source = raw + from
             self.count = to - from
         } else {
-            self.sourceHitch = Hitch.empty
             self.source = nil
             self.count = 0
         }
@@ -73,18 +72,20 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     public init() {
-        self.sourceHitch = Hitch.empty
+        self.sourceObject = nil
         self.source = nil
         self.count = 0
     }
 
     @inlinable @inline(__always)
     public init(stringLiteral: String) {
-        self.sourceHitch = stringLiteral.hitch()
-        if let raw = self.sourceHitch.raw() {
+        let source = stringLiteral.hitch()
+        if let raw = source.raw() {
+            self.sourceObject = source
             self.source = raw
-            self.count = self.sourceHitch.count
+            self.count = source.count
         } else {
+            self.sourceObject = nil
             self.source = nil
             self.count = 0
         }
