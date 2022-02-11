@@ -47,13 +47,30 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     public static let empty = Hitch()
 
     @inlinable @inline(__always)
-    static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
+    public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
     @inlinable @inline(__always)
-    static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
+    public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public subscript (index: Int) -> UInt8 {
+        get {
+            if let data = chitch.data,
+               index < chitch.count {
+                return data[index]
+            }
+            return 0
+        }
+        set(newValue) {
+            if let data = chitch.data,
+               index < chitch.count {
+                data[index] = newValue
+            }
+        }
     }
 
     @inlinable @inline(__always)

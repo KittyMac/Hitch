@@ -236,7 +236,7 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func starts(with hitch: Hitch) -> Bool {
+    func starts(with hitch: Hitchable) -> Bool {
         guard count > hitch.count else { return false }
         return chitch_equal_raw(raw(), hitch.count, hitch.raw(), hitch.count)
     }
@@ -252,7 +252,7 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func contains(_ hitch: Hitch) -> Bool {
+    func contains(_ hitch: Hitchable) -> Bool {
         return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
     }
 
@@ -279,7 +279,7 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func firstIndex(of hitch: Hitch, offset: Int = 0) -> Int? {
+    func firstIndex(of hitch: Hitchable, offset: Int = 0) -> Int? {
         let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
@@ -303,7 +303,7 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func lastIndex(of hitch: Hitch) -> Int? {
+    func lastIndex(of hitch: Hitchable) -> Int? {
         let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
