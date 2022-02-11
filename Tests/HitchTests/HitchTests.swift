@@ -268,6 +268,26 @@ final class HitchTests: XCTestCase {
         XCTAssertTrue(hitch.starts(with: Hitch("Hello world agai")))
     }
     
+    func testEndsWith1() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertTrue(hitch.ends(with: " again"))
+    }
+    
+    func testEndsWith2() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertFalse(hitch.ends(with: "ello "))
+    }
+    
+    func testEndsWith3() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertFalse(hitch.ends(with: "world"))
+    }
+    
+    func testEndsWith4() {
+        let hitch = "Hello world again".hitch()
+        XCTAssertTrue(hitch.ends(with: Hitch("ello world again")))
+    }
+    
     func testUnescaping() {
         // A, ö, Ж, €, 𝄞
         let hitch0 = #"\\ \' \" \t \n \r"#.hitch().unescape()
@@ -528,6 +548,7 @@ final class HitchTests: XCTestCase {
     }
     
     func testSplit0() {
+        splitTest("\n", "hello world", ["hello world"])
         splitTest(",", "1,2,3,4,5,6,7,8,9,10,11,12,13,14", ["1","2","3","4","5","6","7","8","9","10","11","12","13","14"])
         splitTest(" ", "   hello       world   again   ", ["hello","world","again"])
         splitTest("<->", "   hello<->world<->again   ", ["   hello","world","again   "])

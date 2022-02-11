@@ -344,6 +344,20 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
+    func ends(with hitch: Hitchable) -> Bool {
+        return lastIndex(of: hitch) == count - hitch.count
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    func ends(with string: String) -> Bool {
+        return chitch_using(string) { string_raw, string_count in
+            return chitch_lastof_raw(raw(), count, string_raw, string_count) == count - string_count
+        }
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     func contains(_ hitch: Hitchable) -> Bool {
         return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
     }
