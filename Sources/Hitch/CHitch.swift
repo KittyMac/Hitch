@@ -134,6 +134,16 @@ func chitch_init_substring(_ c0: CHitch, _ lhs_positions: Int, _ rhs_positions: 
 }
 
 @inlinable @inline(__always)
+func chitch_init_substring_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int, _ lhs_positions: Int, _ rhs_positions: Int) -> CHitch {
+    guard let raw = raw else { return chitch_empty() }
+    let size = rhs_positions - lhs_positions
+    guard size > 0 && size <= count else { return CHitch() }
+    guard lhs_positions >= 0 && lhs_positions <= count else { return CHitch() }
+    guard rhs_positions >= 0 && rhs_positions <= count else { return CHitch() }
+    return chitch_init_raw(raw + lhs_positions, size)
+}
+
+@inlinable @inline(__always)
 func chitch_dealloc(_ chitch: inout CHitch) {
     chitch_internal_free(chitch.data)
 }
@@ -708,6 +718,20 @@ func chitch_toepoch(_ c0: inout CHitch) -> Int {
     guard c0.count > 0 else { return 0 }
 
     guard let stringValue = String(bytesNoCopy: c0_data, length: c0.count, encoding: .utf8, freeWhenDone: false) else { return 0 }
+    guard let date = epochFormat.date(from: stringValue) else { return 0 }
+
+    return Int(date.timeIntervalSince1970)
+}
+
+@inlinable @inline(__always)
+func chitch_toepoch_raw(_ raw: UnsafeMutablePointer<UInt8>?,
+                        _ count: Int) -> Int {
+    // Handles just this one date format. Timezone is always considered to be UTC
+    // 4/30/2021 8:19:27 AM
+    guard let raw = raw else { return 0 }
+    guard count > 0 else { return 0 }
+
+    guard let stringValue = String(bytesNoCopy: raw, length: count, encoding: .utf8, freeWhenDone: false) else { return 0 }
     guard let date = epochFormat.date(from: stringValue) else { return 0 }
 
     return Int(date.timeIntervalSince1970)

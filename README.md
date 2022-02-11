@@ -22,7 +22,7 @@ Consider Hitch as an alternative to String.
 
 ## Format Strings
 
-Hitch has its own high performance string formatted strings.  It works like this:
+Hitch has its own high performance formatted strings.  It works like this:
 
 **Example:**
 

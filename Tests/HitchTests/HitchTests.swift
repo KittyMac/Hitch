@@ -4,9 +4,7 @@ import XCTest
 let lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 final class HitchTests: XCTestCase {
-    
-    // Basic tests to confirm the functionality of bstring
-    
+        
     func testSimpleCreate() {
         let hello = "Hello"
         XCTAssertEqual(hello.hitch().description, hello)
@@ -289,7 +287,7 @@ final class HitchTests: XCTestCase {
         let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch().unescape()
         XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
         
-        var hitch2 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch().halfhitch()
+        var hitch2 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.halfhitch()
         hitch2.unescape()
         XCTAssertEqual(hitch2, "A ö Ж € 𝄞")
         
@@ -566,11 +564,11 @@ final class HitchTests: XCTestCase {
     
     func testHalfHitchEqualityPerf() {
         let sourceHitches = [
-            "George the seventh123".hitch().halfhitch(),
-            "John the third1234567".hitch().halfhitch(),
-            "Henry the twelveth123".hitch().halfhitch(),
-            "Dennis the mennis1234".hitch().halfhitch(),
-            "Calvin and the Hobbes".hitch().halfhitch()
+            "George the seventh123".halfhitch(),
+            "John the third1234567".halfhitch(),
+            "Henry the twelveth123".halfhitch(),
+            "Dennis the mennis1234".halfhitch(),
+            "Calvin and the Hobbes".halfhitch()
         ]
         
         let match = "John the third1234567".hitch().halfhitch()
