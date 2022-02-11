@@ -220,8 +220,8 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
 
     @inlinable @inline(__always)
     @discardableResult
-    public func append(_ hitch: HalfHitch) -> Self {
-        chitch_concat(&chitch, hitch.source, hitch.count)
+    public func append(_ hitch: Hitchable) -> Self {
+        chitch_concat(&chitch, hitch.raw(), hitch.count)
         return self
     }
 

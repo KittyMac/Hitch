@@ -510,6 +510,29 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "12345"), "   12345 12345 12345 12345 12345 12345 12345 12345   ")
     }
     
+    private func splitTest(_ separator: Hitch, _ hitch: Hitch, _ result: [Hitch]) {
+        let hhresult = result.map { $0.halfhitch() }
+        let stringJoinedResult = result.map { $0.description }.joined(separator: "!")
+        
+        let parts: [Hitch] = hitch.components(separatedBy: separator)
+        XCTAssertEqual(parts, result)
+        XCTAssertEqual(parts.joined(separator: "!"), stringJoinedResult.hitch())
+        
+        let parts2: [HalfHitch] = hitch.halfhitch().components(separatedBy: separator)
+        XCTAssertEqual(parts2, hhresult)
+        XCTAssertEqual(parts2.joined(separator: "!"), stringJoinedResult.hitch())
+        
+        let parts3: [HalfHitch] = hitch.halfhitch().components(separatedBy: separator.halfhitch())
+        XCTAssertEqual(parts3, hhresult)
+        XCTAssertEqual(parts3.joined(separator: "!"), stringJoinedResult.hitch())
+    }
+    
+    func testSplit0() {
+        splitTest(",", "1,2,3,4,5,6,7,8,9,10,11,12,13,14", ["1","2","3","4","5","6","7","8","9","10","11","12","13","14"])
+        splitTest(" ", "   hello       world   again   ", ["hello","world","again"])
+        splitTest("<->", "   hello<->world<->again   ", ["   hello","world","again   "])
+    }
+    
     func testHitchAsKeys() {
         
         var info = [HalfHitch: Int]()

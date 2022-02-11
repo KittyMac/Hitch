@@ -46,6 +46,54 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
     }
 }
 
+typealias HitchArray = [Hitch]
+extension HitchArray {
+    @inlinable @inline(__always)
+    func joined(separator: Hitchable) -> Hitch {
+        var count = 0
+        for part in self {
+            count += separator.count
+            count += part.count
+        }
+        let hitch = Hitch(capacity: count + 1)
+        for part in self {
+            hitch.append(part)
+            hitch.append(separator)
+        }
+        hitch.count -= separator.count
+        return hitch
+    }
+
+    @inlinable @inline(__always)
+    func joined(separator: String) -> Hitch {
+        return joined(separator: separator.halfhitch())
+    }
+}
+
+typealias HalfHitchArray = [HalfHitch]
+extension HalfHitchArray {
+    @inlinable @inline(__always)
+    func joined(separator: Hitchable) -> Hitch {
+        var count = 0
+        for part in self {
+            count += separator.count
+            count += part.count
+        }
+        let hitch = Hitch(capacity: count + 1)
+        for part in self {
+            hitch.append(part)
+            hitch.append(separator)
+        }
+        hitch.count -= separator.count
+        return hitch
+    }
+
+    @inlinable @inline(__always)
+    func joined(separator: String) -> Hitch {
+        return joined(separator: separator.halfhitch())
+    }
+}
+
 public extension Hitchable {
 
     var description: String {
@@ -192,6 +240,50 @@ public extension Hitchable {
             return Data(bytes: data + start, count: end - start)
         }
         return Data()
+    }
+
+    @inlinable @inline(__always)
+    func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
+        guard let raw = raw() else { return [] }
+        guard let separatorRaw = separator.raw() else { return [] }
+        let rawCount = count
+        let separatorCount = separator.count
+
+        var components = [HalfHitch]()
+        var currentIdx = 0
+
+        while true {
+            let nextIdx = chitch_firstof_raw_offset(raw, currentIdx, rawCount, separatorRaw, separatorCount)
+            if nextIdx < 0 {
+                break
+            }
+
+            if currentIdx != nextIdx {
+                components.append(HalfHitch(raw: raw, count: rawCount, from: currentIdx, to: nextIdx))
+            }
+            currentIdx = nextIdx + separatorCount
+        }
+
+        if currentIdx != rawCount {
+            components.append(HalfHitch(raw: raw, count: rawCount, from: currentIdx, to: rawCount))
+        }
+
+        return components
+    }
+
+    @inlinable @inline(__always)
+    func components(separatedBy: Hitch) -> [HalfHitch] {
+        return components(separatedBy: separatedBy.halfhitch())
+    }
+
+    @inlinable @inline(__always)
+    func components(separatedBy: HalfHitch) -> [Hitch] {
+        return components(separatedBy: separatedBy).map { $0.hitch() }
+    }
+
+    @inlinable @inline(__always)
+    func components(separatedBy: Hitch) -> [Hitch] {
+        return components(separatedBy: separatedBy.halfhitch()).map { $0.hitch() }
     }
 
     @inlinable @inline(__always)
