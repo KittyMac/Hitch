@@ -287,6 +287,16 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
+    func components(separatedBy: String) -> [HalfHitch] {
+        return components(separatedBy: separatedBy.halfhitch())
+    }
+
+    @inlinable @inline(__always)
+    func components(separatedBy: String) -> [Hitch] {
+        return components(separatedBy: separatedBy.halfhitch()).map { $0.hitch() }
+    }
+
+    @inlinable @inline(__always)
     func compare(other: Hitchable) -> Int {
         return chitch_cmp_raw(raw(), count, other.raw(), other.count)
     }
