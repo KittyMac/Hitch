@@ -237,7 +237,7 @@ public extension Hitchable {
     @inlinable @inline(__always)
     @discardableResult
     func starts(with hitch: Hitchable) -> Bool {
-        guard count > hitch.count else { return false }
+        guard count >= hitch.count else { return false }
         return chitch_equal_raw(raw(), hitch.count, hitch.raw(), hitch.count)
     }
 
@@ -245,7 +245,7 @@ public extension Hitchable {
     @discardableResult
     func starts(with string: String) -> Bool {
         return chitch_using(string) { string_raw, string_count in
-            guard count > string_count else { return false }
+            guard count >= string_count else { return false }
             return chitch_equal_raw(raw(), string_count, string_raw, string_count)
         }
     }
