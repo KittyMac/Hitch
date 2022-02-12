@@ -163,6 +163,15 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         chitch = chitch_init_capacity(0)
     }
 
+    @inlinable @inline(__always)
+    func exportAsData() -> Data {
+        defer { chitch = chitch_empty() }
+        if let raw = raw() {
+            return Data(bytesNoCopy: raw, count: count, deallocator: .free)
+        }
+        return Data()
+    }
+
     // MARK: - Mutating
 
     @inlinable @inline(__always)

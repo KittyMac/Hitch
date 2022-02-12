@@ -554,6 +554,14 @@ final class HitchTests: XCTestCase {
         splitTest("<->", "   hello<->world<->again   ", ["   hello","world","again   "])
     }
     
+    func testExportAsData() {
+        let hitch = "Hello World".hitch()
+        let data = hitch.exportAsData()
+        
+        XCTAssertEqual(String(data: data, encoding: .utf8), "Hello World")
+        XCTAssertEqual(hitch.count, 0)
+    }
+    
     func testHitchAsKeys() {
         
         var info = [HalfHitch: Int]()
