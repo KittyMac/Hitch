@@ -111,6 +111,11 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     }
 
     @inlinable @inline(__always)
+    public init(bytes: UnsafePointer<UInt8>, offset: Int, count: Int) {
+        chitch = chitch_init_raw(bytes + offset, count)
+    }
+
+    @inlinable @inline(__always)
     public init(data: Data) {
         chitch = chitch_empty()
         data.withUnsafeBytes { unsafeRawBufferPointer in
