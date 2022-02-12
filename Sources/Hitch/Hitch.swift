@@ -234,6 +234,20 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
 
     @inlinable @inline(__always)
     @discardableResult
+    public func append(_ bytes: UnsafePointer<UInt8>, count: Int) -> Self {
+        chitch_concat(&chitch, bytes, count)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func append(_ bytes: UnsafeMutablePointer<UInt8>, count: Int) -> Self {
+        chitch_concat(&chitch, bytes, count)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func append(_ hitch: Hitchable) -> Self {
         chitch_concat(&chitch, hitch.raw(), hitch.count)
         return self
