@@ -42,7 +42,7 @@ final class HalfHitchTests: XCTestCase {
     }
     
     func testDirectAccess() {
-        HalfHitch(stringLiteral: lorem).using { (bytes) in
+        HalfHitch(string: lorem).using { (bytes) in
             XCTAssertEqual(bytes[6], 105)
             XCTAssertEqual(bytes[3], 101)
         }
@@ -115,22 +115,22 @@ final class HalfHitchTests: XCTestCase {
         "value4": "6.0",
         """.halfhitch()
         
-        XCTAssertEqual(test1.extract(#""value1""#, ",")?.toInt(fuzzy: true) ?? 0, 27)
-        XCTAssertEqual(test1.extract(#""value2""#, ",")?.toInt(fuzzy: true) ?? 0, 27)
-        XCTAssertEqual(test1.extract(#"value3"#, ",")?.toInt(fuzzy: true) ?? 0, 27)
-        XCTAssertEqual(test1.extract(#""value4": ""#, "\""), "6.0")
+        XCTAssertEqual(test1.extract(#""value1""#.hitch(), ",".hitch())?.toInt(fuzzy: true) ?? 0, 27)
+        XCTAssertEqual(test1.extract(#""value2""#.hitch(), ",".hitch())?.toInt(fuzzy: true) ?? 0, 27)
+        XCTAssertEqual(test1.extract(#"value3"#.hitch(), ",".hitch())?.toInt(fuzzy: true) ?? 0, 27)
+        XCTAssertEqual(test1.extract(#""value4": ""#.hitch(), "\"".hitch()), "6.0".hitch())
     }
     
     func testIndexOf() {
         let hitchLorem = lorem.halfhitch()
-        let hitchNeedle = Hitch("nulla pariatur")
+        let hitchNeedle = Hitch(string: "nulla pariatur")
         
         XCTAssertEqual(hitchLorem.firstIndex(of: hitchNeedle), 319)
     }
     
     func testLastIndexOf() {
         let hitchLorem = "/true|false/".halfhitch()
-        let hitchNeedle = Hitch("/")
+        let hitchNeedle = Hitch(string: "/")
         
         XCTAssertEqual(hitchLorem.lastIndex(of: hitchNeedle), 11)
     }
@@ -142,7 +142,7 @@ final class HalfHitchTests: XCTestCase {
     
     func testIndexOf3() {
         let hitchLorem = lorem.halfhitch()
-        let hitchNeedle = Hitch("nulla pariatur")
+        let hitchNeedle = Hitch(string: "nulla pariatur")
         
         XCTAssertEqual(hitchLorem.lastIndex(of: hitchNeedle), 319)
     }
@@ -171,7 +171,7 @@ final class HalfHitchTests: XCTestCase {
     
     func testSubstring0() {
         let hitch = "Hello world again".halfhitch()
-        XCTAssertEqual(hitch.substring(6, 11), "world")
+        XCTAssertEqual(hitch.substring(6, 11), "world".hitch())
     }
     
     func testSubstring1() {
@@ -206,7 +206,7 @@ final class HalfHitchTests: XCTestCase {
     
     func testStartsWith4() {
         let hitch = "Hello world again".halfhitch()
-        XCTAssertTrue(hitch.starts(with: Hitch("Hello world agai")))
+        XCTAssertTrue(hitch.starts(with: Hitch(string: "Hello world agai")))
     }
     
     func testUnescaping() {
@@ -226,11 +226,11 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(hitch0[11], 0)
         
         let hitch1 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch().unescape()
-        XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
+        XCTAssertEqual(hitch1, "A ö Ж € 𝄞".hitch())
         
         var hitch2 = #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch().halfhitch()
         hitch2.unescape()
-        XCTAssertEqual(hitch2, "A ö Ж € 𝄞")
+        XCTAssertEqual(hitch2, "A ö Ж € 𝄞".halfhitch())
         
     }
     
@@ -258,9 +258,9 @@ final class HalfHitchTests: XCTestCase {
         
         let hitch1 = "A ö Ж € 𝄞".halfhitch()
         XCTAssertEqual(hitch1.escaped(unicode: true,
-                                      singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+                                      singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch())
         XCTAssertEqual(hitch1.hitch().escaped(unicode: true,
-                                              singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#)
+                                              singleQuotes: true), #"A \u00F6 \u0416 \u20AC \u{1D11E}"#.hitch())
     }
     
     func testComparable() {
@@ -269,8 +269,8 @@ final class HalfHitchTests: XCTestCase {
         
         XCTAssertEqual(hitch1 < hitch2, "Apple" < "apple")
         
-        XCTAssertEqual(Hitch("5") < Hitch("5.1.2"), "5" < "5.1.2")
-        XCTAssertEqual(Hitch("5") > Hitch("5.1.2"), "5" > "5.1.2")
+        XCTAssertEqual(Hitch(string: "5") < Hitch(string: "5.1.2"), "5" < "5.1.2")
+        XCTAssertEqual(Hitch(string: "5") > Hitch(string: "5.1.2"), "5" > "5.1.2")
     }
        
     func testSplitToInt() {
@@ -340,22 +340,22 @@ final class HalfHitchTests: XCTestCase {
     
     func testReplace1() {
         // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
-        XCTAssertEqual(Hitch("Hello CrUeL world").replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
-        XCTAssertEqual(Hitch("Hello CrUeL world").replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "CrUeL".hitch(), with: "happy".hitch()), "Hello happy world".hitch())
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "cRuEl".hitch(), with: "happy".hitch(), ignoreCase: true), "Hello happy world".hitch())
     }
     
     func testReplace2() {
         // reduction
-        XCTAssertEqual(Hitch("Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello", with: "Bye"), "Bye Bye Bye Bye Bye Bye Bye Bye")
-        XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "Bye"), "   Bye Bye Bye Bye Bye Bye Bye Bye   ")
+        XCTAssertEqual(Hitch(string: "Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello".hitch(), with: "Bye".hitch()), "Bye Bye Bye Bye Bye Bye Bye Bye".hitch())
+        XCTAssertEqual(Hitch(string: "   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello".hitch(), with: "Bye".hitch()), "   Bye Bye Bye Bye Bye Bye Bye Bye   ".hitch())
         
         // expansion
-        XCTAssertEqual(Hitch("Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello", with: "Goodbye", ignoreCase: true), "Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye")
-        XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "Goodbye", ignoreCase: true), "   Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye   ")
+        XCTAssertEqual(Hitch(string: "Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello".hitch(), with: "Goodbye".hitch(), ignoreCase: true), "Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye".hitch())
+        XCTAssertEqual(Hitch(string: "   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello".hitch(), with: "Goodbye".hitch(), ignoreCase: true), "   Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye Goodbye   ".hitch())
         
         // same size
-        XCTAssertEqual(Hitch("Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello", with: "12345"), "12345 12345 12345 12345 12345 12345 12345 12345")
-        XCTAssertEqual(Hitch("   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "12345"), "   12345 12345 12345 12345 12345 12345 12345 12345   ")
+        XCTAssertEqual(Hitch(string: "Hello Hello Hello Hello Hello Hello Hello Hello").replace(occurencesOf: "Hello".hitch(), with: "12345".hitch()), "12345 12345 12345 12345 12345 12345 12345 12345".hitch())
+        XCTAssertEqual(Hitch(string: "   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello".hitch(), with: "12345".hitch()), "   12345 12345 12345 12345 12345 12345 12345 12345   ".hitch())
     }
     
     func testHitchAsKeys() {

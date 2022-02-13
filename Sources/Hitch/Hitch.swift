@@ -2,16 +2,26 @@
 
 import Foundation
 
+@inlinable @inline(__always)
+prefix func ~ (value: String) -> Hitch {
+    return Hitch(string: value)
+}
+
+@inlinable @inline(__always)
+prefix func ~ (value: String) -> HalfHitch {
+    return HalfHitch(string: value)
+}
+
 public extension String {
 
     @inlinable @inline(__always)
     func hitch() -> Hitch {
-        return Hitch(stringLiteral: self)
+        return Hitch(string: self)
     }
 
     @inlinable @inline(__always)
     func halfhitch() -> HalfHitch {
-        return HalfHitch(stringLiteral: self)
+        return HalfHitch(string: self)
     }
 }
 
@@ -43,7 +53,7 @@ struct HitchOutputStream: TextOutputStream {
     }
 }
 
-public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
+public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparable, Codable, Hashable {
     public static let empty = Hitch()
 
     @inlinable @inline(__always)
@@ -80,8 +90,8 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
 
     public convenience init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let stringLiteral = try container.decode(String.self)
-        self.init(stringLiteral: stringLiteral)
+        let string = try container.decode(String.self)
+        self.init(string: string)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -96,8 +106,8 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         chitch_dealloc(&chitch)
     }
 
-    required public init (stringLiteral: String) {
-        chitch = chitch_init_string(stringLiteral)
+    required public init (string: String) {
+        chitch = chitch_init_string(string)
     }
 
     @inlinable @inline(__always)

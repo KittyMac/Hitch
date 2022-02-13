@@ -1,13 +1,13 @@
 import Foundation
 
 @usableFromInline
-let trueHitch = Hitch("true")
+let trueHitch = Hitch(string: "true")
 @usableFromInline
-let falseHitch = Hitch("false")
+let falseHitch = Hitch(string: "false")
 @usableFromInline
-let errorHitch = Hitch("error")
+let errorHitch = Hitch(string: "error")
 @usableFromInline
-let nullHitch = Hitch("null")
+let nullHitch = Hitch(string: "null")
 
 @usableFromInline
 let defaultPrecision = 15
@@ -84,8 +84,8 @@ extension Hitch {
         case let value as Bool: return value ? TypedValue(hitch: trueHitch) : TypedValue(hitch: falseHitch)
         case let value as Hitch: return(TypedValue(hitch: value))
         case let value as HalfHitch: return(TypedValue(hitch: value.hitch()))
-        case let value as String: return(TypedValue(hitch: Hitch(stringLiteral: value)))
-        case let value as CustomStringConvertible: return(TypedValue(hitch: Hitch(stringLiteral: value.description)))
+        case let value as String: return(TypedValue(hitch: Hitch(string: value)))
+        case let value as CustomStringConvertible: return(TypedValue(hitch: Hitch(string: value.description)))
         case let value as NSNumber: return(TypedValue(double: Double(value.doubleValue)))
         default: return(TypedValue())
         }

@@ -4,38 +4,38 @@ import XCTest
 final class HitchFormatTests: XCTestCase {
     
     func testNoFormat() {
-        let hello = Hitch("hello", "this", "is", "a", "test")
-        XCTAssertEqual(hello, "hello")
+        let hello = Hitch(~"hello", "this", "is", "a", "test")
+        XCTAssertEqual(hello, ~"hello")
     }
     
     func testStringFormat() {
-        let hello = Hitch("{0} {1}", "hello", "world")
-        XCTAssertEqual(hello, "hello world")
+        let hello = Hitch(~"{0} {1}", "hello", "world")
+        XCTAssertEqual(hello, ~"hello world")
     }
     
     func testIntFormat() {
-        let hello = Hitch("{0} {1} {2}", 0, 1, 2, 3)
-        XCTAssertEqual(hello, "0 1 2")
+        let hello = Hitch(~"{0} {1} {2}", 0, 1, 2, 3)
+        XCTAssertEqual(hello, ~"0 1 2")
     }
     
     func testDoubleFormat() {
-        let hello = Hitch("{0} {1} {2} {3}", 8.0123456789, 12345.12345, 3.02, 0.0)
-        XCTAssertEqual(hello, "8.0123456789 12345.12345 3.02 0.0")
+        let hello = Hitch(~"{0} {1} {2} {3}", 8.0123456789, 12345.12345, 3.02, 0.0)
+        XCTAssertEqual(hello, ~"8.0123456789 12345.12345 3.02 0.0")
     }
     
     func testFloatFormat() {
-        XCTAssertEqual(Hitch("{        ~0.4         }", 8.0123456789), "        8.0123         ")
-        XCTAssertEqual(Hitch("{        ~0.4         }", "8.0123456789x"), "        8.0123x        ")
+        XCTAssertEqual(Hitch(~"{        ~0.4         }", 8.0123456789), ~"        8.0123         ")
+        XCTAssertEqual(Hitch(~"{        ~0.4         }", "8.0123456789x"), ~"        8.0123x        ")
     }
     
     func testBooleanFormat() {
-        let hello = Hitch("{0} {1}", true, false)
-        XCTAssertEqual(hello, "true false")
+        let hello = Hitch(~"{0} {1}", true, false)
+        XCTAssertEqual(hello, ~"true false")
     }
     
     func testExample() {
         
-        let value = Hitch("""
+        let value = Hitch(~"""
             {0}
             +----------+----------+----------+
             |{-0      }|{~0      }|{0       }|
@@ -49,7 +49,7 @@ final class HitchFormatTests: XCTestCase {
             """, "This is an unbounded field", "Hello", "World", 27, 1, 2, 3, 1.0/3.0, 543.0/23.0, 99999.99999)
         print(value)
         
-        XCTAssertEqual(value, """
+        XCTAssertEqual(value, ~"""
         This is an unbounded field
         +----------+----------+----------+
         |This is an|This is an|This is an|
@@ -71,7 +71,7 @@ final class HitchFormatTests: XCTestCase {
                     print("Hello World")
                 }
             }
-            """, "printHelloWorld")
+            """.hitch(), "printHelloWorld")
         print(value)
         
         XCTAssert(value == """
@@ -94,7 +94,7 @@ final class HitchFormatTests: XCTestCase {
                     }
                 }
             }
-            """, "printHelloWorld")
+            """.hitch(), "printHelloWorld")
         print(value)
         
         XCTAssert(value == """
@@ -113,12 +113,12 @@ final class HitchFormatTests: XCTestCase {
         
         let value = Hitch("""
             extension {?} { public struct {?} { } }
-            """, "Hello", "World")
+            """.hitch(), "Hello".hitch(), "World".hitch())
         print(value)
         
         XCTAssertEqual(value, """
             extension Hello { public struct World { } }
-            """)
+            """.hitch())
     }
     
     static var allTests = [

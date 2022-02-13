@@ -5,7 +5,7 @@ import Foundation
 /// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
-public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable {
+public struct HalfHitch: Hitchable, CustomStringConvertible, Sequence, Comparable, Hashable {
 
     public static let empty = HalfHitch()
 
@@ -78,8 +78,8 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     }
 
     @inlinable @inline(__always)
-    public init(stringLiteral: String) {
-        let source = stringLiteral.hitch()
+    public init(string: String) {
+        let source = string.hitch()
         if let raw = source.raw() {
             self.sourceObject = source
             self.source = raw
