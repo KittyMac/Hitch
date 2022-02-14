@@ -9,11 +9,31 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     public static let empty = HalfHitch()
 
+    @inlinable @inline(__always)
+    public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
+        return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func == (lhs: HalfHitch, rhs: StaticString) -> Bool {
+        let halfhitch = HalfHitch(stringLiteral: rhs)
+        return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
+        let halfhitch = HalfHitch(stringLiteral: lhs)
+        return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+    }
+
     @usableFromInline
     let sourceObject: AnyObject?
 
     @usableFromInline
     let source: UnsafePointer<UInt8>?
+
+    @usableFromInline
+    let maybeMutable: Bool
 
     public var count: Int
 
@@ -34,22 +54,26 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.sourceObject = nil
         self.source = raw + from
         self.count = to - from
+        self.maybeMutable = true
     }
 
     @inlinable @inline(__always)
     public init(source: Hitch, from: Int, to: Int) {
-        if let raw = source.raw() {
-            self.sourceObject = source
-            self.source = raw + from
-            self.count = to - from
-        } else if let raw = source.mutableRaw() {
+        if let raw = source.mutableRaw() {
             self.sourceObject = source
             self.source = UnsafePointer(raw) + from
             self.count = to - from
+            self.maybeMutable = true
+        } else if let raw = source.raw() {
+            self.sourceObject = source
+            self.source = raw + from
+            self.count = to - from
+            self.maybeMutable = false
         } else {
             self.sourceObject = nil
             self.source = nil
             self.count = 0
+            self.maybeMutable = false
         }
     }
 
@@ -59,9 +83,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         if let raw = source.source {
             self.source = raw + from
             self.count = to - from
+            self.maybeMutable = source.maybeMutable
         } else {
             self.source = nil
             self.count = 0
+            self.maybeMutable = false
         }
     }
 
@@ -70,6 +96,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.sourceObject = nil
         self.source = nil
         self.count = 0
+        self.maybeMutable = false
     }
 
     @inlinable @inline(__always)
@@ -78,16 +105,19 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.sourceObject = nil
             self.source = stringLiteral.utf8Start
             self.count = stringLiteral.utf8CodeUnitCount
+            self.maybeMutable = false
         } else {
             let source = Hitch(stringLiteral: stringLiteral)
             if let raw = source.raw() {
                 self.sourceObject = source
                 self.source = raw
                 self.count = source.count
+                self.maybeMutable = false
             } else {
                 self.sourceObject = nil
                 self.source = nil
                 self.count = 0
+                self.maybeMutable = false
             }
         }
     }
@@ -95,18 +125,21 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     public init(string: String) {
         let source = Hitch(string: string)
-        if let raw = source.raw() {
-            self.sourceObject = source
-            self.source = raw
-            self.count = source.count
-        } else if let raw = source.mutableRaw() {
+        if let raw = source.mutableRaw() {
             self.sourceObject = source
             self.source = UnsafePointer(raw)
             self.count = source.count
+            self.maybeMutable = true
+        } else if let raw = source.raw() {
+            self.sourceObject = source
+            self.source = raw
+            self.count = source.count
+            self.maybeMutable = false
         } else {
             self.sourceObject = nil
             self.source = nil
             self.count = 0
+            self.maybeMutable = false
         }
     }
 
@@ -131,6 +164,9 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     @discardableResult
     public mutating func unescape() -> Self {
+        guard maybeMutable else {
+            fatalError("unescape() called on HalfHitch pointing at immutable data")
+        }
         guard let raw = raw() else { return self }
         count = unescapeBinary(data: UnsafeMutablePointer(mutating: raw),
                                count: count)

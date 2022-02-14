@@ -18,6 +18,8 @@ struct CHitch {
     @usableFromInline
     var count: Int = 0
     @usableFromInline
+    var copyOnWrite: Bool = false
+    @usableFromInline
     var mutableData: UnsafeMutablePointer<UInt8>?
     @usableFromInline
     var castedMutableData: UnsafePointer<UInt8>?
@@ -98,11 +100,12 @@ func chitch_empty() -> CHitch {
 }
 
 @inlinable @inline(__always)
-func chitch_static(_ raw: UnsafePointer<UInt8>?, _ count: Int) -> CHitch {
+func chitch_static(_ raw: UnsafePointer<UInt8>?, _ count: Int, _ copyOnWrite: Bool) -> CHitch {
     var c = CHitch()
     c.count = count
     c.capacity = count
     c.staticData = raw
+    c.copyOnWrite = copyOnWrite
     return c
 }
 
@@ -174,6 +177,17 @@ func chitch_init_substring_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int, _ lhs
 @inlinable @inline(__always)
 func chitch_dealloc(_ chitch: inout CHitch) {
     chitch_internal_free(chitch.mutableData)
+    chitch.mutableData = nil
+}
+
+@inlinable @inline(__always)
+func chitch_make_mutable(_ c0: inout CHitch) {
+    if let c0_data = c0.staticData {
+        if c0.copyOnWrite == false {
+            fatalError("Mutating method called on Hitchable where copyOnWrite is set to false")
+        }
+        c0 = chitch_init_raw(UnsafeMutablePointer(mutating: c0_data), c0.count)
+    }
 }
 
 @inlinable @inline(__always)

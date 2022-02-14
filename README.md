@@ -8,17 +8,34 @@ Consider Hitch as an alternative to String.
 +-------------------------------+--------------------------+
 |HitchPerformanceTests.swift    |    Faster than String    |
 +-------------------------------+--------------------------+
-|string iterator                |         3923.79x         |
-|utf8 iterator                  |          80.43x          |
-|last index of                  |          62.21x          |
-|contains                       |          24.52x          |
-|first index of                 |          20.19x          |
-|uppercase/lowercase            |          16.50x          |
-|replace occurrences of         |          11.89x          |
-|append (dynamic capacity)      |          7.60x           |
-|append (static capacity)       |          1.15x           |
+|string iterator                |         5718.35x         |
+|utf8 iterator                  |          94.80x          |
+|last index of                  |          40.68x          |
+|first index of                 |          18.72x          |
+|contains                       |          14.38x          |
+|uppercase/lowercase            |          14.25x          |
+|replace occurrences of         |          10.64x          |
+|append (dynamic capacity)      |          5.64x           |
+|append (static capacity)       |          1.14x           |
 +-------------------------------+--------------------------+
 ```
+
+## Usage
+
+The guiding vision for Hitch is to **help ensure you are always on the fastest path** for UTF8 string processing. It aims to be **blatantly transparent** about hidden copy operations that can slow you down unintentionally.
+
+A **Hitch** is a reference type which holds UTF8 buffer data; think of it as a **hybrid of NSString and String**. It is a **class**, it can point to **shared mutable or immutable data**, and it has **copyOnWrite disabled** by default.
+
+A **HalfHitch** is a value type which points to existing, immuable UTF8 data. If possible, it will retain the original source it is pointing to.  
+
+*Note: HalfHitch.unescape() is the one exception to this, which will allow you to unescape unicode in place if the HalfHitch is pointing to a section of mutable data. It is coded to fatal error if you attempt to call it on immutable data.*
+
+The **Hitchable** protocol provides all of the immutable funcationality shared between **Hitches** and **HalfHitches**. You could conform to it for your own structures to provide said functionality to any arbitrary UTF8 data.
+
+As an example of this, prior to v0.4.0 Hitch's implementation ExpressibleByStringLiteral would result in n opaque copy of the underlying data. Now ExpressibleByStringLiteral is only allowed for StaticString (ie a string literal), where the resulting Hitchable can point to the raw, unmutable strind data.
+
+By default, Hitchables which are generated off of StaticStrings have "copyOnWrite" disabled. This means that attempting call a mutating method on a Hitch created from the StaticString will result in a fatal error. You can enabled copyOnWrite, in which case calling a mutating method on the Hitch will result in a new, mutable data store to be created prior to the mutation taking place.
+
 
 ## Format Strings
 

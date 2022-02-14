@@ -2,19 +2,6 @@
 
 import Foundation
 
-public extension String {
-
-    @inlinable @inline(__always)
-    func hitch() -> Hitch {
-        return Hitch(string: self)
-    }
-
-    @inlinable @inline(__always)
-    func halfhitch() -> HalfHitch {
-        return HalfHitch(string: self)
-    }
-}
-
 @usableFromInline
 struct HitchOutputStream: TextOutputStream {
     @usableFromInline
@@ -47,6 +34,11 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     public static let empty = Hitch()
 
     @inlinable @inline(__always)
+    public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
+        return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
@@ -54,6 +46,18 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func == (lhs: Hitch, rhs: StaticString) -> Bool {
+        let halfhitch = HalfHitch(stringLiteral: rhs)
+        return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func == (lhs: StaticString, rhs: Hitch) -> Bool {
+        let halfhitch = HalfHitch(stringLiteral: lhs)
+        return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
 
     @inlinable @inline(__always)
@@ -83,12 +87,14 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         return chitch.mutableData
     }
 
+    @inlinable @inline(__always)
     public convenience init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let string = try container.decode(String.self)
         self.init(string: string)
     }
 
+    @inlinable @inline(__always)
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.description)
@@ -97,13 +103,17 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @usableFromInline
     var chitch: CHitch
 
+    @inlinable @inline(__always)
     deinit {
         chitch_dealloc(&chitch)
     }
 
-    required public init (stringLiteral: StaticString) {
+    @inlinable @inline(__always)
+    required public init (stringLiteral: StaticString, copyOnWrite: Bool) {
         if stringLiteral.hasPointerRepresentation {
-            chitch = chitch_static(stringLiteral.utf8Start, stringLiteral.utf8CodeUnitCount)
+            chitch = chitch_static(stringLiteral.utf8Start,
+                                   stringLiteral.utf8CodeUnitCount,
+                                   copyOnWrite)
         } else {
             chitch = stringLiteral.withUTF8Buffer { bytes in
                 chitch_init_raw(bytes.baseAddress, bytes.count)
@@ -111,6 +121,20 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         }
     }
 
+    @inlinable @inline(__always)
+    required public init (stringLiteral: StaticString) {
+        if stringLiteral.hasPointerRepresentation {
+            chitch = chitch_static(stringLiteral.utf8Start,
+                                   stringLiteral.utf8CodeUnitCount,
+                                   false)
+        } else {
+            chitch = stringLiteral.withUTF8Buffer { bytes in
+                chitch_init_raw(bytes.baseAddress, bytes.count)
+            }
+        }
+    }
+
+    @inlinable @inline(__always)
     required public init (string: String) {
         chitch = chitch_init_string(string)
     }
@@ -186,9 +210,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     public func exportAsData() -> Data {
         defer { chitch = chitch_empty() }
-        if let raw = chitch.mutableData {
-            return Data(bytesNoCopy: raw, count: count, deallocator: .free)
-        } else if let raw = chitch.staticData {
+        if let raw = chitch.universalData {
             return Data(bytes: raw, count: count)
         }
         return Data()
@@ -211,6 +233,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_replace(&chitch, hitch.chitch, with.chitch, ignoreCase)
         return self
     }
@@ -219,6 +242,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @discardableResult
     public func reserveCapacity(_ newCapacity: Int) -> Self {
         if newCapacity > chitch.capacity {
+            chitch_make_mutable(&chitch)
             chitch_resize(&chitch, newCapacity)
         }
         return self
@@ -227,6 +251,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func lowercase() -> Self {
+        chitch_make_mutable(&chitch)
         chitch_tolower_raw(chitch.mutableData, chitch.count)
         return self
     }
@@ -234,6 +259,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func uppercase() -> Self {
+        chitch_make_mutable(&chitch)
         chitch_toupper_raw(chitch.mutableData, chitch.count)
         return self
     }
@@ -241,6 +267,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: Hitch, precision: Int? = nil) -> Self {
+        chitch_make_mutable(&chitch)
         if let precision = precision {
             chitch_concat_precision(&chitch, hitch.raw(), hitch.count, precision)
         } else {
@@ -252,6 +279,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ bytes: UnsafePointer<UInt8>, count: Int) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_concat(&chitch, bytes, count)
         return self
     }
@@ -259,6 +287,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ bytes: UnsafeMutablePointer<UInt8>, count: Int) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_concat(&chitch, bytes, count)
         return self
     }
@@ -266,6 +295,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: Hitchable) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_concat(&chitch, hitch.raw(), hitch.count)
         return self
     }
@@ -273,6 +303,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ string: String) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_using(string) { string_raw, string_count in
             chitch_concat(&chitch, string_raw, string_count)
         }
@@ -282,7 +313,8 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ string: String, precision: Int?) -> Self {
-        chitch_using(string) { string_raw, string_count in
+        chitch_make_mutable(&chitch)
+        return chitch_using(string) { string_raw, string_count in
             if let precision = precision {
                 chitch_concat_precision(&chitch, string_raw, string_count, precision)
             } else {
@@ -295,6 +327,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ char: UInt8) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_concat_char(&chitch, char)
         return self
     }
@@ -316,6 +349,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ data: Data) -> Self {
+        chitch_make_mutable(&chitch)
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
@@ -327,6 +361,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_insert_raw(&chitch, index, hitch.raw(), hitch.count)
         return self
     }
@@ -334,6 +369,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_insert_cstring(&chitch, index, string)
         return self
     }
@@ -341,6 +377,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int, precision: Int?) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_using(string) { string_raw, _ in
             var length = string.count
             if let precision = precision {
@@ -362,6 +399,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ char: UInt8, index: Int) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_insert_char(&chitch, index, char)
         return self
     }
@@ -369,6 +407,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
+        chitch_make_mutable(&chitch)
         chitch_insert_int(&chitch, index, Int(number))
         return self
     }
@@ -384,6 +423,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
+        chitch_make_mutable(&chitch)
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
@@ -395,6 +435,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func trim() -> Self {
+        chitch_make_mutable(&chitch)
         chitch_trim(&chitch)
         return self
     }
@@ -402,6 +443,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func unescape() -> Hitch {
+        chitch_make_mutable(&chitch)
         guard let raw = chitch.mutableData else { return self }
         count = unescapeBinary(data: raw,
                                count: count)

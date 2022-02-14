@@ -62,9 +62,6 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testUTF8IterationPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
         XCTAssert(
             test (100000, "utf8 iterator",
             {
@@ -82,9 +79,6 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testIterationPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
         XCTAssert(
             test (100000, "string iterator",
             {
@@ -102,17 +96,16 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testToUpperAndToLowerPerf() {
-        var swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
+        var mutableSwiftLorem = swiftLorem
+        let hitchLorem = Hitch(string: swiftLorem)
         XCTAssert(
             test (1000, "uppercase/lowercase",
             {
                 for x in 1...1000 {
                     if x % 2 == 0 {
-                        swiftLorem = swiftLorem.lowercased()
+                        mutableSwiftLorem = mutableSwiftLorem.lowercased()
                     } else {
-                        swiftLorem = swiftLorem.uppercased()
+                        mutableSwiftLorem = mutableSwiftLorem.uppercased()
                     }
                 }
             }, {
@@ -162,86 +155,66 @@ final class HitchPerformanceTests: XCTestCase {
             test (10, "string literals",
             {
                 for _ in 1...100000 {
-                    let _ = "Hello World!".hitch()
+                    let _ = Hitch(string: "Hello World!")
                 }
             }, {
                 for _ in 1...100000 {
-                    let _: Hitch = "Hello World!"
+                    let _ = Hitch(stringLiteral: "Hello World!")
                 }
             })
         )
     }
     
     func testContainsPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        let swiftNeedle = "nulla pariatur"
-        let hitchNeedle = swiftNeedle.hitch()
-        
-        XCTAssertTrue(swiftLorem.contains(swiftNeedle))
-        XCTAssertTrue(hitchLorem.contains(hitchNeedle))
+        XCTAssertTrue(swiftLorem.contains("nulla pariatur"))
+        XCTAssertTrue(hitchLorem.contains("nulla pariatur"))
         
         XCTAssert(
             test (1000, "contains",
             {
                 for _ in 1...1000 {
-                    _ = swiftLorem.contains(swiftNeedle)
+                    _ = swiftLorem.contains("nulla pariatur")
                 }
             }, {
                 for _ in 1...1000 {
-                    hitchLorem.contains(hitchNeedle)
+                    hitchLorem.contains("nulla pariatur")
                 }
             })
         )
     }
     
     func testFirstIndexOfPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        let swiftNeedle = "nulla pariatur"
-        let hitchNeedle = swiftNeedle.hitch()
-                
         XCTAssert(
             test (1000, "first index of",
             {
                 for _ in 1...1000 {
-                    _ = swiftLorem.range(of: swiftNeedle)
+                    _ = swiftLorem.range(of: "nulla pariatur")
                 }
             }, {
                 for _ in 1...1000 {
-                    hitchLorem.firstIndex(of: hitchNeedle)
+                    hitchLorem.firstIndex(of: "nulla pariatur")
                 }
             })
         )
     }
     
     func testLastIndexOfPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        let swiftNeedle = "nulla pariatur"
-        let hitchNeedle = swiftNeedle.hitch()
-                
         XCTAssert(
             test (1000, "last index of",
             {
                 for _ in 1...1000 {
-                    _ = swiftLorem.range(of: swiftNeedle)
+                    _ = swiftLorem.range(of: "nulla pariatur")
                 }
             }, {
                 for _ in 1...1000 {
-                    hitchLorem.lastIndex(of: hitchNeedle)
+                    hitchLorem.lastIndex(of: "nulla pariatur")
                 }
             })
         )
     }
     
     func testReplacePerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        let swiftNeedle = "nulla pariatur"
-        let hitchNeedle = swiftNeedle.hitch()
-        let hitchReplacement = Hitch("hello world, goodbye world")
-                
+        let hitchLorem = Hitch(hitchLorem)
         XCTAssert(
             test (1000, "replace occurrences of",
             {
@@ -251,17 +224,14 @@ final class HitchPerformanceTests: XCTestCase {
                 }
             }, {
                 for _ in 1...1000 {
-                    hitchLorem.replace(occurencesOf: hitchNeedle, with: hitchReplacement)
-                    hitchLorem.replace(occurencesOf: hitchReplacement, with: hitchNeedle)
+                    hitchLorem.replace(occurencesOf: "nulla pariatur", with: "hello world, goodbye world")
+                    hitchLorem.replace(occurencesOf: "hello world, goodbye world", with: "nulla pariatur")
                 }
             })
         )
     }
         
     func testAppendStaticMemoryPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
         var swiftCombined = ""
         let hitchCombined = Hitch()
         
@@ -279,9 +249,6 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testAppendDynamicMemoryPerf() {
-        let swiftLorem = lorem
-        let hitchLorem = lorem.hitch()
-        
         var swiftCombined = ""
         let hitchCombined = Hitch()
                 

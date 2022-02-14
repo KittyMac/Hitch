@@ -71,7 +71,7 @@ final class HitchFormatTests: XCTestCase {
                     print("Hello World")
                 }
             }
-            """.hitch(), "printHelloWorld")
+            """, "printHelloWorld")
         print(value)
         
         XCTAssert(value == """
@@ -94,7 +94,7 @@ final class HitchFormatTests: XCTestCase {
                     }
                 }
             }
-            """.hitch(), "printHelloWorld")
+            """, "printHelloWorld")
         print(value)
         
         XCTAssert(value == """
@@ -113,12 +113,12 @@ final class HitchFormatTests: XCTestCase {
         
         let value = Hitch("""
             extension {?} { public struct {?} { } }
-            """.hitch(), "Hello".hitch(), "World".hitch())
+            """, "Hello", "World")
         print(value)
         
         XCTAssertEqual(value, """
             extension Hello { public struct World { } }
-            """.hitch())
+            """)
     }
     
     static var allTests = [

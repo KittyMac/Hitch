@@ -55,7 +55,7 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
 typealias HitchArray = [Hitch]
 extension HitchArray {
     @inlinable @inline(__always)
-    func joined(separator: Hitchable) -> Hitch {
+    func joined(separator: HalfHitch) -> Hitch {
         var count = 0
         for part in self {
             count += separator.count
@@ -68,18 +68,13 @@ extension HitchArray {
         }
         hitch.count -= separator.count
         return hitch
-    }
-
-    @inlinable @inline(__always)
-    func joined(separator: String) -> Hitch {
-        return joined(separator: separator.halfhitch())
     }
 }
 
 typealias HalfHitchArray = [HalfHitch]
 extension HalfHitchArray {
     @inlinable @inline(__always)
-    func joined(separator: Hitchable) -> Hitch {
+    func joined(separator: HalfHitch) -> Hitch {
         var count = 0
         for part in self {
             count += separator.count
@@ -92,11 +87,6 @@ extension HalfHitchArray {
         }
         hitch.count -= separator.count
         return hitch
-    }
-
-    @inlinable @inline(__always)
-    func joined(separator: String) -> Hitch {
-        return joined(separator: separator.halfhitch())
     }
 }
 
@@ -142,36 +132,8 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
-    static func < (lhs: String, rhs: Self) -> Bool {
-        return chitch_using(lhs) { string_raw, string_count in
-            return chitch_cmp_raw(string_raw, string_count, rhs.raw(), rhs.count) < 0
-        }
-    }
-
-    @inlinable @inline(__always)
-    static func < (lhs: Self, rhs: String) -> Bool {
-        return chitch_using(rhs) { string_raw, string_count in
-            return chitch_cmp_raw(lhs.raw(), lhs.count, string_raw, string_count) < 0
-        }
-    }
-
-    @inlinable @inline(__always)
     static func == (lhs: Self, rhs: Self) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
-    }
-
-    @inlinable @inline(__always)
-    static func == (lhs: String, rhs: Self) -> Bool {
-        return chitch_using(lhs) { string_raw, string_count in
-            return chitch_equal_raw(string_raw, string_count, rhs.raw(), rhs.count)
-        }
-    }
-
-    @inlinable @inline(__always)
-    static func == (lhs: Self, rhs: String) -> Bool {
-        return chitch_using(rhs) { string_raw, string_count in
-            return chitch_equal_raw(lhs.raw(), lhs.count, string_raw, string_count)
-        }
     }
 
     @inlinable @inline(__always)
@@ -271,7 +233,7 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
-    func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
+    func components(separatedBy separator: Hitchable) -> [HalfHitch] {
         guard let raw = raw() else { return [] }
         guard let separatorRaw = separator.raw() else { return [] }
         let rawCount = count
@@ -301,31 +263,6 @@ public extension Hitchable {
         }
 
         return components
-    }
-
-    @inlinable @inline(__always)
-    func components(separatedBy: Hitch) -> [HalfHitch] {
-        return components(separatedBy: separatedBy.halfhitch())
-    }
-
-    @inlinable @inline(__always)
-    func components(separatedBy: HalfHitch) -> [Hitch] {
-        return components(separatedBy: separatedBy).map { $0.hitch() }
-    }
-
-    @inlinable @inline(__always)
-    func components(separatedBy: Hitch) -> [Hitch] {
-        return components(separatedBy: separatedBy.halfhitch()).map { $0.hitch() }
-    }
-
-    @inlinable @inline(__always)
-    func components(separatedBy: String) -> [HalfHitch] {
-        return components(separatedBy: separatedBy.halfhitch())
-    }
-
-    @inlinable @inline(__always)
-    func components(separatedBy: String) -> [Hitch] {
-        return components(separatedBy: separatedBy.halfhitch()).map { $0.hitch() }
     }
 
     @inlinable @inline(__always)
@@ -361,11 +298,18 @@ public extension Hitchable {
     @inlinable @inline(__always)
     func escaped(unicode: Bool,
                  singleQuotes: Bool) -> Hitch {
-        guard let mutableRaw = mutableRaw() else { return Hitch() }
-        return escapeBinary(data: mutableRaw,
-                            count: count,
-                            unicode: unicode,
-                            singleQuotes: singleQuotes)
+        if let raw = mutableRaw() {
+            return escapeBinary(data: raw,
+                                count: count,
+                                unicode: unicode,
+                                singleQuotes: singleQuotes)
+        } else if let raw = raw() {
+            return escapeBinary(data: raw,
+                                count: count,
+                                unicode: unicode,
+                                singleQuotes: singleQuotes)
+        }
+        return Hitch.empty
     }
 
     @inlinable @inline(__always)
@@ -377,11 +321,9 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func starts(with string: String) -> Bool {
-        return chitch_using(string) { string_raw, string_count in
-            guard count >= string_count else { return false }
-            return chitch_equal_raw(raw(), string_count, string_raw, string_count)
-        }
+    func starts(with hitch: HalfHitch) -> Bool {
+        guard count >= hitch.count else { return false }
+        return chitch_equal_raw(raw(), hitch.count, hitch.raw(), hitch.count)
     }
 
     @inlinable @inline(__always)
@@ -392,10 +334,8 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func ends(with string: String) -> Bool {
-        return chitch_using(string) { string_raw, string_count in
-            return chitch_lastof_raw(raw(), count, string_raw, string_count) == count - string_count
-        }
+    func ends(with hitch: HalfHitch) -> Bool {
+        return lastIndex(of: hitch) == count - hitch.count
     }
 
     @inlinable @inline(__always)
@@ -408,14 +348,6 @@ public extension Hitchable {
     @discardableResult
     func contains(_ halfHitch: HalfHitch) -> Bool {
         return chitch_contains_raw(raw(), count, halfHitch.source, halfHitch.count)
-    }
-
-    @inlinable @inline(__always)
-    @discardableResult
-    func contains(_ string: String) -> Bool {
-        return chitch_using(string) { string_raw, string_count in
-            return chitch_contains_raw(raw(), count, string_raw, string_count)
-        }
     }
 
     @inlinable @inline(__always)
@@ -434,11 +366,9 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func firstIndex(of string: String, offset: Int = 0) -> Int? {
-        return chitch_using(string) { string_raw, string_count in
-            let index = chitch_firstof_raw_offset(raw(), offset, count, string_raw, string_count)
-            return index >= 0 ? index : nil
-        }
+    func firstIndex(of hitch: HalfHitch, offset: Int = 0) -> Int? {
+        let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
@@ -458,11 +388,9 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func lastIndex(of string: String) -> Int? {
-        return chitch_using(string) { string_raw, string_count in
-            let index = chitch_lastof_raw(raw(), count, string_raw, string_count)
-            return index >= 0 ? index : nil
-        }
+    func lastIndex(of hitch: HalfHitch) -> Int? {
+        let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
+        return index >= 0 ? index : nil
     }
 
     @inlinable @inline(__always)
@@ -484,7 +412,7 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func extract(_ lhs: Hitch, _ rhs: Hitch) -> Hitch? {
+    func extract(_ lhs: Hitchable, _ rhs: Hitchable) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
         guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
             return substring(lhsPos + lhs.count, count)
@@ -494,20 +422,12 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func extract(_ lhs: String, _ rhs: String) -> Hitch? {
-        return extract(lhs.hitch(), rhs.hitch())
-    }
-
-    @inlinable @inline(__always)
-    @discardableResult
-    func extract(_ lhs: Hitch, _ rhs: String) -> Hitch? {
-        return extract(lhs, rhs.hitch())
-    }
-
-    @inlinable @inline(__always)
-    @discardableResult
-    func extract(_ lhs: String, _ rhs: Hitch) -> Hitch? {
-        return extract(lhs.hitch(), rhs)
+    func extract(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
+        guard let lhsPos = firstIndex(of: lhs) else { return nil }
+        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
+            return substring(lhsPos + lhs.count, count)
+        }
+        return substring(lhsPos + lhs.count, rhsPos)
     }
 
     @inlinable @inline(__always)
@@ -515,10 +435,10 @@ public extension Hitchable {
     func toInt(fuzzy: Bool = false) -> Int? {
         if let data = raw() {
             if fuzzy {
-                return intFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: data, count: count),
+                return intFromBinaryFuzzy(data: data,
                                           count: count)
             }
-            return intFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
+            return intFromBinary(data: data,
                                  count: count)
         }
         return nil
@@ -529,10 +449,10 @@ public extension Hitchable {
     func toDouble(fuzzy: Bool = false) -> Double? {
         if let data = raw() {
             if fuzzy {
-                return doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer(start: data, count: count),
+                return doubleFromBinaryFuzzy(data: data,
                                              count: count)
             }
-            return doubleFromBinary(data: UnsafeRawBufferPointer(start: data, count: count),
+            return doubleFromBinary(data: data,
                                     count: count)
         }
         return nil
@@ -555,7 +475,7 @@ func roundToPlaces(value: Double, places: Int) -> Double {
 }
 
 @inlinable @inline(__always)
-func intFromBinary(data: UnsafeRawBufferPointer,
+func intFromBinary(data: UnsafePointer<UInt8>,
                    count: Int) -> Int? {
     var value = 0
     var hasValue = false
@@ -605,7 +525,7 @@ func intFromBinary(data: UnsafeRawBufferPointer,
 }
 
 @inlinable @inline(__always)
-func doubleFromBinary(data: UnsafeRawBufferPointer,
+func doubleFromBinary(data: UnsafePointer<UInt8>,
                       count: Int) -> Double? {
     var value: Double = 0
     var hasValue = false
@@ -681,7 +601,7 @@ func doubleFromBinary(data: UnsafeRawBufferPointer,
 }
 
 @inlinable @inline(__always)
-func intFromBinaryFuzzy(data: UnsafeRawBufferPointer,
+func intFromBinaryFuzzy(data: UnsafePointer<UInt8>,
                         count: Int) -> Int? {
     var value = 0
     var hasValue = false
@@ -708,7 +628,7 @@ func intFromBinaryFuzzy(data: UnsafeRawBufferPointer,
 }
 
 @inlinable @inline(__always)
-func doubleFromBinaryFuzzy(data: UnsafeRawBufferPointer,
+func doubleFromBinaryFuzzy(data: UnsafePointer<UInt8>,
                            count: Int) -> Double? {
     var value: Double = 0
     var hasValue = false
@@ -831,7 +751,7 @@ func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
-func escapeBinary(data: UnsafeMutablePointer<UInt8>,
+func escapeBinary(data: UnsafePointer<UInt8>,
                   count: Int,
                   unicode: Bool,
                   singleQuotes: Bool) -> Hitch {
