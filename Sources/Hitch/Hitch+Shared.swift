@@ -8,6 +8,9 @@ public protocol Hitchable {
 
     @inlinable @inline(__always)
     var count: Int { get }
+
+    @inlinable @inline(__always)
+    func using(_ block: (UnsafePointer<UInt8>?, Int) -> Void)
 }
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
@@ -105,6 +108,13 @@ public extension Hitchable {
     func toString() -> String {
         guard let raw = raw() else { return "" }
         return String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .utf8) ?? ""
+    }
+
+    @inlinable @inline(__always)
+    func using(_ block: (UnsafePointer<UInt8>?, Int) -> Void) {
+        if let raw = raw() {
+            block(raw, count)
+        }
     }
 
     @inlinable @inline(__always)
