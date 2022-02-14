@@ -2,6 +2,31 @@ import Foundation
 
 // swiftlint:disable type_body_length
 
+public extension ArraySlice where Element == UInt8 {
+
+    @discardableResult
+    @inline(__always)
+    func toInt() -> Int? {
+        return self.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
+            return intFromBinary(data: bytes,
+                                 count: count)
+        }
+    }
+
+    @discardableResult
+    @inline(__always)
+    func toDouble() -> Double? {
+        return self.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
+            return doubleFromBinary(data: bytes,
+                                    count: count)
+        }
+    }
+}
+
 public protocol Hitchable {
     @inlinable @inline(__always)
     func raw() -> UnsafePointer<UInt8>?
