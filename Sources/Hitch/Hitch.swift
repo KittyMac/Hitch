@@ -2,14 +2,19 @@
 
 import Foundation
 
-@inlinable @inline(__always)
-prefix func ~ (value: String) -> Hitch {
-    return Hitch(string: value)
-}
+prefix operator ...
 
-@inlinable @inline(__always)
-prefix func ~ (value: String) -> HalfHitch {
-    return HalfHitch(string: value)
+public extension String {
+
+    @inlinable @inline(__always)
+    static prefix func ... (value: String) -> Hitch {
+        return Hitch(string: value)
+    }
+
+    @inlinable @inline(__always)
+    static prefix func ... (value: String) -> HalfHitch {
+        return HalfHitch(string: value)
+    }
 }
 
 public extension String {

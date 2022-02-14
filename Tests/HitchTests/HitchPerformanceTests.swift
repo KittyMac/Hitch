@@ -47,7 +47,7 @@ final class HitchPerformanceTests: XCTestCase {
         
         
         let chart = Hitch()
-        let format: Hitch = ~"|{             -?              }|{       ~?.2             }|\n"
+        let format: Hitch = ..."|{             -?              }|{       ~?.2             }|\n"
         
         chart.append("+-------------------------------+--------------------------+\n")
         chart.append(format: format, "HitchPerformanceTests.swift", "Faster than String")
@@ -141,7 +141,7 @@ final class HitchPerformanceTests: XCTestCase {
                 var total = 0
                 let hitch = Hitch()
                 for idx in 1...100000 {
-                    hitch.append(format: ~"{?}{?}{?}{?}{?}{?}{?}", idx+0, idx+1, idx+2, idx+3, idx+4, idx+5, idx+6)
+                    hitch.append(format: ..."{?}{?}{?}{?}{?}{?}{?}", idx+0, idx+1, idx+2, idx+3, idx+4, idx+5, idx+6)
                     hitch.clear()
                     total += hitch.count
                 }
@@ -152,7 +152,7 @@ final class HitchPerformanceTests: XCTestCase {
     func testFormatStrings2Perf() {
         let hitch = Hitch()
         for idx in 1...1000000 {
-            hitch.append(format: ~"{?}{?}{?}{?}{?}{?}{?}", idx+0, idx+1, idx+2, idx+3, idx+4, idx+5, idx+6)
+            hitch.append(format: ..."{?}{?}{?}{?}{?}{?}{?}", idx+0, idx+1, idx+2, idx+3, idx+4, idx+5, idx+6)
             hitch.clear()
         }
     }
@@ -225,7 +225,7 @@ final class HitchPerformanceTests: XCTestCase {
         let hitchLorem = lorem.hitch()
         let swiftNeedle = "nulla pariatur"
         let hitchNeedle = swiftNeedle.hitch()
-        let hitchReplacement = Hitch(~"hello world, goodbye world")
+        let hitchReplacement = Hitch(..."hello world, goodbye world")
                 
         XCTAssert(
             test (1000, "replace occurrences of",
