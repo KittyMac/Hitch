@@ -174,6 +174,18 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     }
 
     @inlinable @inline(__always)
+    @discardableResult
+    public func unescaped() -> Self {
+        // returns self if there was nothing to unescape, or silo'd halfhitch if there was
+        guard let raw = raw() else { return self }
+
+        var local: UInt8 = .backSlash
+        guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
+
+        return hitch().unescape().halfhitch()
+    }
+
+    @inlinable @inline(__always)
     func escaped(unicode: Bool,
                  singleQuotes: Bool) -> Hitch {
         guard let raw = raw() else { return Hitch() }
