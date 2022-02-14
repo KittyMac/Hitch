@@ -18,6 +18,18 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     public var count: Int
 
     @inlinable @inline(__always)
+    public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
+        return data.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
+            return callback(HalfHitch(raw: bytes,
+                                      count: data.count,
+                                      from: from,
+                                      to: to >= 0 ? to : data.count))
+        }
+    }
+
+    @inlinable @inline(__always)
     public init(raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceObject = nil
         self.source = raw + from
