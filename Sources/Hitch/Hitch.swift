@@ -2,21 +2,6 @@
 
 import Foundation
 
-prefix operator ...
-
-public extension String {
-
-    @inlinable @inline(__always)
-    static prefix func ... (value: String) -> Hitch {
-        return Hitch(string: value)
-    }
-
-    @inlinable @inline(__always)
-    static prefix func ... (value: String) -> HalfHitch {
-        return HalfHitch(string: value)
-    }
-}
-
 public extension String {
 
     @inlinable @inline(__always)
@@ -58,7 +43,7 @@ struct HitchOutputStream: TextOutputStream {
     }
 }
 
-public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparable, Codable, Hashable {
+public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
     public static let empty = Hitch()
 
     @inlinable @inline(__always)
@@ -74,14 +59,14 @@ public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparab
     @inlinable @inline(__always)
     public subscript (index: Int) -> UInt8 {
         get {
-            if let data = chitch.data,
+            if let data = chitch.universalData,
                index < chitch.count {
                 return data[index]
             }
             return 0
         }
         set(newValue) {
-            if let data = chitch.data,
+            if let data = chitch.mutableData,
                index < chitch.count {
                 data[index] = newValue
             }
@@ -89,8 +74,13 @@ public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparab
     }
 
     @inlinable @inline(__always)
-    public func raw() -> UnsafeMutablePointer<UInt8>? {
-        return chitch.data
+    public func raw() -> UnsafePointer<UInt8>? {
+        return chitch.universalData
+    }
+
+    @inlinable @inline(__always)
+    public func mutableRaw() -> UnsafeMutablePointer<UInt8>? {
+        return chitch.mutableData
     }
 
     public convenience init(from decoder: Decoder) throws {
@@ -109,6 +99,16 @@ public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparab
 
     deinit {
         chitch_dealloc(&chitch)
+    }
+
+    required public init (stringLiteral: StaticString) {
+        if stringLiteral.hasPointerRepresentation {
+            chitch = chitch_static(stringLiteral.utf8Start, stringLiteral.utf8CodeUnitCount)
+        } else {
+            chitch = stringLiteral.withUTF8Buffer { bytes in
+                chitch_init_raw(bytes.baseAddress, bytes.count)
+            }
+        }
     }
 
     required public init (string: String) {
@@ -186,8 +186,10 @@ public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparab
     @inlinable @inline(__always)
     public func exportAsData() -> Data {
         defer { chitch = chitch_empty() }
-        if let raw = raw() {
+        if let raw = chitch.mutableData {
             return Data(bytesNoCopy: raw, count: count, deallocator: .free)
+        } else if let raw = chitch.staticData {
+            return Data(bytes: raw, count: count)
         }
         return Data()
     }
@@ -225,14 +227,14 @@ public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparab
     @inlinable @inline(__always)
     @discardableResult
     public func lowercase() -> Self {
-        chitch_tolower_raw(chitch.data, chitch.count)
+        chitch_tolower_raw(chitch.mutableData, chitch.count)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
     public func uppercase() -> Self {
-        chitch_toupper_raw(chitch.data, chitch.count)
+        chitch_toupper_raw(chitch.mutableData, chitch.count)
         return self
     }
 
@@ -400,7 +402,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, Sequence, Comparab
     @inlinable @inline(__always)
     @discardableResult
     public func unescape() -> Hitch {
-        guard let raw = raw() else { return self }
+        guard let raw = chitch.mutableData else { return self }
         count = unescapeBinary(data: raw,
                                count: count)
         return self

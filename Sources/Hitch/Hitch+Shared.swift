@@ -4,7 +4,10 @@ import Foundation
 
 public protocol Hitchable {
     @inlinable @inline(__always)
-    func raw() -> UnsafeMutablePointer<UInt8>?
+    func raw() -> UnsafePointer<UInt8>?
+
+    @inlinable @inline(__always)
+    func mutableRaw() -> UnsafeMutablePointer<UInt8>?
 
     @inlinable @inline(__always)
     var count: Int { get }
@@ -15,9 +18,9 @@ public protocol Hitchable {
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
     @usableFromInline
-    internal var ptr: UnsafeMutablePointer<UInt8>
+    internal var ptr: UnsafePointer<UInt8>
     @usableFromInline
-    internal let end: UnsafeMutablePointer<UInt8>
+    internal let end: UnsafePointer<UInt8>
 
     @inlinable @inline(__always)
     internal init(hitch: Hitchable) {
@@ -100,14 +103,24 @@ extension HalfHitchArray {
 public extension Hitchable {
 
     var description: String {
-        guard let raw = raw() else { return "" }
-        return String(bytesNoCopy: raw, length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+        if let raw = raw() {
+            return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+        }
+        if let raw = mutableRaw() {
+            return String(bytesNoCopy: raw, length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+        }
+        return ""
     }
 
     @inlinable @inline(__always)
     func toString() -> String {
-        guard let raw = raw() else { return "" }
-        return String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .utf8) ?? ""
+        if let raw = raw() {
+            return String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .utf8) ?? ""
+        }
+        if let raw = mutableRaw() {
+            return String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .utf8) ?? ""
+        }
+        return ""
     }
 
     @inlinable @inline(__always)
@@ -162,7 +175,7 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
-    func using<T>(_ callback: (UnsafeMutablePointer<UInt8>) -> T?) -> T? {
+    func using<T>(_ callback: (UnsafePointer<UInt8>) -> T?) -> T? {
         if let raw = raw() {
             return callback(raw)
         }
@@ -191,6 +204,9 @@ public extension Hitchable {
     @inlinable @inline(__always)
     func dataNoCopy() -> Data {
         if let raw = raw() {
+            return Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none)
+        }
+        if let raw = mutableRaw() {
             return Data(bytesNoCopy: raw, count: count, deallocator: .none)
         }
         return Data()
@@ -207,22 +223,24 @@ public extension Hitchable {
     @inlinable @inline(__always)
     func dataNoCopy(start inStart: Int = -1,
                     end inEnd: Int = -1) -> Data {
+        let max = count
+        var start = inStart
+        var end = inEnd
+
+        if start < 0 || start > max {
+            start = 0
+        }
+        if end < 0 || start > max {
+            end = max
+        }
+        if start > end {
+            end = start
+        }
+
         if let raw = raw() {
-
-            let max = count
-            var start = inStart
-            var end = inEnd
-
-            if start < 0 || start > max {
-                start = 0
-            }
-            if end < 0 || start > max {
-                end = max
-            }
-            if start > end {
-                end = start
-            }
-
+            return Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw + start), count: end - start, deallocator: .none)
+        }
+        if let raw = mutableRaw() {
             return Data(bytesNoCopy: raw + start, count: end - start, deallocator: .none)
         }
         return Data()
@@ -269,13 +287,17 @@ public extension Hitchable {
             }
 
             if currentIdx != nextIdx {
-                components.append(HalfHitch(raw: raw, count: rawCount, from: currentIdx, to: nextIdx))
+                components.append(
+                    HalfHitch(raw: raw, count: rawCount, from: currentIdx, to: nextIdx)
+                )
             }
             currentIdx = nextIdx + separatorCount
         }
 
         if currentIdx != rawCount {
-            components.append(HalfHitch(raw: raw, count: rawCount, from: currentIdx, to: rawCount))
+            components.append(
+                HalfHitch(raw: raw, count: rawCount, from: currentIdx, to: rawCount)
+            )
         }
 
         return components
@@ -338,9 +360,9 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     func escaped(unicode: Bool,
-                        singleQuotes: Bool) -> Hitch {
-        guard let raw = raw() else { return Hitch() }
-        return escapeBinary(data: raw,
+                 singleQuotes: Bool) -> Hitch {
+        guard let mutableRaw = mutableRaw() else { return Hitch() }
+        return escapeBinary(data: mutableRaw,
                             count: count,
                             unicode: unicode,
                             singleQuotes: singleQuotes)
@@ -519,7 +541,10 @@ public extension Hitchable {
     @inlinable @inline(__always)
     @discardableResult
     func toEpoch() -> Int {
-        return chitch_toepoch_raw(raw(), count)
+        if let raw = raw() {
+            return chitch_toepoch_raw(UnsafeMutablePointer(mutating: raw), count)
+        }
+        return chitch_toepoch_raw(mutableRaw(), count)
     }
 }
 
@@ -944,4 +969,4 @@ func hex2(_ v: UInt32) -> UInt8 {
     }
 }
 
-public let nullptr = UnsafeMutablePointer<UInt8>(bitPattern: 1)!
+public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!

@@ -146,13 +146,6 @@ final class HalfHitchTests: XCTestCase {
         
         XCTAssertEqual(hitchLorem.lastIndex(of: hitchNeedle), 319)
     }
-        
-    func testHalfHitchFromData0() {
-        let data = "Hello world again".data(using: .utf8)!
-        HalfHitch.using(data: data, from: 6, to: 11) { hh in
-            XCTAssertEqual(hh.description, "world")
-        }
-    }
     
     func testHalfHitch0() {
         let hitch = "Hello world again".halfhitch()

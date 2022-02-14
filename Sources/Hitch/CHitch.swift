@@ -18,17 +18,27 @@ struct CHitch {
     @usableFromInline
     var count: Int = 0
     @usableFromInline
-    var data: UnsafeMutablePointer<UInt8>?
+    var mutableData: UnsafeMutablePointer<UInt8>?
+    @usableFromInline
+    var castedMutableData: UnsafePointer<UInt8>?
+    @usableFromInline
+    var staticData: UnsafePointer<UInt8>?
 
     @inlinable @inline(__always)
     init() { }
+
+    @inlinable @inline(__always)
+    var universalData: UnsafePointer<UInt8>? {
+        if castedMutableData != nil { return castedMutableData }
+        return staticData
+    }
 }
 
 // MARK: - Utility
 
 @inlinable @inline(__always)
-func memcasecmp(_ ptr1: UnsafeMutablePointer<UInt8>,
-                _ ptr2: UnsafeMutablePointer<UInt8>,
+func memcasecmp(_ ptr1: UnsafePointer<UInt8>,
+                _ ptr2: UnsafePointer<UInt8>,
                 _ count: Int,
                 _ ignoreCase: Bool) -> Int32 {
     if ignoreCase {
@@ -88,11 +98,21 @@ func chitch_empty() -> CHitch {
 }
 
 @inlinable @inline(__always)
+func chitch_static(_ raw: UnsafePointer<UInt8>?, _ count: Int) -> CHitch {
+    var c = CHitch()
+    c.count = count
+    c.capacity = count
+    c.staticData = raw
+    return c
+}
+
+@inlinable @inline(__always)
 func chitch_init_capacity(_ capacity: Int) -> CHitch {
     var c = CHitch()
     c.count = 0
     c.capacity = capacity
-    c.data = chitch_internal_malloc(capacity + 1)
+    c.mutableData = chitch_internal_malloc(capacity + 1)
+    c.castedMutableData = UnsafePointer(c.mutableData)
     return c
 }
 
@@ -102,8 +122,9 @@ func chitch_init_raw(_ raw: UnsafeMutablePointer<UInt8>?, _ count: Int) -> CHitc
     var c = CHitch()
     c.count = count
     c.capacity = count
-    c.data = chitch_internal_malloc(count + 1)
-    c.data?.assign(from: raw, count: count)
+    c.mutableData = chitch_internal_malloc(count + 1)
+    c.castedMutableData = UnsafePointer(c.mutableData)
+    c.mutableData?.assign(from: raw, count: count)
     return c
 }
 
@@ -113,8 +134,9 @@ func chitch_init_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int) -> CHitch {
     var c = CHitch()
     c.count = count
     c.capacity = count
-    c.data = chitch_internal_malloc(count + 1)
-    c.data?.assign(from: raw, count: count)
+    c.mutableData = chitch_internal_malloc(count + 1)
+    c.castedMutableData = UnsafePointer(c.mutableData)
+    c.mutableData?.assign(from: raw, count: count)
     return c
 }
 
@@ -129,8 +151,14 @@ func chitch_init_substring(_ c0: CHitch, _ lhs_positions: Int, _ rhs_positions: 
     guard size > 0 && size <= c0.count else { return CHitch() }
     guard lhs_positions >= 0 && lhs_positions <= c0.count else { return CHitch() }
     guard rhs_positions >= 0 && rhs_positions <= c0.count else { return CHitch() }
-    guard let c0_data = c0.data else { return CHitch() }
-    return chitch_init_raw(c0_data + lhs_positions, size)
+
+    if let c0_data = c0.mutableData {
+        return chitch_init_raw(c0_data + lhs_positions, size)
+    }
+    if let c0_data = c0.staticData {
+        return chitch_init_raw(c0_data + lhs_positions, size)
+    }
+    return CHitch()
 }
 
 @inlinable @inline(__always)
@@ -145,7 +173,7 @@ func chitch_init_substring_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int, _ lhs
 
 @inlinable @inline(__always)
 func chitch_dealloc(_ chitch: inout CHitch) {
-    chitch_internal_free(chitch.data)
+    chitch_internal_free(chitch.mutableData)
 }
 
 @inlinable @inline(__always)
@@ -153,14 +181,17 @@ func chitch_realloc(_ c0: inout CHitch, _ newCapacity: Int) {
     // Note: UnsafeMutablePointer appears to be missing a realloc!
     guard newCapacity != c0.capacity else { return }
 
-    guard let c0_data = c0.data else {
-        c0 = chitch_init_capacity(newCapacity)
+    if let c0_data = c0.mutableData {
+        c0.count = min(c0.count, newCapacity)
+        c0.capacity = newCapacity
+        c0.mutableData = chitch_internal_realloc(c0_data, newCapacity + 1)
+        c0.castedMutableData = UnsafePointer(c0.mutableData)
         return
     }
-
-    c0.count = min(c0.count, newCapacity)
-    c0.capacity = newCapacity
-    c0.data = chitch_internal_realloc(c0_data, newCapacity + 1)
+    if let _ = c0.staticData {
+        return
+    }
+    c0 = chitch_init_capacity(newCapacity)
 }
 
 @inlinable @inline(__always)
@@ -213,7 +244,7 @@ func chitch_toupper_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int) {
 
 @inlinable @inline(__always)
 func chitch_trim(_ c0: inout CHitch) {
-    guard let c0_data = c0.data else { return }
+    guard let c0_data = c0.mutableData else { return }
 
     var start = c0_data
     var end = c0_data + c0.count - 1
@@ -231,7 +262,7 @@ func chitch_trim(_ c0: inout CHitch) {
     }
 
     c0.count = end - start + 1
-    if start == c0.data {
+    if start == c0.mutableData {
         return
     }
     memmove(c0_data, start, c0.count)
@@ -239,8 +270,8 @@ func chitch_trim(_ c0: inout CHitch) {
 
 @inlinable @inline(__always)
 func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ignoreCase: Bool) {
-    guard let find_data = find.data else { return }
-    guard let replace_data = replace.data else { return }
+    guard let find_data = find.universalData else { return }
+    guard let replace_data = replace.universalData else { return }
 
     let c0_count = c0.count
     let find_count = find.count
@@ -255,7 +286,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         var num_occurences = 0
         var nextOffset = 0
         while true {
-            nextOffset = chitch_firstof_raw_offset(c0.data, nextOffset, c0_count, find.data, find_count)
+            nextOffset = chitch_firstof_raw_offset(c0.mutableData, nextOffset, c0_count, find_data, find_count)
             if nextOffset < 0 {
                 break
             }
@@ -266,7 +297,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         let capacity_required = c0_count + (replace_count - find_count) * num_occurences
 
         chitch_sanity(&c0, capacity_required)
-        guard let c0_data = c0.data else { return }
+        guard let c0_data = c0.mutableData else { return }
 
         // work our way from back to front, copying and replacing as we go
         let start = c0_data
@@ -309,7 +340,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
     } else {
         // Our array can stay the same size as we perform the replacement. Since we can go front to
         // back we don't need to know the number of occurrences a priori.
-        guard let c0_data = c0.data else { return }
+        guard let c0_data = c0.mutableData else { return }
 
         // work our way from back to front, copying and replacing as we go
         let start = c0_data
@@ -339,24 +370,12 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 }
 
 @inlinable @inline(__always)
-func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafeMutablePointer<UInt8>?, _ rhs_count: Int) {
-    guard rhs_count > 0 else { return }
-    guard let rhs = rhs else { return }
-
-    chitch_sanity(&c0, c0.count + rhs_count)
-    guard let c0_data = c0.data else { return }
-
-    (c0_data + c0.count).assign(from: rhs, count: rhs_count)
-    c0.count += rhs_count
-}
-
-@inlinable @inline(__always)
 func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafePointer<UInt8>?, _ rhs_count: Int) {
     guard rhs_count > 0 else { return }
     guard let rhs = rhs else { return }
 
     chitch_sanity(&c0, c0.count + rhs_count)
-    guard let c0_data = c0.data else { return }
+    guard let c0_data = c0.mutableData else { return }
 
     (c0_data + c0.count).assign(from: rhs, count: rhs_count)
     c0.count += rhs_count
@@ -366,19 +385,19 @@ func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafePointer<UInt8>?, _ rhs_count
 func chitch_concat_char(_ c0: inout CHitch, _ rhs: UInt8) {
 
     chitch_sanity(&c0, c0.count + 1)
-    guard let c0_data = c0.data else { return }
+    guard let c0_data = c0.mutableData else { return }
 
     c0_data[c0.count] = rhs
     c0.count += 1
 }
 
 @inlinable @inline(__always)
-func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafeMutablePointer<UInt8>?, _ rhs_count: Int, _ precision: Int) {
+func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafePointer<UInt8>?, _ rhs_count: Int, _ precision: Int) {
     guard rhs_count > 0 else { return }
     guard var rhs = rhs_in else { return }
 
     chitch_sanity(&c0, c0.count + rhs_count)
-    guard let c0_data = c0.data else { return }
+    guard let c0_data = c0.mutableData else { return }
 
     // treat each '.' found with digits on boths sides as if it were a double, include only precision number of decimal places
     var ptr = c0_data + c0.count
@@ -421,7 +440,7 @@ func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafeMutablePointer<
 }
 
 @inlinable @inline(__always)
-func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafeMutablePointer<UInt8>?, _ rhs_count: Int) {
+func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafePointer<UInt8>?, _ rhs_count: Int) {
     guard let rhs = rhs else { return }
 
     var position = position_in
@@ -432,7 +451,7 @@ func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafeMuta
     }
 
     chitch_sanity(&c0, c0.count + rhs_count)
-    guard let c0_data = c0.data else { return }
+    guard let c0_data = c0.mutableData else { return }
 
     // Start at end and copy back until old count + rhs_count to make room
     // for simultaneous copy operation
@@ -454,15 +473,6 @@ func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafeMuta
     }
 
     c0.count += rhs_count
-}
-
-@inlinable @inline(__always)
-func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafeRawPointer?, _ rhs_count: Int) {
-    let raw = UnsafeMutableRawPointer(mutating: rhs)
-    chitch_insert_raw(&c0,
-                      position_in,
-                      raw?.bindMemory(to: UInt8.self, capacity: rhs_count),
-                      rhs_count)
 }
 
 @inlinable @inline(__always)
@@ -534,9 +544,9 @@ func chitch_insert_int(_ c0: inout CHitch, _ position: Int, _ rhs_in: Int) {
 // MARK: - IMMUTABLE METHODS
 
 @inlinable @inline(__always)
-func chitch_cmp_raw(_ lhs: UnsafeMutablePointer<UInt8>?,
+func chitch_cmp_raw(_ lhs: UnsafePointer<UInt8>?,
                     _ lhs_count: Int,
-                    _ rhs: UnsafeMutablePointer<UInt8>?,
+                    _ rhs: UnsafePointer<UInt8>?,
                     _ rhs_count: Int) -> Int {
     guard lhs != nil && rhs != nil else { return 0 }
     guard let lhs = lhs else { return -1 }
@@ -566,9 +576,9 @@ func chitch_cmp_raw(_ lhs: UnsafeMutablePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
-func chitch_equal_raw(_ lhs: UnsafeMutablePointer<UInt8>?,
+func chitch_equal_raw(_ lhs: UnsafePointer<UInt8>?,
                       _ lhs_count: Int,
-                      _ rhs: UnsafeMutablePointer<UInt8>?,
+                      _ rhs: UnsafePointer<UInt8>?,
                       _ rhs_count: Int) -> Bool {
     if lhs == nil && rhs == nil { return true }
     guard lhs != nil && rhs != nil else { return false }
@@ -581,18 +591,18 @@ func chitch_equal_raw(_ lhs: UnsafeMutablePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
-func chitch_contains_raw(_ haystack: UnsafeMutablePointer<UInt8>?,
+func chitch_contains_raw(_ haystack: UnsafePointer<UInt8>?,
                          _ haystack_count: Int,
-                         _ needle: UnsafeMutablePointer<UInt8>?,
+                         _ needle: UnsafePointer<UInt8>?,
                          _ needle_count: Int) -> Bool {
     return chitch_firstof_raw(haystack, haystack_count, needle, needle_count) >= 0
 }
 
 @inlinable @inline(__always)
-func chitch_firstof_raw_offset(_ haystack: UnsafeMutablePointer<UInt8>?,
+func chitch_firstof_raw_offset(_ haystack: UnsafePointer<UInt8>?,
                                _ haystack_offset: Int,
                                _ haystack_count: Int,
-                               _ needle: UnsafeMutablePointer<UInt8>?,
+                               _ needle: UnsafePointer<UInt8>?,
                                _ needle_count: Int) -> Int {
     guard haystack_count >= 0 else { return -1 }
     guard needle_count > 0 else { return 0 }
@@ -608,9 +618,9 @@ func chitch_firstof_raw_offset(_ haystack: UnsafeMutablePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
-func chitch_firstof_raw(_ haystack: UnsafeMutablePointer<UInt8>?,
+func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
                         _ haystack_count: Int,
-                        _ needle: UnsafeMutablePointer<UInt8>?,
+                        _ needle: UnsafePointer<UInt8>?,
                         _ needle_count: Int) -> Int {
     guard haystack_count >= 0 else { return -1 }
     guard needle_count > 0 else { return 0 }
@@ -659,9 +669,9 @@ func chitch_firstof_raw(_ haystack: UnsafeMutablePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
-func chitch_lastof_raw(_ haystack: UnsafeMutablePointer<UInt8>?,
+func chitch_lastof_raw(_ haystack: UnsafePointer<UInt8>?,
                        _ haystack_count: Int,
-                       _ needle: UnsafeMutablePointer<UInt8>?,
+                       _ needle: UnsafePointer<UInt8>?,
                        _ needle_count: Int) -> Int {
     guard haystack_count >= 0 else { return -1 }
     guard needle_count > 0 else { return 0 }
@@ -714,10 +724,10 @@ func chitch_lastof_raw(_ haystack: UnsafeMutablePointer<UInt8>?,
 func chitch_toepoch(_ c0: inout CHitch) -> Int {
     // Handles just this one date format. Timezone is always considered to be UTC
     // 4/30/2021 8:19:27 AM
-    guard let c0_data = c0.data else { return 0 }
+    guard let c0_data = c0.universalData else { return 0 }
     guard c0.count > 0 else { return 0 }
 
-    guard let stringValue = String(bytesNoCopy: c0_data, length: c0.count, encoding: .utf8, freeWhenDone: false) else { return 0 }
+    guard let stringValue = String(bytesNoCopy: UnsafeMutableRawPointer(mutating: c0_data), length: c0.count, encoding: .utf8, freeWhenDone: false) else { return 0 }
     guard let date = epochFormat.date(from: stringValue) else { return 0 }
 
     return Int(date.timeIntervalSince1970)
@@ -738,7 +748,7 @@ func chitch_toepoch_raw(_ raw: UnsafeMutablePointer<UInt8>?,
 }
 
 @usableFromInline
-func chitch_using<T>(_ string: String, _ block: (UnsafeMutablePointer<UInt8>, Int) -> T) -> T {
+func chitch_using<T>(_ string: String, _ block: (UnsafePointer<UInt8>, Int) -> T) -> T {
     return string.withCString { bytes in
         var ptr = bytes
         while ptr.pointee != 0 {
