@@ -452,6 +452,18 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
 
     @inlinable @inline(__always)
     @discardableResult
+    public func unescaped() -> Hitch {
+        // returns self if there was nothing to unescape, or silo'd halfhitch if there was
+        guard let raw = raw() else { return self }
+
+        var local: UInt8 = .backSlash
+        guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
+
+        return Hitch(hitch: self).unescape()
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func halfhitch(_ lhsPos: Int, _ rhsPos: Int) -> HalfHitch {
         guard lhsPos >= 0 && lhsPos <= count else { return HalfHitch() }
         guard rhsPos >= 0 && rhsPos <= count else { return HalfHitch() }

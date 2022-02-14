@@ -163,7 +163,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     @discardableResult
-    public mutating func unescape() -> Self {
+    public mutating func unescape() -> HalfHitch {
         guard maybeMutable else {
             fatalError("unescape() called on HalfHitch pointing at immutable data")
         }
@@ -175,7 +175,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     @discardableResult
-    public func unescaped() -> Self {
+    public func unescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
         guard let raw = raw() else { return self }
 
