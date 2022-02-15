@@ -1,13 +1,22 @@
 import Foundation
 
+public func << (left: StaticString, right: [Any?]) -> HalfHitch {
+    return Hitch(HalfHitch(stringLiteral: left), values: right).halfhitch()
+}
+
+infix operator <<<: AdditionPrecedence
+public func <<< (left: StaticString, right: [Any?]) -> Hitch {
+    return Hitch(HalfHitch(stringLiteral: left), values: right)
+}
+
 @usableFromInline
-let trueHitch = Hitch(string: "true")
+let trueHitch: Hitch = "true"
 @usableFromInline
-let falseHitch = Hitch(string: "false")
+let falseHitch: Hitch = "false"
 @usableFromInline
-let errorHitch = Hitch(string: "error")
+let errorHitch: Hitch = "error"
 @usableFromInline
-let nullHitch = Hitch(string: "null")
+let nullHitch: Hitch = "null"
 
 @usableFromInline
 let defaultPrecision = 15
