@@ -44,6 +44,16 @@ Hitch has its own high performance formatted strings.  It works like this:
 **Example:**
 
 ```swift
+let halfHitch: HalfHitch = "{0} {1}" << ["hello", "world"]
+let hitch: Hitch = "{0} {1}" <<<< ["hello", "world"]
+    
+XCTAssertEqual(halfHitch, "hello world")
+XCTAssertEqual(hitch, "hello world")
+```
+
+**Example:**
+
+```swift
 let value = Hitch("""
     {0}
     +----------+----------+----------+

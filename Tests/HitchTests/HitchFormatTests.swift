@@ -1,7 +1,30 @@
 import XCTest
 @testable import Hitch
 
+infix operator <<: AdditionPrecedence
+extension StaticString {
+    static func << (left: StaticString, right: [Any?]) -> HalfHitch {
+        return Hitch(HalfHitch(stringLiteral: left), values: right).halfhitch()
+    }
+}
+
+infix operator <<<<: AdditionPrecedence
+extension StaticString {
+    static func <<<< (left: StaticString, right: [Any?]) -> Hitch {
+        return Hitch(HalfHitch(stringLiteral: left), values: right)
+    }
+}
+
+
 final class HitchFormatTests: XCTestCase {
+    
+    func testFormatOperator() {
+        let halfHitch: HalfHitch = "{0} {1}" << ["hello", "world"]
+        let hitch: Hitch = "{0} {1}" <<<< ["hello", "world"]
+        
+        XCTAssertEqual(halfHitch, "hello world")
+        XCTAssertEqual(hitch, "hello world")
+    }
     
     func testNoFormat() {
         let hello = Hitch("hello", "this", "is", "a", "test")

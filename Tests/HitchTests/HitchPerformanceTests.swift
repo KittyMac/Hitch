@@ -47,13 +47,13 @@ final class HitchPerformanceTests: XCTestCase {
         
         
         let chart = Hitch()
-        let format: Hitch = "|{             -?              }|{       ~?.2             }|\n"
+        let format: StaticString = "|{             -?              }|{       ~?.2             }|\n"
         
         chart.append("+-------------------------------+--------------------------+\n")
-        chart.append(format: format, "HitchPerformanceTests.swift", "Faster than String")
+        chart.append(format << ["HitchPerformanceTests.swift", "Faster than String"])
         chart.append("+-------------------------------+--------------------------+\n")
         for (name,timing) in results.sorted(by: { $0.1 > $1.1 } ) {
-            chart.append(format: format, name, "\(timing)x")
+            chart.append(format << [name, "\(timing)x"])
         }
         chart.append("+-------------------------------+--------------------------+\n")
         
@@ -214,7 +214,7 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testReplacePerf() {
-        let hitchLorem = Hitch(hitchLorem)
+        let hitchLorem = Hitch(hitch: hitchLorem)
         XCTAssert(
             test (1000, "replace occurrences of",
             {

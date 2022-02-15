@@ -92,32 +92,38 @@ extension Hitch {
     }
 
     @inlinable @inline(__always)
-    public convenience init(_ format: Hitch, _ values: Any?...) {
+    public convenience init(_ format: HalfHitch, _ values: Any?...) {
         self.init()
         self.insert(format: format, index: count, values: values)
     }
 
     @inlinable @inline(__always)
+    public convenience init(_ format: HalfHitch, values: [Any?]) {
+        self.init()
+        self.append(format: format, values: values)
+    }
+
+    @inlinable @inline(__always)
     @discardableResult
-    public func append(format: Hitch, _ values: Any?...) -> Self {
+    public func append(format: HalfHitch, _ values: Any?...) -> Self {
         return insert(format: format, index: count, values: values)
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func append(format: Hitch, values: [Any?]) -> Self {
+    public func append(format: HalfHitch, values: [Any?]) -> Self {
         return insert(format: format, index: count, values: values)
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func insert(format: Hitch, index: Int, _ values: Any?...) -> Self {
+    public func insert(format: HalfHitch, index: Int, _ values: Any?...) -> Self {
         return insert(format: format, index: index, values: values)
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func insert(format: Hitch, index: Int, values: [Any?]) -> Self {
+    public func insert(format: HalfHitch, index: Int, values: [Any?]) -> Self {
 
         let scratch = index == count ? self : Hitch(capacity: format.count)
         let valueScratch = Hitch(capacity: format.count)
