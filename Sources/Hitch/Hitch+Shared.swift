@@ -258,7 +258,7 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
-    func components(separatedBy separator: Hitchable) -> [HalfHitch] {
+    func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
         guard let raw = raw() else { return [] }
         guard let separatorRaw = separator.raw() else { return [] }
         let rawCount = count
@@ -288,6 +288,12 @@ public extension Hitchable {
         }
 
         return components
+    }
+
+    @inlinable @inline(__always)
+    func components(separatedBy separator: HalfHitch) -> [Hitch] {
+        let hhcomponents: [HalfHitch] = components(separatedBy: separator)
+        return hhcomponents.map { $0.hitch() }
     }
 
     @inlinable @inline(__always)
