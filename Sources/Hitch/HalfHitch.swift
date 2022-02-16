@@ -169,7 +169,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             fatalError("unescape() called on HalfHitch pointing at immutable data")
             #else
             print("warning: unescape() called on HalfHitch pointing at immutable data")
-            return
+            return self
             #endif
         }
         guard let raw = raw() else { return self }
