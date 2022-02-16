@@ -11,6 +11,33 @@ final class HitchFormatTests: XCTestCase {
         XCTAssertEqual(hitch, "hello world")
     }
     
+    func testFormatOperator2() {
+        let format = "{0} {1}"
+        let halfHitch = format << ["hello", "world"]
+        let hitch = format <<< ["hello", "world"]
+        
+        XCTAssertEqual(halfHitch, "hello world")
+        XCTAssertEqual(hitch, "hello world")
+    }
+    
+    func testFormatOperator3() {
+        let format: Hitch = "{0} {1}"
+        let halfHitch = format << ["hello", "world"]
+        let hitch = format <<< ["hello", "world"]
+        
+        XCTAssertEqual(halfHitch, "hello world")
+        XCTAssertEqual(hitch, "hello world")
+    }
+    
+    func testFormatOperator4() {
+        let format: HalfHitch = "{0} {1}"
+        let halfHitch = format << ["hello", "world"]
+        let hitch = format <<< ["hello", "world"]
+        
+        XCTAssertEqual(halfHitch, "hello world")
+        XCTAssertEqual(hitch, "hello world")
+    }
+    
     func testNoFormat() {
         let hello = Hitch("hello", "this", "is", "a", "test")
         XCTAssertEqual(hello, "hello")
