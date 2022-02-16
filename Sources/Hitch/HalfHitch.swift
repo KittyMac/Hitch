@@ -165,7 +165,12 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @discardableResult
     public mutating func unescape() -> HalfHitch {
         guard maybeMutable else {
+            #if DEBUG
             fatalError("unescape() called on HalfHitch pointing at immutable data")
+            #else
+            print("warning: unescape() called on HalfHitch pointing at immutable data")
+            return
+            #endif
         }
         guard let raw = raw() else { return self }
         count = unescapeBinary(data: UnsafeMutablePointer(mutating: raw),

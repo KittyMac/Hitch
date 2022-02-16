@@ -184,7 +184,12 @@ func chitch_dealloc(_ chitch: inout CHitch) {
 func chitch_make_mutable(_ c0: inout CHitch) {
     if let c0_data = c0.staticData {
         if c0.copyOnWrite == false {
+            #if DEBUG
             fatalError("Mutating method called on Hitchable where copyOnWrite is set to false")
+            #else
+            print("warning: attempted to mutate a Hitchable where copyOnWrite is set to false")
+            return
+            #endif
         }
         c0 = chitch_init_raw(UnsafeMutablePointer(mutating: c0_data), c0.count)
     }
