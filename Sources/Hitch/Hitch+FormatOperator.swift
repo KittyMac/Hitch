@@ -3,8 +3,6 @@ import Foundation
 infix operator <<<: AdditionPrecedence
 
 public protocol HitchFormattable {
-    associatedtype HitchType
-
     @inlinable @inline(__always)
     func formatToHalfHitch(using values: [Any?]) -> HalfHitch
 
@@ -13,7 +11,6 @@ public protocol HitchFormattable {
 }
 
 extension String: HitchFormattable {
-    public typealias HitchType = String
     @inlinable @inline(__always)
     public func formatToHalfHitch(using values: [Any?]) -> HalfHitch {
         return formatToHitch(using: values).halfhitch()
@@ -25,7 +22,6 @@ extension String: HitchFormattable {
 }
 
 extension StaticString: HitchFormattable {
-    public typealias HitchType = StaticString
     @inlinable @inline(__always)
     public func formatToHalfHitch(using values: [Any?]) -> HalfHitch {
         return formatToHitch(using: values).halfhitch()
@@ -37,7 +33,6 @@ extension StaticString: HitchFormattable {
 }
 
 extension Hitch: HitchFormattable {
-    public typealias HitchType = Hitch
     @inlinable @inline(__always)
     public func formatToHalfHitch(using values: [Any?]) -> HalfHitch {
         return formatToHitch(using: values).halfhitch()
@@ -49,7 +44,6 @@ extension Hitch: HitchFormattable {
 }
 
 extension HalfHitch: HitchFormattable {
-    public typealias HitchType = HalfHitch
     @inlinable @inline(__always)
     public func formatToHalfHitch(using values: [Any?]) -> HalfHitch {
         return Hitch(self, values: values).halfhitch()
@@ -61,11 +55,11 @@ extension HalfHitch: HitchFormattable {
 }
 
 @inlinable @inline(__always)
-public func <<<T: HitchFormattable> (left: T, right: [Any?]) -> HalfHitch {
+public func << (left: HitchFormattable, right: [Any?]) -> HalfHitch {
     return left.formatToHalfHitch(using: right)
 }
 
 @inlinable @inline(__always)
-public func <<<<T: HitchFormattable> (left: T, right: [Any?]) -> Hitch {
+public func <<< (left: HitchFormattable, right: [Any?]) -> Hitch {
     return left.formatToHitch(using: right)
 }
