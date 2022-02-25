@@ -147,8 +147,7 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     func hash(into hasher: inout Hasher) {
-        hasher.combine(count)
-        hasher.combine(bytes: UnsafeRawBufferPointer(start: raw(), count: Swift.min(count, 8)))
+        hasher.combine(bytes: UnsafeRawBufferPointer(start: raw(), count: count))
     }
 
     @inlinable @inline(__always)
