@@ -37,6 +37,9 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     public var count: Int
 
+    @usableFromInline
+    let lastHash: Int
+
     @inlinable @inline(__always)
     public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
         return data.withUnsafeBytes { unsafeRawBufferPointer in
@@ -55,6 +58,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = raw + from
         self.count = to - from
         self.maybeMutable = true
+        self.lastHash = chitch_hash_raw(self.source, count)
     }
 
     @inlinable @inline(__always)
@@ -75,6 +79,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
+        self.lastHash = chitch_hash_raw(self.source, count)
     }
 
     @inlinable @inline(__always)
@@ -89,6 +94,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
+        self.lastHash = chitch_hash_raw(self.source, count)
     }
 
     @inlinable @inline(__always)
@@ -97,6 +103,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.count = 0
         self.maybeMutable = false
+        self.lastHash = chitch_hash_raw(self.source, count)
     }
 
     @inlinable @inline(__always)
@@ -120,6 +127,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                 self.maybeMutable = false
             }
         }
+        self.lastHash = chitch_hash_raw(self.source, count)
     }
 
     @inlinable @inline(__always)
@@ -141,6 +149,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
+        self.lastHash = chitch_hash_raw(self.source, count)
     }
 
     @inlinable @inline(__always)
@@ -159,6 +168,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     public func mutableRaw() -> UnsafeMutablePointer<UInt8>? {
         return nil
+    }
+
+    @inlinable @inline(__always)
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(lastHash)
     }
 
     @inlinable @inline(__always)

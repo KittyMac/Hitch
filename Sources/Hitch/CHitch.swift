@@ -563,6 +563,23 @@ func chitch_insert_int(_ c0: inout CHitch, _ position: Int, _ rhs_in: Int) {
 // MARK: - IMMUTABLE METHODS
 
 @inlinable @inline(__always)
+func chitch_hash_raw(_ lhs: UnsafePointer<UInt8>?,
+                     _ lhs_count: Int) -> Int {
+    guard let lhs = lhs else { return 0 }
+    let lhsEnd = lhs + min(lhs_count, 128)
+    var lhsPtr = lhs
+    var hash: Int = 0
+    var idx: Int = 0
+    while lhsPtr < lhsEnd {
+        let char = Int(lhsPtr.pointee)
+        hash = (hash &+ char &* idx) &* (hash &+ char &* idx)
+        idx += 1
+        lhsPtr += 1
+    }
+    return hash
+}
+
+@inlinable @inline(__always)
 func chitch_cmp_raw(_ lhs: UnsafePointer<UInt8>?,
                     _ lhs_count: Int,
                     _ rhs: UnsafePointer<UInt8>?,

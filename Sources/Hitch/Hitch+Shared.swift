@@ -146,11 +146,6 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(bytes: UnsafeRawBufferPointer(start: raw(), count: count))
-    }
-
-    @inlinable @inline(__always)
     static func < (lhs: Self, rhs: Self) -> Bool {
         return chitch_cmp_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count) < 0
     }

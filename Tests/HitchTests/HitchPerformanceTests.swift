@@ -78,6 +78,23 @@ final class HitchPerformanceTests: XCTestCase {
         )
     }
     
+    func testHashingPerf() {
+        XCTAssert(
+            test (1000, "utf8 iterator",
+            {
+                let key = "12345678910"
+                for _ in 0..<100000 {
+                    key.hashValue
+                }
+            }, {
+                let key: Hitch = "12345678910"
+                for _ in 0..<100000 {
+                    key.hashValue
+                }
+            })
+        )
+    }
+    
     func testIterationPerf() {
         XCTAssert(
             test (100000, "string iterator",

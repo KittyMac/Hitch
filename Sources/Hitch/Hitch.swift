@@ -103,6 +103,9 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @usableFromInline
     var chitch: CHitch
 
+    @usableFromInline
+    var lastHash: Int = 0
+
     @inlinable @inline(__always)
     deinit {
         chitch_dealloc(&chitch)
@@ -197,17 +200,6 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     }
 
     @inlinable @inline(__always)
-    public func clear() {
-        chitch_resize(&chitch, 0)
-    }
-
-    @inlinable @inline(__always)
-    public func release() {
-        chitch_dealloc(&chitch)
-        chitch = chitch_init_capacity(0)
-    }
-
-    @inlinable @inline(__always)
     public func exportAsData() -> Data {
         defer { chitch = chitch_empty() }
         if let raw = chitch.universalData {
@@ -216,16 +208,39 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         return Data()
     }
 
+    @inlinable @inline(__always)
+    public func hash(into hasher: inout Hasher) {
+        if lastHash == 0 {
+            lastHash = chitch_hash_raw(raw(), count)
+        }
+        hasher.combine(lastHash)
+    }
+
     // MARK: - Mutating
 
     @inlinable @inline(__always)
+    public func clear() {
+        lastHash = 0
+        chitch_resize(&chitch, 0)
+    }
+
+    @inlinable @inline(__always)
+    public func release() {
+        lastHash = 0
+        chitch_dealloc(&chitch)
+        chitch = chitch_init_capacity(0)
+    }
+
+    @inlinable @inline(__always)
     public func replace(with string: String) {
+        lastHash = 0
         count = 0
         append(string)
     }
 
     @inlinable @inline(__always)
     public func replace(with hitch: Hitch) {
+        lastHash = 0
         count = 0
         append(hitch)
     }
@@ -233,6 +248,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_replace(&chitch, hitch.chitch, with.chitch, ignoreCase)
         return self
@@ -251,6 +267,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func lowercase() -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_tolower_raw(chitch.mutableData, chitch.count)
         return self
@@ -259,6 +276,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func uppercase() -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_toupper_raw(chitch.mutableData, chitch.count)
         return self
@@ -267,6 +285,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: Hitch, precision: Int? = nil) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         if let precision = precision {
             chitch_concat_precision(&chitch, hitch.raw(), hitch.count, precision)
@@ -279,6 +298,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ bytes: UnsafePointer<UInt8>, count: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_concat(&chitch, bytes, count)
         return self
@@ -287,6 +307,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ bytes: UnsafeMutablePointer<UInt8>, count: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_concat(&chitch, bytes, count)
         return self
@@ -295,6 +316,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ hitch: Hitchable) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_concat(&chitch, hitch.raw(), hitch.count)
         return self
@@ -303,6 +325,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ string: String) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_using(string) { string_raw, string_count in
             chitch_concat(&chitch, string_raw, string_count)
@@ -313,6 +336,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ string: String, precision: Int?) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         return chitch_using(string) { string_raw, string_count in
             if let precision = precision {
@@ -327,6 +351,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ char: UInt8) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_concat_char(&chitch, char)
         return self
@@ -349,6 +374,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func append(_ data: Data) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -361,6 +387,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_insert_raw(&chitch, index, hitch.raw(), hitch.count)
         return self
@@ -369,6 +396,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_insert_cstring(&chitch, index, string)
         return self
@@ -377,6 +405,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ string: String, index: Int, precision: Int?) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_using(string) { string_raw, _ in
             var length = string.count
@@ -399,6 +428,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ char: UInt8, index: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_insert_char(&chitch, index, char)
         return self
@@ -407,6 +437,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_insert_int(&chitch, index, Int(number))
         return self
@@ -423,6 +454,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -435,6 +467,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func trim() -> Self {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         chitch_trim(&chitch)
         return self
@@ -443,6 +476,7 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     @discardableResult
     public func unescape() -> Hitch {
+        lastHash = 0
         chitch_make_mutable(&chitch)
         guard let raw = chitch.mutableData else { return self }
         count = unescapeBinary(data: raw,
