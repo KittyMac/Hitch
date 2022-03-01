@@ -7,7 +7,7 @@ import Foundation
 /// Note: as you can gather from the above, use HalfHitch carefully!
 public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable {
 
-    public static let empty = HalfHitch()
+    public static let empty: HalfHitch = ""
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {

@@ -31,7 +31,7 @@ struct HitchOutputStream: TextOutputStream {
 }
 
 public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
-    public static let empty = Hitch()
+    public static let empty: Hitch = ""
 
     @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
