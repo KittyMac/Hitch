@@ -332,7 +332,7 @@ final class HitchTests: XCTestCase {
     }
     
     func testInsert() {
-        let hitch = Hitch.empty
+        let hitch = Hitch()
         let values: [UInt8] = [53, 52, 51, 50, 49]
         
         for value in values {
@@ -502,6 +502,7 @@ final class HitchTests: XCTestCase {
     func testReplaceRange() {
         // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 11, with: "happy"), "Hello happy world")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 12, with: Hitch()), "Hello world")
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 17, with: "happy"), "Hello happy")
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 0, to: 11, with: "happy"), "happy world")
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 99, with: "happy"), "Hello CrUeL world")
@@ -512,6 +513,9 @@ final class HitchTests: XCTestCase {
         // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "cRuEl", with: "happy", ignoreCase: true), "Hello happy world")
+        
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "CrUeL", with: ""), "Hello  world")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "CrUeL", with: Hitch()), "Hello  world")
     }
     
     func testReplace2() {

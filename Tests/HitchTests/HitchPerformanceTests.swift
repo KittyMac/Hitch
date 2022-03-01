@@ -84,12 +84,12 @@ final class HitchPerformanceTests: XCTestCase {
             {
                 let key = "12345678910"
                 for _ in 0..<100000 {
-                    key.hashValue
+                    _ = key.hashValue
                 }
             }, {
                 let key: Hitch = "12345678910"
                 for _ in 0..<100000 {
-                    key.hashValue
+                    _ = key.hashValue
                 }
             })
         )

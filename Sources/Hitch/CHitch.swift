@@ -290,7 +290,7 @@ func chitch_trim(_ c0: inout CHitch) {
 @inlinable @inline(__always)
 func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ignoreCase: Bool) {
     guard let find_data = find.universalData else { return }
-    guard let replace_data = replace.universalData else { return }
+    let replace_data = replace.universalData
 
     let c0_count = c0.count
     let find_count = find.count
@@ -390,7 +390,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 
 @inlinable @inline(__always)
 func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitch) {
-    guard let replace_data = replace.universalData else { return }
+    let replace_data = replace.universalData
 
     let find_count = to - from
 
