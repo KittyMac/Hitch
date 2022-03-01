@@ -247,6 +247,19 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
 
     @inlinable @inline(__always)
     @discardableResult
+    public func replace(from: Int, to: Int, with: Hitch) -> Self {
+        guard from >= 0 && from <= count else { return self }
+        guard to >= 0 && to <= count else { return self }
+        guard from <= to else { return self }
+
+        lastHash = 0
+        chitch_make_mutable(&chitch)
+        chitch_replace(&chitch, from, to, with.chitch)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
         lastHash = 0
         chitch_make_mutable(&chitch)

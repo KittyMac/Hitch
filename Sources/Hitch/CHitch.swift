@@ -389,6 +389,91 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 }
 
 @inlinable @inline(__always)
+func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitch) {
+    guard let replace_data = replace.universalData else { return }
+
+    let find_count = to - from
+
+    let c0_count = c0.count
+    let replace_count = replace.count
+
+    // Expansion: our array is going to need to grow before we can perform the replacement
+    if replace_count > find_count {
+        let capacity_required = c0_count + (replace_count - find_count)
+
+        chitch_sanity(&c0, capacity_required)
+        guard let c0_data = c0.mutableData else { return }
+
+        let from_ptr = c0_data + from
+
+        // work our way from back to front, copying and replacing as we go
+        let start = c0_data
+        let old_end = c0_data + c0_count
+        let new_end = c0_data + capacity_required
+
+        var old_ptr_a = old_end
+        var old_ptr_b = old_end
+        var new_ptr = new_end
+
+        var fix_count = 0
+
+        while old_ptr_a >= start {
+            // is this the thing we need to replace?
+            if old_ptr_a == from_ptr {
+                fix_count = old_ptr_b - (old_ptr_a + find_count)
+                if fix_count > 0 {
+                    memmove(new_ptr - fix_count, (old_ptr_a + find_count), fix_count)
+                    new_ptr -= fix_count
+                }
+
+                new_ptr -= replace_count
+                memmove(new_ptr, replace_data, replace_count)
+                old_ptr_b = old_ptr_a
+            }
+
+            old_ptr_a -= 1
+        }
+
+        // final copy
+        fix_count = old_ptr_b - (old_ptr_a + find_count)
+        if fix_count > 0 {
+            memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
+        }
+
+        c0.count = capacity_required
+    } else {
+        // Our array can stay the same size as we perform the replacement. Since we can go front to
+        // back we don't need to know the number of occurrences a priori.
+        guard let c0_data = c0.mutableData else { return }
+
+        let from_ptr = c0_data + from
+
+        // work our way from back to front, copying and replacing as we go
+        let start = c0_data
+        let old_end = c0_data + c0_count
+
+        var old_ptr = start
+        var new_ptr = start
+
+        while old_ptr <= old_end {
+            // is this the thing we need to replace?
+            if old_ptr == from_ptr {
+                old_ptr += find_count
+
+                memmove(new_ptr, replace_data, replace_count)
+                new_ptr += replace_count
+            } else {
+                new_ptr.pointee = old_ptr.pointee
+                new_ptr += 1
+                old_ptr += 1
+            }
+        }
+
+        c0.count = (new_ptr - start) - 1
+    }
+}
+
+@inlinable @inline(__always)
 func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafePointer<UInt8>?, _ rhs_count: Int) {
     guard rhs_count > 0 else { return }
     guard let rhs = rhs else { return }

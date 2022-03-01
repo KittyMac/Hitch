@@ -499,6 +499,15 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch.toDouble(), 5.2567)
     }
     
+    func testReplaceRange() {
+        // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 11, with: "happy"), "Hello happy world")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 17, with: "happy"), "Hello happy")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 0, to: 11, with: "happy"), "happy world")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: 6, to: 99, with: "happy"), "Hello CrUeL world")
+        XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(from: -5, to: 11, with: "happy"), "Hello CrUeL world")
+    }
+    
     func testReplace1() {
         // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
         XCTAssertEqual(Hitch(string: "Hello CrUeL world").replace(occurencesOf: "CrUeL", with: "happy"), "Hello happy world")
