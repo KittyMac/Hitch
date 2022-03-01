@@ -342,7 +342,9 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
                 }
 
                 new_ptr -= replace_count
-                memmove(new_ptr, replace_data, replace_count)
+                if let replace_data = replace_data {
+                    memmove(new_ptr, replace_data, replace_count)
+                }
                 old_ptr_b = old_ptr_a
             }
 
@@ -375,7 +377,9 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
                     memcasecmp(old_ptr, find_data, find_count, ignoreCase) == 0 {
                 old_ptr += find_count
 
-                memmove(new_ptr, replace_data, replace_count)
+                if let replace_data = replace_data {
+                    memmove(new_ptr, replace_data, replace_count)
+                }
                 new_ptr += replace_count
             } else {
                 new_ptr.pointee = old_ptr.pointee
@@ -393,7 +397,7 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
     if from == to && replace.count == 0 {
         return
     }
-    
+
     let replace_data = replace.universalData
 
     let find_count = to - from
@@ -431,7 +435,10 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
                 }
 
                 new_ptr -= replace_count
-                memmove(new_ptr, replace_data, replace_count)
+
+                if let replace_data = replace_data {
+                    memmove(new_ptr, replace_data, replace_count)
+                }
                 old_ptr_b = old_ptr_a
             }
 
@@ -464,7 +471,9 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
             if old_ptr == from_ptr {
                 old_ptr += find_count
 
-                memmove(new_ptr, replace_data, replace_count)
+                if let replace_data = replace_data {
+                    memmove(new_ptr, replace_data, replace_count)
+                }
                 new_ptr += replace_count
             } else {
                 new_ptr.pointee = old_ptr.pointee
