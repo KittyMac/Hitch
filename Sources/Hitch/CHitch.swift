@@ -390,6 +390,10 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 
 @inlinable @inline(__always)
 func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitch) {
+    if from == to && replace.count == 0 {
+        return
+    }
+    
     let replace_data = replace.universalData
 
     let find_count = to - from
