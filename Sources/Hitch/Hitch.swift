@@ -216,6 +216,45 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         hasher.combine(lastHash)
     }
 
+    @inlinable @inline(__always)
+    public func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
+        guard let raw = raw() else { return [] }
+        guard let separatorRaw = separator.raw() else { return [] }
+        let rawCount = count
+        let separatorCount = separator.count
+
+        var components = [HalfHitch]()
+        var currentIdx = 0
+
+        while true {
+            let nextIdx = chitch_firstof_raw_offset(raw, currentIdx, rawCount, separatorRaw, separatorCount)
+            if nextIdx < 0 {
+                break
+            }
+
+            if currentIdx != nextIdx {
+                components.append(
+                    HalfHitch(sourceObject: self, raw: raw, count: rawCount, from: currentIdx, to: nextIdx)
+                )
+            }
+            currentIdx = nextIdx + separatorCount
+        }
+
+        if currentIdx != rawCount {
+            components.append(
+                HalfHitch(sourceObject: self, raw: raw, count: rawCount, from: currentIdx, to: rawCount)
+            )
+        }
+
+        return components
+    }
+
+    @inlinable @inline(__always)
+    public func components(separatedBy separator: HalfHitch) -> [Hitch] {
+        let hhcomponents: [HalfHitch] = components(separatedBy: separator)
+        return hhcomponents.map { $0.hitch() }
+    }
+
     // MARK: - Mutating
 
     @inlinable @inline(__always)

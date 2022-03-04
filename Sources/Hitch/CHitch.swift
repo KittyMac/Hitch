@@ -178,6 +178,11 @@ func chitch_init_substring_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int, _ lhs
 func chitch_dealloc(_ chitch: inout CHitch) {
     chitch_internal_free(chitch.mutableData)
     chitch.mutableData = nil
+    chitch.capacity = 0
+    chitch.count = 0
+    chitch.mutableData = nil
+    chitch.castedMutableData = nil
+    chitch.staticData = nil
 }
 
 @inlinable @inline(__always)
@@ -352,9 +357,11 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         }
 
         // final copy
-        fix_count = old_ptr_b - (old_ptr_a + find_count)
-        if fix_count > 0 {
-            memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
+        if old_ptr_a >= start {
+            fix_count = old_ptr_b - (old_ptr_a + find_count)
+            if fix_count > 0 {
+                memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
+            }
         }
 
         c0.count = capacity_required
@@ -446,9 +453,11 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
         }
 
         // final copy
-        fix_count = old_ptr_b - (old_ptr_a + find_count)
-        if fix_count > 0 {
-            memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
+        if old_ptr_a >= start {
+            fix_count = old_ptr_b - (old_ptr_a + find_count)
+            if fix_count > 0 {
+                memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
+            }
         }
 
         c0.count = capacity_required

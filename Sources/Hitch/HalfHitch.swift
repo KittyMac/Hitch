@@ -45,7 +45,8 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
-            return callback(HalfHitch(raw: bytes,
+            return callback(HalfHitch(sourceObject: nil,
+                                      raw: bytes,
                                       count: data.count,
                                       from: from,
                                       to: to >= 0 ? to : data.count))
@@ -53,12 +54,12 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     }
 
     @inlinable @inline(__always)
-    public init(raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
-        self.sourceObject = nil
+    public init(sourceObject: AnyObject?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
+        self.sourceObject = sourceObject
         self.source = raw + from
         self.count = to - from
         self.maybeMutable = true
-        self.lastHash = chitch_hash_raw(self.source, count)
+        self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -79,12 +80,12 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, count)
+        self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
     public init(source: HalfHitch, from: Int, to: Int) {
-        self.sourceObject = nil
+        self.sourceObject = source.sourceObject
         if let raw = source.source {
             self.source = raw + from
             self.count = to - from
@@ -94,7 +95,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, count)
+        self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -103,7 +104,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.count = 0
         self.maybeMutable = false
-        self.lastHash = chitch_hash_raw(self.source, count)
+        self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -127,7 +128,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                 self.maybeMutable = false
             }
         }
-        self.lastHash = chitch_hash_raw(self.source, count)
+        self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -149,7 +150,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, count)
+        self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -212,5 +213,44 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                             count: count,
                             unicode: unicode,
                             singleQuotes: singleQuotes)
+    }
+
+    @inlinable @inline(__always)
+    public func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
+        guard let raw = raw() else { return [] }
+        guard let separatorRaw = separator.raw() else { return [] }
+        let rawCount = count
+        let separatorCount = separator.count
+
+        var components = [HalfHitch]()
+        var currentIdx = 0
+
+        while true {
+            let nextIdx = chitch_firstof_raw_offset(raw, currentIdx, rawCount, separatorRaw, separatorCount)
+            if nextIdx < 0 {
+                break
+            }
+
+            if currentIdx != nextIdx {
+                components.append(
+                    HalfHitch(sourceObject: sourceObject, raw: raw, count: rawCount, from: currentIdx, to: nextIdx)
+                )
+            }
+            currentIdx = nextIdx + separatorCount
+        }
+
+        if currentIdx != rawCount {
+            components.append(
+                HalfHitch(sourceObject: sourceObject, raw: raw, count: rawCount, from: currentIdx, to: rawCount)
+            )
+        }
+
+        return components
+    }
+
+    @inlinable @inline(__always)
+    public func components(separatedBy separator: HalfHitch) -> [Hitch] {
+        let hhcomponents: [HalfHitch] = components(separatedBy: separator)
+        return hhcomponents.map { $0.hitch() }
     }
 }
