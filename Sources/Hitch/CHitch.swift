@@ -492,6 +492,9 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
         }
 
         c0.count = (new_ptr - start) - 1
+        if c0.count < 0 {
+            c0.count = 0
+        }
     }
 }
 
