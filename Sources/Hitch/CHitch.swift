@@ -711,8 +711,8 @@ func chitch_cmp_raw(_ lhs: UnsafePointer<UInt8>?,
     var lhsPtr = lhs
     var rhsPtr = rhs
     while lhsPtr < lhsEnd {
-        if lhsPtr.pointee != rhs.pointee {
-            return Int(lhsPtr.pointee) - Int(rhs.pointee)
+        if lhsPtr.pointee != rhsPtr.pointee {
+            return Int(lhsPtr.pointee) - Int(rhsPtr.pointee)
         }
         lhsPtr += 1
         rhsPtr += 1

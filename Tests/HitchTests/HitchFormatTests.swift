@@ -155,11 +155,25 @@ final class HitchFormatTests: XCTestCase {
             extension Hello { public struct World { } }
             """)
     }
-    
-    static var allTests = [
-        ("testNoFormat", testNoFormat),
-        ("testStringFormat", testStringFormat),
-        ("testIntFormat", testIntFormat),
-        ("testFloatFormat", testFloatFormat),
-    ]
+}
+
+extension HitchFormatTests {
+    static var allTests: [(String, (HitchFormatTests) -> () throws -> Void)] {
+        return [
+            ("testFormatOperator", testFormatOperator),
+            ("testFormatOperator2", testFormatOperator2),
+            ("testFormatOperator3", testFormatOperator3),
+            ("testFormatOperator4", testFormatOperator4),
+            ("testNoFormat", testNoFormat),
+            ("testStringFormat", testStringFormat),
+            ("testIntFormat", testIntFormat),
+            ("testDoubleFormat", testDoubleFormat),
+            ("testFloatFormat", testFloatFormat),
+            ("testBooleanFormat", testBooleanFormat),
+            ("testExample", testExample),
+            ("testExample2", testExample2),
+            ("testExample3", testExample3),
+            ("testExample4", testExample4)
+        ]
+    }
 }

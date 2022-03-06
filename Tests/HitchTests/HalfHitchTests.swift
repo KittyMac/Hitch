@@ -387,8 +387,52 @@ final class HalfHitchTests: XCTestCase {
         
         XCTAssertEqual(numMatches, 10000000 * 10)
     }
+}
 
-    static var allTests = [
-        ("testSimpleCreate", testSimpleCreate),
-    ]
+extension HalfHitchTests {
+    static var allTests: [(String, (HalfHitchTests) -> () throws -> Void)] {
+        return [
+            ("testSimpleCreate", testSimpleCreate),
+            ("testIteration", testIteration),
+            ("testIterationRange", testIterationRange),
+            ("testDirectAccess", testDirectAccess),
+            ("testSubscript", testSubscript),
+            ("testContainsSingle", testContainsSingle),
+            ("testHashable", testHashable),
+            ("testEquality", testEquality),
+            ("testEpoch", testEpoch),
+            ("testExtract", testExtract),
+            ("testIndexOf", testIndexOf),
+            ("testLastIndexOf", testLastIndexOf),
+            ("testLastIndexOf2", testLastIndexOf2),
+            ("testIndexOf3", testIndexOf3),
+            ("testHalfHitchFromData0", testHalfHitchFromData0),
+            ("testHalfHitch0", testHalfHitch0),
+            ("testHalfHitchToInt0", testHalfHitchToInt0),
+            ("testHalfHitchToDouble0", testHalfHitchToDouble0),
+            ("testSubstring0", testSubstring0),
+            ("testSubstring1", testSubstring1),
+            ("testSubstring2", testSubstring2),
+            ("testSubstring3", testSubstring3),
+            ("testStartsWith1", testStartsWith1),
+            ("testStartsWith2", testStartsWith2),
+            ("testStartsWith3", testStartsWith3),
+            ("testStartsWith4", testStartsWith4),
+            ("testUnescaping", testUnescaping),
+            ("testEscaping", testEscaping),
+            ("testComparable", testComparable),
+            ("testToInt", testToInt),
+            ("testToIntFuzzy", testToIntFuzzy),
+            ("testToDoubleFuzzy", testToDoubleFuzzy),
+            ("testSplitToDouble", testSplitToDouble),
+            ("testToDouble", testToDouble),
+            ("testReplace1", testReplace1),
+            ("testReplace2", testReplace2),
+            ("testHitchAsKeys", testHitchAsKeys),
+            ("testNullHalfHitch", testNullHalfHitch),
+            
+            // Performance tests cannot be run without XCode because we cannot test using release configuration
+            //("testEqualityPerf", testEqualityPerf)
+        ]
+    }
 }

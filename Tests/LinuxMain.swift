@@ -1,7 +1,10 @@
 import XCTest
 
-import HitchTests
+@testable import HitchTests
 
-var tests = [XCTestCaseEntry]()
-tests += HitchTests.allTests()
-XCTMain(tests)
+XCTMain([
+    testCase(HalfHitchTests.allTests),
+    testCase(HitchFormatTests.allTests),
+    testCase(HitchTests.allTests),
+    testCase(HitchPerformanceTests.allTests)
+])

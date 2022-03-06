@@ -231,7 +231,7 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testReplacePerf() {
-        let hitchLorem = Hitch(hitch: hitchLorem)
+        let hitchLoremCopy = Hitch(hitch: hitchLorem)
         XCTAssert(
             test (1000, "replace occurrences of",
             {
@@ -241,8 +241,8 @@ final class HitchPerformanceTests: XCTestCase {
                 }
             }, {
                 for _ in 1...1000 {
-                    hitchLorem.replace(occurencesOf: "nulla pariatur", with: "hello world, goodbye world")
-                    hitchLorem.replace(occurencesOf: "hello world, goodbye world", with: "nulla pariatur")
+                    hitchLoremCopy.replace(occurencesOf: "nulla pariatur", with: "hello world, goodbye world")
+                    hitchLoremCopy.replace(occurencesOf: "hello world, goodbye world", with: "nulla pariatur")
                 }
             })
         )
@@ -280,4 +280,26 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     
+}
+
+extension HitchPerformanceTests {
+    static var allTests: [(String, (HitchPerformanceTests) -> () throws -> Void)] {
+        return [
+            // Performance tests cannot be run without XCode because we cannot test using release configuration
+            //("testCreateChart", testCreateChart),
+            //("testUTF8IterationPerf", testUTF8IterationPerf),
+            //("testHashingPerf", testHashingPerf),
+            //("testIterationPerf", testIterationPerf),
+            //("testToUpperAndToLowerPerf", testToUpperAndToLowerPerf),
+            //("testFormatStringsPerf", testFormatStringsPerf),
+            //("testFormatStrings2Perf", testFormatStrings2Perf),
+            //("testStaticStringVsNonStaticString", testStaticStringVsNonStaticString),
+            //("testContainsPerf", testContainsPerf),
+            //("testFirstIndexOfPerf", testFirstIndexOfPerf),
+            //("testLastIndexOfPerf", testLastIndexOfPerf),
+            //("testReplacePerf", testReplacePerf),
+            //("testAppendStaticMemoryPerf", testAppendStaticMemoryPerf),
+            //("testAppendDynamicMemoryPerf", testAppendDynamicMemoryPerf)
+        ]
+    }
 }

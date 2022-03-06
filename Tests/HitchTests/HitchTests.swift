@@ -106,6 +106,23 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(swiftDict[swiftKey2] ?? 0, 2)
         XCTAssertEqual(hitchDict[hitchKey2] ?? 0, 2)
     }
+        
+    func testHashableInSet() {
+        var stuff = Set<Hitch>()
+        stuff.insert("Hitch1")
+        stuff.insert("Hitch2")
+        stuff.insert("Hitch3")
+        stuff.insert("Hitch4")
+        stuff.insert("Hitch5")
+        stuff.insert("Hitch1")
+        stuff.insert("Hitch2")
+        stuff.insert("Hitch3")
+        stuff.insert("Hitch4")
+        stuff.insert("Hitch5")
+        var array = Array(stuff)
+        array.sort()
+        XCTAssertEqual(array.description, "[Hitch1, Hitch2, Hitch3, Hitch4, Hitch5]")
+    }
     
     func testEquality() {
         XCTAssertTrue(Hitch.empty == Hitch.empty)
@@ -365,6 +382,10 @@ final class HitchTests: XCTestCase {
         let hitch2: Hitch = "apple"
         
         XCTAssertEqual(hitch1 < hitch2, "Apple" < "apple")
+        
+        XCTAssertTrue(Hitch(string: "Hitch1") < Hitch(string: "Hitch2"))
+        XCTAssertTrue(Hitch(string: "Hitch2") < Hitch(string: "Hitch3"))
+        XCTAssertTrue(Hitch(string: "Hitch3") < Hitch(string: "Hitch4"))
         
         XCTAssertEqual(Hitch(string: "5") < Hitch(string: "5.1.2"), "5" < "5.1.2")
         XCTAssertEqual(Hitch(string: "5") > Hitch(string: "5.1.2"), "5" > "5.1.2")
@@ -670,8 +691,78 @@ final class HitchTests: XCTestCase {
         
         XCTAssertEqual(numMatches, 10000000 * 10)
     }
+}
 
-    static var allTests = [
-        ("testSimpleCreate", testSimpleCreate),
-    ]
+extension HitchTests {
+    static var allTests: [(String, (HitchTests) -> () throws -> Void)] {
+        return [
+            ("testSimpleCreate", testSimpleCreate),
+            ("testAppendToEmpty", testAppendToEmpty),
+            ("testToLower", testToLower),
+            ("testToUpper", testToUpper),
+            ("testIteration", testIteration),
+            ("testIterationRange", testIterationRange),
+            ("testDirectAccess", testDirectAccess),
+            ("testSubscript", testSubscript),
+            ("testContainsSingle", testContainsSingle),
+            ("testHashable", testHashable),
+            ("testEquality", testEquality),
+            ("testEpoch", testEpoch),
+            ("testData", testData),
+            ("testSubdata", testSubdata),
+            ("testExtract", testExtract),
+            ("testIndexOf", testIndexOf),
+            ("testLastIndexOf", testLastIndexOf),
+            ("testLastIndexOf2", testLastIndexOf2),
+            ("testIndexOf3", testIndexOf3),
+            ("testHalfHitchFromData0", testHalfHitchFromData0),
+            ("testHalfHitchEquality", testHalfHitchEquality),
+            ("testHalfHitch0", testHalfHitch0),
+            ("testHalfHitchAppend0", testHalfHitchAppend0),
+            ("testHalfHitchToInt0", testHalfHitchToInt0),
+            ("testHalfHitchToDouble0", testHalfHitchToDouble0),
+            ("testSubstring0", testSubstring0),
+            ("testSubstring1", testSubstring1),
+            ("testSubstring2", testSubstring2),
+            ("testSubstring3", testSubstring3),
+            ("testStartsWith1", testStartsWith1),
+            ("testStartsWith2", testStartsWith2),
+            ("testStartsWith3", testStartsWith3),
+            ("testStartsWith4", testStartsWith4),
+            ("testEndsWith1", testEndsWith1),
+            ("testEndsWith2", testEndsWith2),
+            ("testEndsWith3", testEndsWith3),
+            ("testEndsWith4", testEndsWith4),
+            ("testUnescaping", testUnescaping),
+            ("testEscaping", testEscaping),
+            ("testInsert", testInsert),
+            ("testInsert2", testInsert2),
+            ("testInsert3", testInsert3),
+            ("testComparable", testComparable),
+            ("testAppendValue", testAppendValue),
+            ("testInsertValue", testInsertValue),
+            ("testAppendDouble", testAppendDouble),
+            ("testInsertDouble", testInsertDouble),
+            ("testTrim", testTrim),
+            ("testInitFromHitch", testInitFromHitch),
+            ("testSplitToInt", testSplitToInt),
+            ("testToInt", testToInt),
+            ("testToIntFuzzy", testToIntFuzzy),
+            ("testToDoubleFuzzy", testToDoubleFuzzy),
+            ("testSplitToDouble", testSplitToDouble),
+            ("testToDouble", testToDouble),
+            ("testReplaceRange", testReplaceRange),
+            ("testReplace1", testReplace1),
+            ("testReplace2", testReplace2),
+            ("testSplit0", testSplit0),
+            ("testExportAsData", testExportAsData),
+            ("testHitchAsKeys", testHitchAsKeys),
+            ("testNullHalfHitch", testNullHalfHitch),
+            
+            // Performance tests cannot be run without XCode because we cannot test using release configuration
+            //("testHitchEqualityPerf", testHitchEqualityPerf),
+            //("testHalfHitchEqualityPerf", testHalfHitchEqualityPerf),
+            //("testHitchToHalfHitchEqualityPerf", testHitchToHalfHitchEqualityPerf)
+        ]
+    }
 }
