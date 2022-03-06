@@ -30,7 +30,9 @@ struct HitchOutputStream: TextOutputStream {
     }
 }
 
-public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Codable, Hashable {
+// Note: being a subclass of NSObject is required (BOO) due to runtime crash on Linux when storing Hitch values in a dictionary
+// See unit test testCastAnyToHitch().
+public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Sequence, Comparable, Codable {
     public static let empty: Hitch = ""
 
     @inlinable @inline(__always)
@@ -58,6 +60,12 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     public static func == (lhs: StaticString, rhs: Hitch) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: lhs)
         return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+    }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let object0 = object else { return false }
+        guard let object1 = object0 as? Hitchable else { return false }
+        return chitch_equal_raw(raw(), count, object1.raw(), object1.count)
     }
 
     @inlinable @inline(__always)
@@ -160,6 +168,8 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     @inlinable @inline(__always)
     public init(data: Data) {
         chitch = chitch_empty()
+        super.init()
+
         data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
             guard let bytes = unsafeBufferPointer.baseAddress else { return }
@@ -172,14 +182,23 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
         chitch = chitch_init_capacity(capacity)
     }
 
-    @inlinable @inline(__always)
-    public init() {
+    public override init() {
         chitch = chitch_empty()
     }
 
     @usableFromInline
     internal init(chitch: CHitch) {
         self.chitch = chitch
+    }
+
+    public override var description: String {
+        if let raw = raw() {
+            return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+        }
+        if let raw = mutableRaw() {
+            return String(bytesNoCopy: raw, length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+        }
+        return ""
     }
 
     @inlinable @inline(__always)
@@ -209,11 +228,11 @@ public final class Hitch: Hitchable, CustomStringConvertible, ExpressibleByStrin
     }
 
     @inlinable @inline(__always)
-    public func hash(into hasher: inout Hasher) {
+    public override var hash: Int {
         if lastHash == 0 {
             lastHash = chitch_hash_raw(raw(), count)
         }
-        hasher.combine(lastHash)
+        return lastHash
     }
 
     @inlinable @inline(__always)

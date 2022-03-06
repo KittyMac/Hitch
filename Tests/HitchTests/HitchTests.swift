@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Hitch
 
 let loremStatic: StaticString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -8,6 +9,30 @@ let hitchLorem = Hitch(stringLiteral: loremStatic)
 let halfhitchLorem = HalfHitch(stringLiteral: loremStatic)
 
 final class HitchTests: XCTestCase {
+    
+    func testCastAnyToHitch() {
+        let unknown: Any? = [
+            "test": Hitch(string: "test2")
+        ]
+        
+        // note: linux will "crash" in here with
+        // Could not cast value of type 'Hitch.Hitch' (0x56093e670f90) to 'Foundation.NSObject' (0x7f4ca74c5bd8).
+        // From research it appears that any class type in swift on Linux which can be stored in a hashable (like
+        // a set or a dictionary) must inherit from NSObject. This is super unfortunate and annoying, hopefully
+        // it will be fixed in the future. Until them, Hitch is now a subclass of NSObject to avoid
+        // this runtime crash
+        if let unknown = unknown {
+            switch unknown {
+            case _ as NSNull:
+                return
+            case let _ as Hitch:
+                break
+            default:
+                print("DEFAULT")
+                break
+            }
+        }
+    }
         
     func testSimpleCreate() {
         let hello = "Hello"
@@ -696,6 +721,7 @@ final class HitchTests: XCTestCase {
 extension HitchTests {
     static var allTests: [(String, (HitchTests) -> () throws -> Void)] {
         return [
+            ("testCastAnyToHitch", testCastAnyToHitch),
             ("testSimpleCreate", testSimpleCreate),
             ("testAppendToEmpty", testAppendToEmpty),
             ("testToLower", testToLower),

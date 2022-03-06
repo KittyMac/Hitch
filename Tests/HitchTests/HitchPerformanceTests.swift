@@ -79,6 +79,8 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testHashingPerf() {
+        // Note: we're currently slower on hashing performance because Hitch is required to
+        // be a subclass of NSObject to avoid a runtime fatal error on Linux.
         XCTAssert(
             test (1000, "utf8 iterator",
             {
