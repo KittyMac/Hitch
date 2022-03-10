@@ -120,6 +120,25 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     }
 
     @inlinable @inline(__always)
+    required public init? (contentsOfFile path: String) {
+        // Read contents of file directly into our memory (unnecessary data copy)
+        let file = fopen(path, "r")
+
+        fseek(file, 0, SEEK_END)
+        let size = ftell(file)
+        fseek(file, 0, SEEK_SET)
+
+        chitch = chitch_init_capacity(size)
+
+        guard let mutableData = chitch.mutableData else { return nil }
+
+        fread(mutableData, 1, size, file)
+
+        fclose(file)
+        chitch.count = size
+    }
+
+    @inlinable @inline(__always)
     required public init (stringLiteral: StaticString, copyOnWrite: Bool) {
         if stringLiteral.hasPointerRepresentation {
             chitch = chitch_static(stringLiteral.utf8Start,

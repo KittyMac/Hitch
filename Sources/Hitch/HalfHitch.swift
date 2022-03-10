@@ -54,6 +54,28 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     }
 
     @inlinable @inline(__always)
+    public init?(contentsOfFile path: String) {
+        guard let source = Hitch(contentsOfFile: path) else { return nil }
+        if let raw = source.mutableRaw() {
+            self.sourceObject = source
+            self.source = UnsafePointer(raw)
+            self.count = source.count
+            self.maybeMutable = true
+        } else if let raw = source.raw() {
+            self.sourceObject = source
+            self.source = raw
+            self.count = source.count
+            self.maybeMutable = false
+        } else {
+            self.sourceObject = nil
+            self.source = nil
+            self.count = 0
+            self.maybeMutable = false
+        }
+        self.lastHash = chitch_hash_raw(self.source, self.count)
+    }
+
+    @inlinable @inline(__always)
     public init(sourceObject: AnyObject?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceObject = sourceObject
         self.source = raw + from
