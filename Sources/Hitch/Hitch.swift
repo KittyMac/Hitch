@@ -122,7 +122,9 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     @inlinable @inline(__always)
     required public init? (contentsOfFile path: String) {
         // Read contents of file directly into our memory (unnecessary data copy)
-        let file = fopen(path, "r")
+        guard let file = fopen(path, "r") else {
+            return nil
+        }
 
         fseek(file, 0, SEEK_END)
         let size = ftell(file)
