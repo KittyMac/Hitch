@@ -1,5 +1,6 @@
 import Foundation
 
+infix operator <<~: AdditionPrecedence
 infix operator <<<: AdditionPrecedence
 
 public protocol HitchFormattable {
@@ -62,4 +63,9 @@ public func << (left: HitchFormattable, right: [Any?]) -> HalfHitch {
 @inlinable @inline(__always)
 public func <<< (left: HitchFormattable, right: [Any?]) -> Hitch {
     return left.formatToHitch(using: right)
+}
+
+@inlinable @inline(__always)
+public func <<~ (left: HitchFormattable, right: [Any?]) -> String {
+    return left.formatToHalfHitch(using: right).toString()
 }

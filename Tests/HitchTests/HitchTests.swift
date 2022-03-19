@@ -33,6 +33,10 @@ final class HitchTests: XCTestCase {
             }
         }
     }
+    
+    func testContentsOfFileError() {
+        XCTAssertNil(Hitch(contentsOfFile: "/tmp/doesnotexist1343.html"))
+    }
         
     func testSimpleCreate() {
         let hello = "Hello"

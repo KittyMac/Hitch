@@ -155,6 +155,14 @@ final class HitchFormatTests: XCTestCase {
             extension Hello { public struct World { } }
             """)
     }
+    
+    func testToStringOperator() {
+        
+        let value = "extension {?} { public struct {?} { } }" <<~ ["Hello", "World"]
+        print(value)
+        
+        XCTAssertEqual(value, "extension Hello { public struct World { } }")
+    }
 }
 
 extension HitchFormatTests {
