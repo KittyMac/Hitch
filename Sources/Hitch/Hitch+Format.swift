@@ -140,6 +140,9 @@ extension Hitch {
 
         let appendBoundedValue: (Int, Int, Int, Alignment) -> Void = { valueIdx, fieldPrecision, fieldWidth, fieldAlignment in
             var valueAsHitch = Hitch.empty
+            guard valueIdx < values.count else {
+                return
+            }
 
             let value = self.getTypedValue(values[valueIdx])
             switch value.type {
