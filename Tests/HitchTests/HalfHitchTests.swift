@@ -1,6 +1,10 @@
 import XCTest
 @testable import Hitch
 
+struct TestHalfHitchCodable: Codable {
+    let x: HalfHitch
+}
+
 final class HalfHitchTests: XCTestCase {
     
     func testSimpleCreate() {

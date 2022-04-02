@@ -5,8 +5,8 @@ import Foundation
 /// HalfHitch is a Hitch-like view on raw data.  In other words, when you need to do string-like
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
-public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable {
-
+public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable, Codable {
+    
     public static let empty: HalfHitch = ""
 
     @inlinable @inline(__always)
@@ -173,6 +173,35 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.maybeMutable = false
         }
         self.lastHash = chitch_hash_raw(self.source, self.count)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let string = try container.decode(String.self)
+        
+        let source = Hitch(string: string)
+        if let raw = source.mutableRaw() {
+            self.sourceObject = source
+            self.source = UnsafePointer(raw)
+            self.count = source.count
+            self.maybeMutable = true
+        } else if let raw = source.raw() {
+            self.sourceObject = source
+            self.source = raw
+            self.count = source.count
+            self.maybeMutable = false
+        } else {
+            self.sourceObject = nil
+            self.source = nil
+            self.count = 0
+            self.maybeMutable = false
+        }
+        self.lastHash = chitch_hash_raw(self.source, self.count)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(description)
     }
 
     @inlinable @inline(__always)

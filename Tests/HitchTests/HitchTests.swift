@@ -8,6 +8,10 @@ let swiftLorem = lorem
 let hitchLorem = Hitch(stringLiteral: loremStatic)
 let halfhitchLorem = HalfHitch(stringLiteral: loremStatic)
 
+struct TestHitchCodable: Codable {
+    let x: Hitch
+}
+
 final class HitchTests: XCTestCase {
     
     func testCastAnyToHitch() {
