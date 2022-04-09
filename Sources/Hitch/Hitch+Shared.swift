@@ -447,10 +447,7 @@ public extension Hitchable {
     @inlinable @inline(__always)
     @discardableResult
     func toEpoch() -> Int {
-        if let raw = raw() {
-            return chitch_toepoch_raw(UnsafeMutablePointer(mutating: raw), count)
-        }
-        return chitch_toepoch_raw(mutableRaw(), count)
+        return chitch_toepoch_raw(raw(), count)
     }
 }
 

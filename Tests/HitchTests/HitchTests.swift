@@ -641,6 +641,24 @@ final class HitchTests: XCTestCase {
         let _ = halfHitch[1]
     }
     
+    func testEpochPerf() {
+        // DateFormatter: 0.027s
+        // Custom: 0.000s
+        let hitch = Hitch("4/30/2021 11:59:59 PM")
+        
+        XCTAssertEqual(hitch.toEpoch(), 1619827199)
+        
+        measure {
+            var numMatches = 0
+            for _ in 0..<1000 {
+                if hitch.toEpoch() == 1619827199 {
+                    numMatches += 1
+                }
+            }
+            XCTAssertEqual(numMatches, 1000)
+        }
+    }
+    
     func testHitchEqualityPerf() {
         let sourceHitches = [
             "George the seventh123",
