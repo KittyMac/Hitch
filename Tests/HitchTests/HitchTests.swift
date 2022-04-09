@@ -811,6 +811,8 @@ extension HitchTests {
             ("testHitchAsKeys", testHitchAsKeys),
             ("testNullHalfHitch", testNullHalfHitch),
             
+            ("testEpochPerf", testEpochPerf),
+            
             // Performance tests cannot be run without XCode because we cannot test using release configuration
             //("testHitchEqualityPerf", testHitchEqualityPerf),
             //("testHalfHitchEqualityPerf", testHalfHitchEqualityPerf),
