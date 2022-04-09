@@ -777,250 +777,35 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
 
     var ptr = haystack
     let end = haystack + haystack_count - needle_count
-    let needle_start = needle[0]
+    let needle_start = needle.pointee
+    let needle_end = needle + needle_count
 
-    var found = true
+    var ptr2 = haystack
+    var needle2 = needle
     
-    if needle_count == 1 {
-        while ptr <= end {
-            if ptr.pointee == needle_start { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 2 {
-        let needle_1 = needle[1]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 3 {
-        let needle_1 = needle[1], needle_2 = needle[2]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 4 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 5 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 6 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 7 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 8 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 9 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 10 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 11 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 12 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 13 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 14 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 15 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 16 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 17 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 18 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 19 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 20 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 21 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 22 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 23 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 24 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 25 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 26 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 27 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25], needle_26 = needle[26]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 && ptr[26] == needle_26 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 28 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25], needle_26 = needle[26], needle_27 = needle[27]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 && ptr[26] == needle_26 && ptr[27] == needle_27 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 29 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25], needle_26 = needle[26], needle_27 = needle[27], needle_28 = needle[28]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 && ptr[26] == needle_26 && ptr[27] == needle_27 && ptr[28] == needle_28 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 30 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25], needle_26 = needle[26], needle_27 = needle[27], needle_28 = needle[28], needle_29 = needle[29]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 && ptr[26] == needle_26 && ptr[27] == needle_27 && ptr[28] == needle_28 && ptr[29] == needle_29 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 31 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25], needle_26 = needle[26], needle_27 = needle[27], needle_28 = needle[28], needle_29 = needle[29], needle_30 = needle[30]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 && ptr[26] == needle_26 && ptr[27] == needle_27 && ptr[28] == needle_28 && ptr[29] == needle_29 && ptr[30] == needle_30 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else if needle_count == 32 {
-        let needle_1 = needle[1], needle_2 = needle[2], needle_3 = needle[3], needle_4 = needle[4], needle_5 = needle[5], needle_6 = needle[6], needle_7 = needle[7], needle_8 = needle[8], needle_9 = needle[9], needle_10 = needle[10]
-        let needle_11 = needle[11], needle_12 = needle[12], needle_13 = needle[13], needle_14 = needle[14], needle_15 = needle[15], needle_16 = needle[16], needle_17 = needle[17], needle_18 = needle[18], needle_19 = needle[19], needle_20 = needle[20]
-        let needle_21 = needle[21], needle_22 = needle[22], needle_23 = needle[23], needle_24 = needle[24], needle_25 = needle[25], needle_26 = needle[26], needle_27 = needle[27], needle_28 = needle[28], needle_29 = needle[29], needle_30 = needle[30]
-        let needle_31 = needle[31]
-        while ptr <= end {
-            if ptr.pointee == needle_start && ptr[1] == needle_1 && ptr[2] == needle_2 && ptr[3] == needle_3 && ptr[4] == needle_4 && ptr[5] == needle_5 && ptr[6] == needle_6 && ptr[7] == needle_7 && ptr[8] == needle_8 && ptr[9] == needle_9 && ptr[10] == needle_10 && ptr[11] == needle_11 && ptr[12] == needle_12 && ptr[13] == needle_13 && ptr[14] == needle_14 && ptr[15] == needle_15 && ptr[16] == needle_16 && ptr[17] == needle_17 && ptr[18] == needle_18 && ptr[19] == needle_19 && ptr[20] == needle_20 && ptr[21] == needle_21 && ptr[22] == needle_22 && ptr[23] == needle_23 && ptr[24] == needle_24 && ptr[25] == needle_25 && ptr[26] == needle_26 && ptr[27] == needle_27 && ptr[28] == needle_28 && ptr[29] == needle_29 && ptr[30] == needle_30 && ptr[31] == needle_31 { return (ptr - haystack) }
-            ptr += 1
-        }
-    } else {
-        while ptr <= end {
-            if ptr.pointee == needle_start {
-                found = true
-                for idx in 1..<needle_count {
-                    if ptr[idx] != needle[idx] {
-                        found = false
-                        break
-                    }
-                }
-                if found {
-                    return (ptr - haystack)
-                }
+    var found = true
+    while ptr <= end {
+        if ptr.pointee == needle_start {
+            if needle_count == 1 {
+                return (ptr - haystack)
             }
-            ptr += 1
+            
+            ptr2 = ptr + 1
+            needle2 = needle + 1
+            found = true
+            while needle2 < needle_end {
+                if ptr2.pointee != needle2.pointee {
+                    found = false
+                    break
+                }
+                ptr2 += 1
+                needle2 += 1
+            }
+            if found {
+                return (ptr - haystack)
+            }
         }
+        ptr += 1
     }
 
     return -1
