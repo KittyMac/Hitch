@@ -775,21 +775,30 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     guard let needle = needle else { return -1 }
     guard needle_count <= haystack_count else { return -1 }
 
-    var ptr = haystack
-    let end = haystack + haystack_count - needle_count
-    let needle_start = needle.pointee
-    let needle_end = needle + needle_count
+    let haystack_end = haystack + haystack_count - needle_count
+    
+    let needle_count_minus_one = needle_count - 1
+    let needle_start_pointee = needle.pointee
+    let needle_end = needle + needle_count_minus_one
+    let needle_end_pointee = needle_end.pointee
 
-    var ptr2 = haystack
+    var ptr = haystack
+    var ptr2 = haystack + needle_count_minus_one
     var needle2 = needle
     
-    var found = true
-    while ptr <= end {
-        if ptr.pointee == needle_start {
-            if needle_count == 1 {
+    if needle_count == 1 {
+        while ptr <= haystack_end {
+            if ptr.pointee == needle_start_pointee {
                 return (ptr - haystack)
             }
-            
+            ptr += 1
+        }
+        return -1
+    }
+    
+    var found = true
+    while ptr <= haystack_end {
+        if ptr.pointee == needle_start_pointee && ptr2.pointee == needle_end_pointee {
             ptr2 = ptr + 1
             needle2 = needle + 1
             found = true
@@ -804,8 +813,10 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
             if found {
                 return (ptr - haystack)
             }
+            ptr2 = ptr + needle_count_minus_one
         }
         ptr += 1
+        ptr2 += 1
     }
 
     return -1
