@@ -307,7 +307,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public func release() {
         lastHash = 0
         chitch_dealloc(&chitch)
-        chitch = chitch_init_capacity(0)
+        chitch = chitch_empty()
     }
 
     @inlinable @inline(__always)
