@@ -273,7 +273,8 @@ public extension Hitchable {
                         char == .formFeed ||
                         char == .carriageReturn ||
                         char == .doubleQuote ||
-                        char == .backSlash {
+                        char == .backSlash ||
+                        char == .forwardSlash {
                 return true
             }
             ptr += 1
@@ -681,6 +682,7 @@ func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
         if read.pointee == .backSlash {
             switch read[1] {
             case .backSlash: append(.backSlash, 2); continue
+            case .forwardSlash: append(.forwardSlash, 2); continue
             case .singleQuote: append(.singleQuote, 2); continue
             case .doubleQuote: append(.doubleQuote, 2); continue
             case .r: append(.carriageReturn, 2); continue
@@ -815,6 +817,9 @@ func escapeBinary(data: UnsafePointer<UInt8>,
             case .backSlash:
                 writer.append(.backSlash)
                 writer.append(.backSlash)
+            case .forwardSlash:
+                writer.append(.backSlash)
+                writer.append(.forwardSlash)
             default:
                 writer.append(ch)
             }
