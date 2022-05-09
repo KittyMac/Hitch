@@ -34,7 +34,7 @@ extension Hitch {
         @usableFromInline
         let double: Double?
 
-        @inlinable @inline(__always)
+        @usableFromInline
         init() {
             self.type = .null
             self.hitch = nil
@@ -42,7 +42,7 @@ extension Hitch {
             self.double = nil
         }
 
-        @inlinable @inline(__always)
+        @usableFromInline
         init(int: Int) {
             self.type = .int
             self.hitch = nil
@@ -50,7 +50,7 @@ extension Hitch {
             self.double = nil
         }
 
-        @inlinable @inline(__always)
+        @usableFromInline
         init(double: Double) {
             self.type = .double
             self.hitch = nil
@@ -58,7 +58,7 @@ extension Hitch {
             self.double = double
         }
 
-        @inlinable @inline(__always)
+        @usableFromInline
         init(hitch: Hitch) {
             self.type = .hitch
             self.hitch = hitch
@@ -135,6 +135,7 @@ extension Hitch {
             case .int: scratch.append(number: value.int ?? 0)
             case .double: scratch.append(double: value.double ?? 0.0, precision: fieldPrecision)
             case .hitch: scratch.append(value.hitch ?? Hitch.empty, precision: fieldPrecision)
+            default: break
             }
         }
 
@@ -160,6 +161,7 @@ extension Hitch {
                 valueScratch.clear()
                 valueScratch.append(value.hitch ?? Hitch.empty, precision: fieldPrecision)
                 valueAsHitch = valueScratch
+            default: break
             }
 
             let valueWidth = valueAsHitch.count
@@ -187,6 +189,7 @@ extension Hitch {
                     for _ in 0..<rightPadding {
                         scratch.append(.space)
                     }
+                default: break
                 }
             } else {
                 scratch.append(valueAsHitch.substring(0, fieldWidth) ?? Hitch.empty)

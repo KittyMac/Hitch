@@ -26,7 +26,7 @@ struct CHitch {
     @usableFromInline
     var staticData: UnsafePointer<UInt8>?
 
-    @inlinable @inline(__always)
+    @usableFromInline
     init() { }
 
     @inlinable @inline(__always)
@@ -776,7 +776,7 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     guard needle_count <= haystack_count else { return -1 }
 
     let haystack_end = haystack + haystack_count - needle_count
-    
+
     let needle_count_minus_one = needle_count - 1
     let needle_start_pointee = needle.pointee
     let needle_end = needle + needle_count_minus_one
@@ -785,7 +785,7 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     var ptr = haystack
     var ptr2 = haystack + needle_count_minus_one
     var needle2 = needle
-    
+
     if needle_count == 1 {
         while ptr <= haystack_end {
             if ptr.pointee == needle_start_pointee {
@@ -795,7 +795,7 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
         }
         return -1
     }
-    
+
     var found = true
     while ptr <= haystack_end {
         if ptr.pointee == needle_start_pointee && ptr2.pointee == needle_end_pointee {
@@ -894,7 +894,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     // 4/30/2021 8:19:27 AM
     guard let raw = raw else { return 0 }
     guard count > 0 else { return 0 }
-        
+
     var monthPtr = raw
     var monthCount = 0
     var dayPtr = raw
@@ -909,7 +909,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     var secondCount = 0
     var ptr = raw
     let ptrEnd = raw + count
-    
+
     // month
     monthPtr = ptr
     while ptr.pointee != .forwardSlash && ptr < ptrEnd {
@@ -919,7 +919,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard var tm_month = intFromBinary(data: monthPtr, count: monthCount) else { return 0 }
-    
+
     // day
     dayPtr = ptr
     while ptr.pointee != .forwardSlash && ptr < ptrEnd {
@@ -929,7 +929,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard let tm_day = intFromBinary(data: dayPtr, count: dayCount) else { return 0 }
-    
+
     // year
     yearPtr = ptr
     while ptr.pointee != .space && ptr < ptrEnd {
@@ -939,7 +939,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard var tm_year = intFromBinary(data: yearPtr, count: yearCount) else { return 0 }
-    
+
     // hour
     hourPtr = ptr
     while ptr.pointee != .colon && ptr < ptrEnd {
@@ -949,7 +949,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard var tm_hour = intFromBinary(data: hourPtr, count: hourCount) else { return 0 }
-    
+
     // minute
     minutePtr = ptr
     while ptr.pointee != .colon && ptr < ptrEnd {
@@ -959,7 +959,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard let tm_min = intFromBinary(data: minutePtr, count: minuteCount) else { return 0 }
-    
+
     // second
     secondPtr = ptr
     while ptr.pointee != .space && ptr < ptrEnd {
@@ -969,7 +969,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard let tm_sec = intFromBinary(data: secondPtr, count: secondCount) else { return 0 }
-    
+
     if ptr.pointee == .p || ptr.pointee == .P {
         if tm_hour != 12 {
             tm_hour += 12
@@ -977,7 +977,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     } else if tm_hour == 12 {
         tm_hour = 0
     }
-        
+
     /* tm_sec seconds after the minute [0-60] */
     /* tm_min minutes after the hour [0-59] */
     /* tm_hour hours since midnight [0-23] */
@@ -990,10 +990,10 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
 
     tm_year -= 1900
     tm_month -= 1
-    
+
     // Source adapted from https://dox.ipxe.org/time_8c.html
     let days_to_month_start: [Int] = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 ]
-    
+
     var is_leap_year = false
     if tm_year % 4 == 0 {
         is_leap_year = true
@@ -1004,12 +1004,12 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     if tm_year % 400 == 100 {
         is_leap_year = true
     }
-    
+
     var tm_yday = (tm_day - 1) + days_to_month_start[ tm_month ]
     if tm_month >= 2 && is_leap_year {
         tm_yday += 1
     }
-        
+
     return tm_sec + tm_min*60 + tm_hour*3600 + tm_yday*86400 + (tm_year-70)*31536000 + ((tm_year-69)/4)*86400 - ((tm_year-1)/100)*86400 + ((tm_year+299)/400)*86400
 }
 

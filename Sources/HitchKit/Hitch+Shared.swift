@@ -47,7 +47,7 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
     @usableFromInline
     internal let end: UnsafePointer<UInt8>
 
-    @inlinable @inline(__always)
+    @usableFromInline
     internal init(hitch: Hitchable) {
         if let data = hitch.raw() {
             ptr = data - 1
@@ -58,7 +58,7 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
         }
     }
 
-    @inlinable @inline(__always)
+    @usableFromInline
     internal init(hitch: Hitchable, from: Int, to: Int) {
         if let data = hitch.raw() {
             ptr = data + from - 1

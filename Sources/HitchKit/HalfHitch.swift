@@ -6,7 +6,7 @@ import Foundation
 /// processing on existing data without copies or allocations, then HalfHitch is your answer.
 /// Note: as you can gather from the above, use HalfHitch carefully!
 public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByStringLiteral, Sequence, Comparable, Hashable, Codable {
-    
+
     public static let empty: HalfHitch = ""
 
     @inlinable @inline(__always)
@@ -53,7 +53,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         }
     }
 
-    @inlinable @inline(__always)
     public init?(contentsOfFile path: String) {
         guard let source = Hitch(contentsOfFile: path) else { return nil }
         if let raw = source.mutableRaw() {
@@ -75,7 +74,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
-    @inlinable @inline(__always)
     public init(sourceObject: AnyObject?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceObject = sourceObject
         self.source = raw + from
@@ -84,7 +82,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
-    @inlinable @inline(__always)
     public init(source: Hitch, from: Int, to: Int) {
         if let raw = source.mutableRaw() {
             self.sourceObject = source
@@ -105,7 +102,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
-    @inlinable @inline(__always)
     public init(source: HalfHitch, from: Int, to: Int) {
         self.sourceObject = source.sourceObject
         if let raw = source.source {
@@ -120,7 +116,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
-    @inlinable @inline(__always)
     public init() {
         self.sourceObject = nil
         self.source = nil
@@ -129,7 +124,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
-    @inlinable @inline(__always)
     public init(stringLiteral: StaticString) {
         if stringLiteral.hasPointerRepresentation {
             self.sourceObject = nil
@@ -153,7 +147,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
 
-    @inlinable @inline(__always)
     public init(string: String) {
         let source = Hitch(string: string)
         if let raw = source.mutableRaw() {
@@ -174,11 +167,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         }
         self.lastHash = chitch_hash_raw(self.source, self.count)
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let string = try container.decode(String.self)
-        
+
         let source = Hitch(string: string)
         if let raw = source.mutableRaw() {
             self.sourceObject = source

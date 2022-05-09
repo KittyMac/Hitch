@@ -114,12 +114,10 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     @usableFromInline
     var lastHash: Int = 0
 
-    @inlinable @inline(__always)
     deinit {
         chitch_dealloc(&chitch)
     }
 
-    @inlinable @inline(__always)
     required public init? (contentsOfFile path: String) {
         // Read contents of file directly into our memory (unnecessary data copy)
         guard let file = fopen(path, "r") else {
@@ -140,7 +138,6 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         chitch.count = size
     }
 
-    @inlinable @inline(__always)
     required public init (stringLiteral: StaticString, copyOnWrite: Bool) {
         if stringLiteral.hasPointerRepresentation {
             chitch = chitch_static(stringLiteral.utf8Start,
@@ -153,7 +150,6 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
 
-    @inlinable @inline(__always)
     required public init (stringLiteral: StaticString) {
         if stringLiteral.hasPointerRepresentation {
             chitch = chitch_static(stringLiteral.utf8Start,
@@ -166,27 +162,22 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
 
-    @inlinable @inline(__always)
     required public init (string: String) {
         chitch = chitch_init_string(string)
     }
 
-    @inlinable @inline(__always)
     public init(hitch: Hitch) {
         chitch = chitch_init_raw(hitch.raw(), hitch.count)
     }
 
-    @inlinable @inline(__always)
     public init(bytes: UnsafeMutablePointer<UInt8>, offset: Int, count: Int) {
         chitch = chitch_init_raw(bytes + offset, count)
     }
 
-    @inlinable @inline(__always)
     public init(bytes: UnsafePointer<UInt8>, offset: Int, count: Int) {
         chitch = chitch_init_raw(bytes + offset, count)
     }
 
-    @inlinable @inline(__always)
     public init(data: Data) {
         chitch = chitch_empty()
         super.init()
@@ -198,7 +189,6 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
 
-    @inlinable @inline(__always)
     public init(capacity: Int) {
         chitch = chitch_init_capacity(capacity)
     }
