@@ -817,6 +817,9 @@ func escapeBinary(data: UnsafePointer<UInt8>,
             case .backSlash:
                 writer.append(.backSlash)
                 writer.append(.backSlash)
+            case .forwardSlash:
+                writer.append(.backSlash)
+                writer.append(.forwardSlash)
             default:
                 writer.append(ch)
             }
