@@ -3,19 +3,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "HitchKit",
+    name: "Hitch",
     products: [
         .library(
-            name: "HitchKit",
-            targets: ["HitchKit"]),
+            name: "Hitch",
+            targets: ["Hitch"]),
     ],
     dependencies: [ ],
     targets: [
         .target(
-            name: "HitchKit",
+            name: "Hitch",
             dependencies: []),
         .testTarget(
             name: "HitchTests",
-            dependencies: ["HitchKit"]),
+            dependencies: ["Hitch"]),
     ]
 )

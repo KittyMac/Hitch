@@ -16,9 +16,9 @@ update:
 xcode:
 	-killall Xcode.app
 	swift package generate-xcodeproj
-	meta/addBuildPhase HitchKit.xcodeproj/project.pbxproj 'HitchKit::HitchKit' 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'
+	meta/addBuildPhase Hitch.xcodeproj/project.pbxproj 'Hitch::Hitch' 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'
 	sleep 2
-	open ./HitchKit.xcodeproj
+	open ./Hitch.xcodeproj
 
 docker:
 	-DOCKER_HOST=tcp://192.168.1.209:2376 docker buildx create --name cluster --platform linux/arm64/v8 --append

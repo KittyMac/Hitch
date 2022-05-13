@@ -1,5 +1,5 @@
 import XCTest
-@testable import HitchKit
+@testable import Hitch
 
 final class HitchPerformanceTests: XCTestCase {
     
