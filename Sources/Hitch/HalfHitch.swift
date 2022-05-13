@@ -207,14 +207,8 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.maybeMutable = false
         
-        var tempHash: Int = 0
-        var tempCount: Int = 0
-        chitch_using(hashOnly.description) { bytes, count in
-            tempCount = count
-            tempHash = chitch_hash_raw(bytes, count)
-        }
-        self.lastHash = tempHash
-        self.count = tempCount
+        self.lastHash = chitch_hash_raw(hashOnly.utf8Start, hashOnly.utf8CodeUnitCount)
+        self.count = hashOnly.utf8CodeUnitCount
     }
     
     public init(from decoder: Decoder) throws {
