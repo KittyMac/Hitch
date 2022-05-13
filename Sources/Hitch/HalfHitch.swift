@@ -11,19 +11,31 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+        if lhs.lastHash == rhs.lastHash && lhs.count == rhs.count {
+            guard lhs.source != nil && rhs.source != nil else { return true }
+            return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+        }
+        return false
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: StaticString) -> Bool {
-        let halfhitch = HalfHitch(stringLiteral: rhs)
-        return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+        let halfhitch = HalfHitch(hashOnly: rhs)
+        if lhs.lastHash == halfhitch.lastHash && lhs.count == halfhitch.count {
+            guard lhs.source != nil else { return true }
+            return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+        }
+        return false
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: lhs)
-        return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+        if halfhitch.lastHash == rhs.lastHash && halfhitch.count == rhs.count {
+            guard rhs.source != nil else { return true }
+            return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+        }
+        return false
     }
 
     @usableFromInline
@@ -173,6 +185,36 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.maybeMutable = false
         }
         self.lastHash = chitch_hash_raw(self.source, self.count)
+    }
+    
+    public init(hashOnly: String) {
+        self.sourceObject = nil
+        self.source = nil
+        self.maybeMutable = false
+        
+        var tempHash: Int = 0
+        var tempCount: Int = 0
+        chitch_using(hashOnly) { bytes, count in
+            tempCount = count
+            tempHash = chitch_hash_raw(bytes, count)
+        }
+        self.lastHash = tempHash
+        self.count = tempCount
+    }
+    
+    public init(hashOnly: StaticString) {
+        self.sourceObject = nil
+        self.source = nil
+        self.maybeMutable = false
+        
+        var tempHash: Int = 0
+        var tempCount: Int = 0
+        chitch_using(hashOnly.description) { bytes, count in
+            tempCount = count
+            tempHash = chitch_hash_raw(bytes, count)
+        }
+        self.lastHash = tempHash
+        self.count = tempCount
     }
     
     public init(from decoder: Decoder) throws {
