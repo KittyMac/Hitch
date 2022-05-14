@@ -11,31 +11,28 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        if lhs.lastHash == rhs.lastHash && lhs.count == rhs.count {
-            guard lhs.source != nil && rhs.source != nil else { return true }
-            return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
-        }
-        return false
+        return lhs.count == rhs.count &&
+                lhs.lastHash1 == rhs.lastHash1 &&
+                lhs.lastHash2 == rhs.lastHash2 &&
+                lhs.lastHash3 == rhs.lastHash3
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: StaticString) -> Bool {
+        guard lhs.count == rhs.utf8CodeUnitCount else { return false }
         let halfhitch = HalfHitch(hashOnly: rhs)
-        if lhs.lastHash == halfhitch.lastHash && lhs.count == halfhitch.count {
-            guard lhs.source != nil else { return true }
-            return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
-        }
-        return false
+        return lhs.lastHash1 == halfhitch.lastHash1 &&
+                lhs.lastHash2 == halfhitch.lastHash2 &&
+                lhs.lastHash3 == halfhitch.lastHash3
     }
 
     @inlinable @inline(__always)
     public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
+        guard lhs.utf8CodeUnitCount == rhs.count else { return false }
         let halfhitch = HalfHitch(stringLiteral: lhs)
-        if halfhitch.lastHash == rhs.lastHash && halfhitch.count == rhs.count {
-            guard rhs.source != nil else { return true }
-            return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
-        }
-        return false
+        return halfhitch.lastHash1 == rhs.lastHash1 &&
+                halfhitch.lastHash2 == rhs.lastHash2 &&
+                halfhitch.lastHash3 == rhs.lastHash3
     }
 
     @usableFromInline
@@ -50,7 +47,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     public var count: Int
 
     @usableFromInline
-    let lastHash: Int
+    let lastHash1: Int
+    @usableFromInline
+    let lastHash2: Int
+    @usableFromInline
+    let lastHash3: Int
 
     @inlinable @inline(__always)
     public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
@@ -84,7 +85,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -93,7 +94,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = raw + from
         self.count = to - from
         self.maybeMutable = true
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -114,7 +115,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -129,7 +130,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -138,7 +139,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.count = 0
         self.maybeMutable = false
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -162,7 +163,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                 self.maybeMutable = false
             }
         }
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     @inlinable @inline(__always)
@@ -184,7 +185,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
     
     public init(hashOnly: String) {
@@ -192,13 +193,17 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.maybeMutable = false
         
-        var tempHash: Int = 0
+        var tempHash1: Int = 0
+        var tempHash2: Int = 0
+        var tempHash3: Int = 0
         var tempCount: Int = 0
         chitch_using(hashOnly) { bytes, count in
             tempCount = count
-            tempHash = chitch_hash_raw(bytes, count)
+            (tempHash1, tempHash2, tempHash3) = chitch_multihash_raw(bytes, count)
         }
-        self.lastHash = tempHash
+        self.lastHash1 = tempHash1
+        self.lastHash2 = tempHash2
+        self.lastHash3 = tempHash3
         self.count = tempCount
     }
     
@@ -207,7 +212,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.maybeMutable = false
         
-        self.lastHash = chitch_hash_raw(hashOnly.utf8Start, hashOnly.utf8CodeUnitCount)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(hashOnly.utf8Start, hashOnly.utf8CodeUnitCount)
         self.count = hashOnly.utf8CodeUnitCount
     }
     
@@ -232,7 +237,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.count = 0
             self.maybeMutable = false
         }
-        self.lastHash = chitch_hash_raw(self.source, self.count)
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -260,7 +265,9 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(lastHash)
+        hasher.combine(lastHash1)
+        hasher.combine(lastHash2)
+        hasher.combine(lastHash3)
     }
 
     @inlinable @inline(__always)

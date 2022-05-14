@@ -690,6 +690,27 @@ func chitch_hash_raw(_ lhs: UnsafePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
+func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
+                          _ lhs_count: Int) -> (Int,Int,Int) {
+    guard let lhs = lhs else { return (0,0,0) }
+    let lhsEnd = lhs + min(lhs_count, 128)
+    var lhsPtr = lhs
+    var hash1: Int = 0
+    var hash2: Int = 0
+    var hash3: Int = 0
+    var idx: Int = 0
+    while lhsPtr < lhsEnd {
+        let char = Int(lhsPtr.pointee)
+        hash1 = (hash1 &+ char &* idx) &* (hash1 &+ char &* idx)
+        hash2 = hash2 &+ (char &* idx) &* (char &* idx) &* (hash2 &+ char &* idx)
+        hash3 = (hash3 &- char &* idx) &* (hash3 &+ char &* idx &+ char &+ idx) &+ char &* idx
+        idx += 1
+        lhsPtr += 1
+    }
+    return (hash1,hash2,hash3)
+}
+
+@inlinable @inline(__always)
 func chitch_cmp_raw(_ lhs: UnsafePointer<UInt8>?,
                     _ lhs_count: Int,
                     _ rhs: UnsafePointer<UInt8>?,
