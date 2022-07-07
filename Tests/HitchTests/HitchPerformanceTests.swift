@@ -191,10 +191,8 @@ final class HitchPerformanceTests: XCTestCase {
         XCTAssertTrue(hitchLorem.contains("nulla pariatur"))
         
         let halfHitch: HalfHitch = "nulla pariatur"
-        let options = XCTMeasureOptions()
-        options.iterationCount = 100
         
-        measure(options: options) {
+        measure {
             for _ in 1...100000 {
                 hitchLorem.contains(halfHitch)
             }
