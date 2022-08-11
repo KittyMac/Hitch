@@ -750,7 +750,9 @@ final class HitchTests: XCTestCase {
             "world"
         ])
         
-        print(result)
+        XCTAssertTrue(result.contains("consectetur"))
+        XCTAssertTrue(result.contains("voluptate"))
+        XCTAssertFalse(result.contains("world"))
     }
 }
 

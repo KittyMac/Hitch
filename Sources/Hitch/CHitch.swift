@@ -3,34 +3,20 @@ import Foundation
 // Ported from cHitch.c.
 
 @usableFromInline
-class Needle: NSObject {
+struct Needle: Equatable {
     @usableFromInline let bytes: UnsafePointer<UInt8>
     @usableFromInline let count: Int
     @usableFromInline let startingByte: UInt8
     
-    private var lastHash: Int = 0
+    @usableFromInline let hitch: Hitch
     
     @usableFromInline
-    init?(_ bytes: UnsafePointer<UInt8>?,
-          _ count: Int) {
-        guard let bytes = bytes else { return nil }
+    init?(_ hitch: Hitch) {
+        guard let bytes = hitch.raw() else { return nil }
+        self.hitch = hitch
         self.bytes = bytes
-        self.count = count
+        self.count = hitch.count
         self.startingByte = bytes.pointee
-        
-        if lastHash == 0 {
-            lastHash = chitch_hash_raw(bytes, count)
-        }
-    }
-    
-    @usableFromInline
-    func hitch() -> Hitch {
-        return Hitch(bytes: bytes, offset: 0, count: count)
-    }
-    
-    @usableFromInline
-    override var hash: Int {
-        return lastHash
     }
 }
 
@@ -878,9 +864,9 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
 @inlinable @inline(__always)
 func chitch_contains_which(_ haystack: UnsafePointer<UInt8>?,
                            _ haystack_count: Int,
-                           _ needles: [Needle]) -> Set<Needle> {
-    var foundNeedles = Set<Needle>()
-    var stillToFindNeedles = Set<Needle>(needles)
+                           _ needles: [Needle]) -> Set<Hitch> {
+    var foundNeedles = Set<Hitch>()
+    var stillToFindNeedles: [Needle] = needles
     
     guard haystack_count >= 0 else { return foundNeedles }
     guard needles.count > 0 else { return foundNeedles }
@@ -904,8 +890,10 @@ func chitch_contains_which(_ haystack: UnsafePointer<UInt8>?,
                                      needle.count,
                                      needle.bytes,
                                      needle.count) {
-                     foundNeedles.insert(needle)
-                     stillToFindNeedles.remove(needle)
+                     foundNeedles.insert(needle.hitch)
+                     if let idx = stillToFindNeedles.firstIndex(of: needle) {
+                         stillToFindNeedles.remove(at: idx)
+                     }
                      
                      if stillToFindNeedles.count == 0 {
                          return foundNeedles
