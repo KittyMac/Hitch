@@ -906,6 +906,10 @@ func chitch_contains_which(_ haystack: UnsafePointer<UInt8>?,
                                      needle.count) {
                      foundNeedles.insert(needle)
                      stillToFindNeedles.remove(needle)
+                     
+                     if stillToFindNeedles.count == 0 {
+                         return foundNeedles
+                     }
                  }
             }
         }
