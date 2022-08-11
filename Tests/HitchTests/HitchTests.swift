@@ -742,6 +742,16 @@ final class HitchTests: XCTestCase {
         
         XCTAssertEqual(numMatches, 10000000 * 10)
     }
+    
+    func testContainsWhich() {
+        let result = hitchLorem.contains(which: [
+            "consectetur",
+            "voluptate",
+            "world"
+        ])
+        
+        print(result)
+    }
 }
 
 extension HitchTests {

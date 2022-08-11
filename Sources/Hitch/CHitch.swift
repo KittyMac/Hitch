@@ -3,6 +3,38 @@ import Foundation
 // Ported from cHitch.c.
 
 @usableFromInline
+class Needle: NSObject {
+    @usableFromInline let bytes: UnsafePointer<UInt8>
+    @usableFromInline let count: Int
+    @usableFromInline let startingByte: UInt8
+    
+    private var lastHash: Int = 0
+    
+    @usableFromInline
+    init?(_ bytes: UnsafePointer<UInt8>?,
+          _ count: Int) {
+        guard let bytes = bytes else { return nil }
+        self.bytes = bytes
+        self.count = count
+        self.startingByte = bytes.pointee
+        
+        if lastHash == 0 {
+            lastHash = chitch_hash_raw(bytes, count)
+        }
+    }
+    
+    @usableFromInline
+    func hitch() -> Hitch {
+        return Hitch(bytes: bytes, offset: 0, count: count)
+    }
+    
+    @usableFromInline
+    override var hash: Int {
+        return lastHash
+    }
+}
+
+@usableFromInline
 let epochFormat: DateFormatter = {
     let format = DateFormatter()
     format.dateFormat = "MM/dd/yyyy hh:mm:ss a"
@@ -841,6 +873,47 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     }
 
     return -1
+}
+
+@inlinable @inline(__always)
+func chitch_contains_which(_ haystack: UnsafePointer<UInt8>?,
+                           _ haystack_count: Int,
+                           _ needles: [Needle]) -> Set<Needle> {
+    var foundNeedles = Set<Needle>()
+    var stillToFindNeedles = Set<Needle>(needles)
+    
+    guard haystack_count >= 0 else { return foundNeedles }
+    guard needles.count > 0 else { return foundNeedles }
+    guard let haystack = haystack else { return foundNeedles }
+    
+    guard let min_needle_count = needles.map({ $0.count }).min() else { return foundNeedles }
+
+    let haystack_end = haystack + haystack_count - min_needle_count
+    
+    let starting_chars = Set<UInt8>(needles.map { $0.startingByte })
+    
+    var ptr = haystack
+    let end_ptr = haystack + haystack_count
+    
+    while ptr <= haystack_end {
+        let haystackCountLeft = end_ptr - ptr
+        
+        if starting_chars.contains(ptr.pointee) {
+            for needle in stillToFindNeedles where needle.startingByte == ptr.pointee && haystackCountLeft >= needle.count {
+                 if chitch_equal_raw(ptr,
+                                     needle.count,
+                                     needle.bytes,
+                                     needle.count) {
+                     foundNeedles.insert(needle)
+                     stillToFindNeedles.remove(needle)
+                 }
+            }
+        }
+        
+        ptr += 1
+    }
+    
+    return foundNeedles
 }
 
 @inlinable @inline(__always)

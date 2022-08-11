@@ -187,10 +187,11 @@ final class HitchPerformanceTests: XCTestCase {
     func testContainsPerf() {
         // OLD: 0.020
         // 0.018
-        XCTAssertTrue(swiftLorem.contains("nulla pariatur"))
-        XCTAssertTrue(hitchLorem.contains("nulla pariatur"))
+        // 0.010
+        XCTAssertTrue(swiftLorem.contains("ea commodo consequat"))
+        XCTAssertTrue(hitchLorem.contains("ea commodo consequat"))
         
-        let halfHitch: HalfHitch = "nulla pariatur"
+        let halfHitch: HalfHitch = "ea commodo consequat"
         let options = XCTMeasureOptions()
         options.iterationCount = 100
         
@@ -204,11 +205,11 @@ final class HitchPerformanceTests: XCTestCase {
             test (1000, "contains",
             {
                 for _ in 1...1000 {
-                    _ = swiftLorem.contains("nulla pariatur")
+                    _ = swiftLorem.contains("ea commodo consequat")
                 }
             }, {
                 for _ in 1...1000 {
-                    hitchLorem.contains("nulla pariatur")
+                    hitchLorem.contains("ea commodo consequat")
                 }
             })
         )

@@ -324,6 +324,18 @@ public extension Hitchable {
     func ends(with hitch: HalfHitch) -> Bool {
         return lastIndex(of: hitch) == count - hitch.count
     }
+    
+    @inlinable @inline(__always)
+    @discardableResult
+    func contains(which: [Hitchable]) -> [Hitch] {
+        return chitch_contains_which(raw(), count, which.compactMap { Needle($0.raw(), $0.count) }).map { $0.hitch() }
+    }
+    
+    @inlinable @inline(__always)
+    @discardableResult
+    func contains(which: [HalfHitch]) -> [Hitch] {
+        return chitch_contains_which(raw(), count, which.compactMap { Needle($0.raw(), $0.count) }).map { $0.hitch() }
+    }
 
     @inlinable @inline(__always)
     @discardableResult
