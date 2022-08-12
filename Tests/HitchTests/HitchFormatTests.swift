@@ -1,5 +1,5 @@
 import XCTest
-@testable import Hitch
+import Hitch
 
 final class HitchFormatTests: XCTestCase {
     

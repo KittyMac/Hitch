@@ -1,5 +1,5 @@
 import XCTest
-@testable import Hitch
+import Hitch
 
 final class HitchPerformanceTests: XCTestCase {
     
@@ -290,8 +290,6 @@ final class HitchPerformanceTests: XCTestCase {
             })
         )
     }
-    
-    
 }
 
 extension HitchPerformanceTests {

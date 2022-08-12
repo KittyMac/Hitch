@@ -1,5 +1,5 @@
 import XCTest
-@testable import Hitch
+import Hitch
 
 struct TestHalfHitchCodable: Codable {
     let x: HalfHitch

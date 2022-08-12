@@ -327,12 +327,6 @@ public extension Hitchable {
     
     @inlinable @inline(__always)
     @discardableResult
-    func contains(which: [Hitch]) -> Set<Hitch> {
-        return chitch_contains_which(raw(), count, which.compactMap { Needle($0) })
-    }
-    
-    @inlinable @inline(__always)
-    @discardableResult
     func contains(_ hitch: Hitchable) -> Bool {
         return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
     }

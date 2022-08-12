@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Hitch
+import Hitch
 
 let loremStatic: StaticString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 let lorem = loremStatic.description
@@ -592,15 +592,15 @@ final class HitchTests: XCTestCase {
         
         let parts: [HalfHitch] = hitch.components(separatedBy: separator)
         XCTAssertEqual(parts, hhresult)
-        XCTAssertEqual(parts.joined(separator: "!").description, stringJoinedResult)
+        XCTAssertEqual(parts.map { $0.description }.joined(separator: "!").description, stringJoinedResult)
         
         let parts2: [HalfHitch] = hitch.halfhitch().components(separatedBy: separator)
         XCTAssertEqual(parts2, hhresult)
-        XCTAssertEqual(parts2.joined(separator: "!").description, stringJoinedResult)
+        XCTAssertEqual(parts2.map { $0.description }.joined(separator: "!").description, stringJoinedResult)
         
         let parts3: [HalfHitch] = hitch.halfhitch().components(separatedBy: separator)
         XCTAssertEqual(parts3, hhresult)
-        XCTAssertEqual(parts3.joined(separator: "!").description, stringJoinedResult)
+        XCTAssertEqual(parts3.map { $0.description }.joined(separator: "!").description, stringJoinedResult)
     }
     
     func testSplit0() {
@@ -741,18 +741,6 @@ final class HitchTests: XCTestCase {
         }
         
         XCTAssertEqual(numMatches, 10000000 * 10)
-    }
-    
-    func testContainsWhich() {
-        let result = hitchLorem.contains(which: [
-            "consectetur",
-            "voluptate",
-            "world"
-        ])
-        
-        XCTAssertTrue(result.contains("consectetur"))
-        XCTAssertTrue(result.contains("voluptate"))
-        XCTAssertFalse(result.contains("world"))
     }
 }
 

@@ -862,53 +862,6 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
-func chitch_contains_which(_ haystack: UnsafePointer<UInt8>?,
-                           _ haystack_count: Int,
-                           _ needles: [Needle]) -> Set<Hitch> {
-    var foundNeedles = Set<Hitch>()
-    var stillToFindNeedles: [Needle] = needles
-    
-    guard haystack_count >= 0 else { return foundNeedles }
-    guard needles.count > 0 else { return foundNeedles }
-    guard let haystack = haystack else { return foundNeedles }
-    
-    guard let min_needle_count = needles.map({ $0.count }).min() else { return foundNeedles }
-
-    let haystack_end = haystack + haystack_count - min_needle_count
-    
-    let starting_chars = Set<UInt8>(needles.map { $0.startingByte })
-    
-    var ptr = haystack
-    let end_ptr = haystack + haystack_count
-    
-    while ptr <= haystack_end {
-        let haystackCountLeft = end_ptr - ptr
-        
-        if starting_chars.contains(ptr.pointee) {
-            for needle in stillToFindNeedles where needle.startingByte == ptr.pointee && haystackCountLeft >= needle.count {
-                 if chitch_equal_raw(ptr,
-                                     needle.count,
-                                     needle.bytes,
-                                     needle.count) {
-                     foundNeedles.insert(needle.hitch)
-                     if let idx = stillToFindNeedles.firstIndex(of: needle) {
-                         stillToFindNeedles.remove(at: idx)
-                     }
-                     
-                     if stillToFindNeedles.count == 0 {
-                         return foundNeedles
-                     }
-                 }
-            }
-        }
-        
-        ptr += 1
-    }
-    
-    return foundNeedles
-}
-
-@inlinable @inline(__always)
 func chitch_lastof_raw(_ haystack: UnsafePointer<UInt8>?,
                        _ haystack_count: Int,
                        _ needle: UnsafePointer<UInt8>?,
