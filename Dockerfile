@@ -13,7 +13,6 @@ RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/Hitch
 COPY ./Makefile ./Makefile
-COPY ./Package.resolved ./Package.resolved
 COPY ./Package.swift ./Package.swift
 COPY ./Sources ./Sources
 COPY ./Tests ./Tests
