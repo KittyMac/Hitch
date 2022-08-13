@@ -1,7 +1,6 @@
 SWIFT_BUILD_FLAGS=--configuration release
 
 build:
-	./meta/CombinedBuildPhases.sh
 	swift build -v $(SWIFT_BUILD_FLAGS)
 
 clean:
@@ -12,13 +11,6 @@ test:
 
 update:
 	swift package update
-
-xcode:
-	-killall Xcode.app
-	swift package generate-xcodeproj
-	meta/addBuildPhase Hitch.xcodeproj/project.pbxproj 'Hitch::Hitch' 'cd $${SRCROOT}; ./meta/CombinedBuildPhases.sh'
-	sleep 2
-	open ./Hitch.xcodeproj
 
 docker:
 	-docker buildx create --name local_builder
