@@ -202,6 +202,12 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public init(capacity: Int) {
         chitch = chitch_init_capacity(capacity)
     }
+    
+    @inlinable @inline(__always)
+    public init(garbage: Int) {
+        chitch = chitch_init_capacity(garbage)
+        chitch.count = garbage
+    }
 
     public override init() {
         chitch = chitch_empty()
