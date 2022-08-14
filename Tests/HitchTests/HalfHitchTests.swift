@@ -147,6 +147,26 @@ final class HalfHitchTests: XCTestCase {
         }
     }
     
+    func testHalfHitchFromRaw() {
+        let hitch: Hitch = "Hello world again"
+        
+        guard let raw = hitch.raw() else {
+            XCTFail()
+            return
+        }
+        
+        let partial = HalfHitch(sourceObject: hitch,
+                                raw: raw,
+                                count: hitch.count,
+                                from: 5,
+                                to: 12)
+        
+        let trimmed = partial.hitch()
+        trimmed.trim()
+        
+        XCTAssertEqual(trimmed, "world")
+    }
+    
     func testHalfHitch0() {
         let hitch: HalfHitch = "Hello world again"
         XCTAssertEqual(hitch.substring(6, 11)?.description, "world")

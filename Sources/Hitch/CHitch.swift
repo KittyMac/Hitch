@@ -58,8 +58,8 @@ struct CHitch {
 
 @inlinable @inline(__always)
 func nullify(_ chitch: CHitch) {
-    if chitch.count+1 < chitch.capacity {
-        chitch.mutableData?[chitch.count+1] = 0
+    if chitch.count < chitch.capacity {
+        chitch.mutableData?[chitch.count] = 0
     }
 }
 
@@ -316,12 +316,13 @@ func chitch_trim(_ c0: inout CHitch) {
     }
 
     c0.count = end - start + 1
-    nullify(c0)
     
     if start == c0.mutableData {
+        nullify(c0)
         return
     }
     memmove(c0_data, start, c0.count)
+    nullify(c0)
 }
 
 @inlinable @inline(__always)
