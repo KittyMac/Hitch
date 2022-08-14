@@ -58,7 +58,9 @@ struct CHitch {
 
 @inlinable @inline(__always)
 func nullify(_ chitch: CHitch) {
-    chitch.mutableData?[chitch.count] = 0
+    if chitch.count+1 < chitch.capacity {
+        chitch.mutableData?[chitch.count+1] = 0
+    }
 }
 
 @inlinable @inline(__always)
