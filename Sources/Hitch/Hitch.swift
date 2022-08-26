@@ -185,6 +185,11 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public init(bytes: UnsafePointer<UInt8>, offset: Int, count: Int) {
         chitch = chitch_init_raw(bytes + offset, count)
     }
+    
+    @inlinable @inline(__always)
+    public init(utf8 raw: UnsafePointer<UInt8>) {
+        chitch = chitch_init_raw(raw, strlen(raw))
+    }
 
     @inlinable @inline(__always)
     public init(data: Data) {

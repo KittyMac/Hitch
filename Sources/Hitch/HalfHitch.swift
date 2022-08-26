@@ -87,6 +87,15 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         }
         (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
     }
+    
+    @inlinable @inline(__always)
+    public init(utf8 raw: UnsafePointer<UInt8>) {
+        self.sourceObject = nil
+        self.source = raw
+        self.count = strlen(raw)
+        self.maybeMutable = true
+        (lastHash1, lastHash2, lastHash3) = chitch_multihash_raw(self.source, self.count)
+    }
 
     @inlinable @inline(__always)
     public init(sourceObject: AnyObject?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
