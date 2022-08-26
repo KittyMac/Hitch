@@ -18,4 +18,4 @@ docker:
 	-docker buildx use local_builder
 	-docker buildx inspect --bootstrap
 	-docker login
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t kittymac/pamphlet .
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t kittymac/hitch .
