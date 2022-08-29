@@ -44,8 +44,7 @@ struct CHitch {
     @usableFromInline
     var staticData: UnsafePointer<UInt8>?
 
-    @inlinable @inline(__always)
-    init() { }
+    public init() { }
 
     @inlinable @inline(__always)
     var universalData: UnsafePointer<UInt8>? {

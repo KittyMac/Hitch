@@ -34,7 +34,6 @@ extension Hitch {
         @usableFromInline
         let double: Double?
 
-        @inlinable @inline(__always)
         init() {
             self.type = .null
             self.hitch = nil
@@ -42,7 +41,6 @@ extension Hitch {
             self.double = nil
         }
 
-        @inlinable @inline(__always)
         init(int: Int) {
             self.type = .int
             self.hitch = nil
@@ -50,7 +48,6 @@ extension Hitch {
             self.double = nil
         }
 
-        @inlinable @inline(__always)
         init(double: Double) {
             self.type = .double
             self.hitch = nil
@@ -58,7 +55,6 @@ extension Hitch {
             self.double = double
         }
 
-        @inlinable @inline(__always)
         init(hitch: Hitch) {
             self.type = .hitch
             self.hitch = hitch
@@ -74,7 +70,7 @@ extension Hitch {
         case right
     }
 
-    @inlinable @inline(__always)
+    @usableFromInline
     internal func getTypedValue(_ value: Any?) -> TypedValue {
         // Note: this is a slow path
         switch value {
