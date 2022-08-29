@@ -99,7 +99,7 @@ final class HitchPerformanceTests: XCTestCase {
     
     func testIterationPerf() {
         XCTAssert(
-            test (100000, "string iterator",
+            test (1000000, "string iterator",
             {
                 var i = 0
                 for x in swiftLorem {

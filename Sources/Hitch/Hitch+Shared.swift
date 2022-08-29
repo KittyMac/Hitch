@@ -2,6 +2,8 @@ import Foundation
 
 // swiftlint:disable type_body_length
 
+public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!
+
 public extension ArraySlice where Element == UInt8 {
 
     @discardableResult
@@ -43,29 +45,11 @@ public protocol Hitchable {
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
     @usableFromInline
-    internal var ptr: UnsafePointer<UInt8>
+    internal var ptr: UnsafePointer<UInt8> = nullptr
     @usableFromInline
-    internal let end: UnsafePointer<UInt8>
-
-    public init(hitch: Hitchable) {
-        if let data = hitch.raw() {
-            ptr = data - 1
-            end = data + hitch.count - 1
-        } else {
-            ptr = nullptr
-            end = ptr
-        }
-    }
-
-    public init(hitch: Hitchable, from: Int, to: Int) {
-        if let data = hitch.raw() {
-            ptr = data + from - 1
-            end = data + to - 1
-        } else {
-            ptr = nullptr
-            end = ptr
-        }
-    }
+    internal var end: UnsafePointer<UInt8> = nullptr
+    
+    public init() { }
 
     @inlinable @inline(__always)
     public mutating func next() -> UInt8? {
@@ -172,12 +156,22 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     func makeIterator() -> HitchableIterator {
-        return HitchableIterator(hitch: self)
+        var iterator = HitchableIterator()
+        if let data = raw() {
+            iterator.ptr = data - 1
+            iterator.end = data + count - 1
+        }
+        return iterator
     }
 
     @inlinable @inline(__always)
     func stride(from: Int, to: Int) -> HitchableIterator {
-        return HitchableIterator(hitch: self, from: from, to: to)
+        var iterator = HitchableIterator()
+        if let data = raw() {
+            iterator.ptr = data + from - 1
+            iterator.end = data + to - 1
+        }
+        return iterator
     }
 
     @inlinable @inline(__always)
@@ -871,5 +865,3 @@ func hex2(_ v: UInt32) -> UInt8 {
     default: return .questionMark
     }
 }
-
-public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!
