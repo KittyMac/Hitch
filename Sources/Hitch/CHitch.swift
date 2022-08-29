@@ -735,7 +735,7 @@ func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
     var hash1: Int = 0
     var hash2: Int = 0
     var hash3: Int = 0
-    var idx: Int = 0
+    var idx: Int = 2
     while lhsPtr < lhsEnd {
         let char = Int(lhsPtr.pointee)
         hash1 = (hash1 &+ char &* idx) &* (hash1 &+ char &* idx)
