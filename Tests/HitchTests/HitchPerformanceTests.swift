@@ -63,7 +63,7 @@ final class HitchPerformanceTests: XCTestCase {
     
     func testUTF8IterationPerf() {
         XCTAssert(
-            test (100000, "utf8 iterator",
+            test (1000000, "utf8 iterator",
             {
                 var i = 0
                 for x in swiftLorem.utf8 {
@@ -185,19 +185,6 @@ final class HitchPerformanceTests: XCTestCase {
     }
     
     func testContainsPerf() {
-        // OLD: 0.020
-        // 0.018
-        // 0.010
-        XCTAssertTrue(swiftLorem.contains("ea commodo consequat"))
-        XCTAssertTrue(hitchLorem.contains("ea commodo consequat"))
-        
-        let halfHitch: HalfHitch = "ea commodo consequat"
-        measure {
-            for _ in 1...100000 {
-                hitchLorem.contains(halfHitch)
-            }
-        }
-        
         XCTAssert(
             test (1000, "contains",
             {

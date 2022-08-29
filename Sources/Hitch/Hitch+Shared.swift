@@ -52,28 +52,6 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
     public init() { }
 
     @inlinable @inline(__always)
-    internal mutating func make(hitch: Hitchable) {
-        if let data = hitch.raw() {
-            ptr = data - 1
-            end = data + hitch.count - 1
-        } else {
-            ptr = nullptr
-            end = ptr
-        }
-    }
-
-    @inlinable @inline(__always)
-    internal mutating func make(hitch: Hitchable, from: Int, to: Int) {
-        if let data = hitch.raw() {
-            ptr = data + from - 1
-            end = data + to - 1
-        } else {
-            ptr = nullptr
-            end = ptr
-        }
-    }
-
-    @inlinable @inline(__always)
     public mutating func next() -> UInt8? {
         if ptr >= end { return nil }
         ptr += 1
@@ -179,14 +157,20 @@ public extension Hitchable {
     @inlinable @inline(__always)
     func makeIterator() -> HitchableIterator {
         var iterator = HitchableIterator()
-        iterator.make(hitch: self)
+        if let data = raw() {
+            iterator.ptr = data - 1
+            iterator.end = data + count - 1
+        }
         return iterator
     }
 
     @inlinable @inline(__always)
     func stride(from: Int, to: Int) -> HitchableIterator {
         var iterator = HitchableIterator()
-        iterator.make(hitch: self, from: from, to: to)
+        if let data = raw() {
+            iterator.ptr = data + from - 1
+            iterator.end = data + to - 1
+        }
         return iterator
     }
 
