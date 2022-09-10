@@ -544,6 +544,7 @@ func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafePointer<UInt8>?, _ rhs_count
 
     (c0_data + c0.count).assign(from: rhs, count: rhs_count)
     c0.count += rhs_count
+    nullify(c0)
 }
 
 @inlinable @inline(__always)
@@ -554,6 +555,7 @@ func chitch_concat_char(_ c0: inout CHitch, _ rhs: UInt8) {
 
     c0_data[c0.count] = rhs
     c0.count += 1
+    nullify(c0)
 }
 
 @inlinable @inline(__always)
@@ -639,6 +641,7 @@ func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafePoin
     }
 
     c0.count += rhs_count
+    nullify(c0)
 }
 
 @inlinable @inline(__always)
