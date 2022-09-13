@@ -270,6 +270,10 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         hasher.combine(lastHash2)
         hasher.combine(lastHash3)
     }
+    
+    public var hashValue: Int {
+        return lastHash1 ^ lastHash2 ^ lastHash3
+    }
 
     @inlinable @inline(__always)
     @discardableResult
