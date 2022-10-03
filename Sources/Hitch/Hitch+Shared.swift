@@ -40,7 +40,7 @@ public protocol Hitchable {
     var count: Int { get }
 
     @inlinable @inline(__always)
-    func using(_ block: (UnsafePointer<UInt8>?, Int) -> Void)
+    func using<T>(_ block: (UnsafePointer<UInt8>?, Int) -> T?) -> T?
 }
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
@@ -121,10 +121,11 @@ public extension Hitchable {
     }
 
     @inlinable @inline(__always)
-    func using(_ block: (UnsafePointer<UInt8>?, Int) -> Void) {
+    func using<T>(_ block: (UnsafePointer<UInt8>?, Int) -> T?) -> T? {
         if let raw = raw() {
-            block(raw, count)
+            return block(raw, count)
         }
+        return nil
     }
 
     @inlinable @inline(__always)
