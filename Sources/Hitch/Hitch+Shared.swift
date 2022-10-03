@@ -43,7 +43,7 @@ public protocol Hitchable {
     func using<T>(_ block: (UnsafePointer<UInt8>?, Int) -> T?) -> T?
     
     @inlinable @inline(__always)
-    func using<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T?
+    func mutableUsing<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T?
 }
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
@@ -132,7 +132,7 @@ public extension Hitchable {
     }
     
     @inlinable @inline(__always)
-    func using<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T? {
+    func mutableUsing<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T? {
         if let raw = mutableRaw() {
             return block(raw, count)
         }
