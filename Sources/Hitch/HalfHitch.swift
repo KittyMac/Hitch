@@ -381,6 +381,10 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             ptr -= 1
         }
         
+        if trimmedEnd < trimmedStart {
+            trimmedEnd = trimmedStart
+        }
+        
         return HalfHitch(source: self, from: trimmedStart - start, to: trimmedEnd - start)
     }
 }

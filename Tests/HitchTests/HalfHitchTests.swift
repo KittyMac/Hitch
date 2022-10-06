@@ -188,6 +188,8 @@ final class HalfHitchTests: XCTestCase {
     }
     
     func testTrim() {
+        XCTAssertEqual(HalfHitch(string: "").trimmed().count, 0)
+        XCTAssertEqual(HalfHitch(string: "\n\n").trimmed().count, 0)
         XCTAssertEqual(HalfHitch(string: "Hello   \t\n\r  ").trimmed(), "Hello")
         XCTAssertEqual(HalfHitch(string: "   \t\n\r  Hello").trimmed(), "Hello")
         XCTAssertEqual(HalfHitch(string: "   \t\n\r  Hello   \t\n\r  ").trimmed(), "Hello")
