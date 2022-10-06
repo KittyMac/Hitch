@@ -261,8 +261,9 @@ public extension Hitchable {
     }
     
     @inlinable @inline(__always)
-    func equals(raw otherRaw: UnsafePointer<UInt8>, count otherCount: Int) -> Bool {
-        return chitch_equal_raw(raw(), count, otherRaw, otherCount)
+    func startsAt(raw otherRaw: UnsafePointer<UInt8>, count otherCount: Int) -> Bool {
+        if otherCount < count { return false }
+        return chitch_equal_raw(raw(), count, otherRaw, count)
     }
 
     @inlinable @inline(__always)
