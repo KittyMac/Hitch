@@ -259,6 +259,11 @@ public extension Hitchable {
     func compare(other: Hitchable) -> Int {
         return chitch_cmp_raw(raw(), count, other.raw(), other.count)
     }
+    
+    @inlinable @inline(__always)
+    func equals(raw otherRaw: UnsafePointer<UInt8>, count otherCount: Int) -> Bool {
+        return chitch_equal_raw(raw(), count, otherRaw, otherCount)
+    }
 
     @inlinable @inline(__always)
     func canEscape(unicode: Bool,
