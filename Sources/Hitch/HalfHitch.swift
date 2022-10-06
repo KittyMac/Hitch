@@ -352,4 +352,35 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         let hhcomponents: [HalfHitch] = components(separatedBy: separator)
         return hhcomponents.map { $0.hitch() }
     }
+    
+    @inlinable @inline(__always)
+    public func trimmed() -> HalfHitch {
+        guard let start = raw() else { return self }
+        let end = start + count
+        var ptr = start
+        
+        var trimmedStart = start
+        var trimmedEnd = end
+        
+        // advance the start past all whitespace
+        while ptr < end {
+            trimmedStart = ptr
+            if isWhitespace(ptr.pointee) == false {
+                break
+            }
+            ptr += 1
+        }
+        
+        // advance the start past all whitespace
+        ptr = end - 1
+        while ptr >= start {
+            if isWhitespace(ptr.pointee) == false {
+                break
+            }
+            trimmedEnd = ptr
+            ptr -= 1
+        }
+        
+        return HalfHitch(source: self, from: trimmedStart - start, to: trimmedEnd - start)
+    }
 }

@@ -187,6 +187,13 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(hitch.substring(6, 19)?.toDouble(), 123456.123456)
     }
     
+    func testTrim() {
+        XCTAssertEqual(HalfHitch(string: "Hello   \t\n\r  ").trimmed(), "Hello")
+        XCTAssertEqual(HalfHitch(string: "   \t\n\r  Hello").trimmed(), "Hello")
+        XCTAssertEqual(HalfHitch(string: "   \t\n\r  Hello   \t\n\r  ").trimmed(), "Hello")
+        XCTAssertEqual(HalfHitch(string: "Hello").trimmed(), "Hello")
+    }
+    
     func testSubstring0() {
         let hitch: HalfHitch = "Hello world again"
         XCTAssertEqual(hitch.substring(6, 11), "world")
