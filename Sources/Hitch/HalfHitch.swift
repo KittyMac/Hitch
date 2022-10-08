@@ -65,6 +65,11 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                                       to: to >= 0 ? to : data.count))
         }
     }
+    
+    @inlinable @inline(__always)
+    public var description: String {
+        return toTempString()
+    }
 
     public init?(contentsOfFile path: String) {
         guard let source = Hitch(contentsOfFile: path) else { return nil }

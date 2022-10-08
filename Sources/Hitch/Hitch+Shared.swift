@@ -101,8 +101,21 @@ extension HalfHitchArray {
 }
 
 public extension Hitchable {
+    
+    @inlinable @inline(__always)
+    var first: UInt8 {
+        guard count > 0 else { return 0 }
+        return self[0]
+    }
+    
+    @inlinable @inline(__always)
+    var last: UInt8 {
+        guard count > 0 else { return 0 }
+        return self[count-1]
+    }
 
-    var description: String {
+    @inlinable @inline(__always)
+    func toTempString() -> String {
         if let raw = raw() {
             return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ?? ""
         }

@@ -129,6 +129,15 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(hitchLorem.firstIndex(of: "nulla pariatur"), 319)
     }
     
+    func testFirstAndLast() {
+        let hitchLorem: HalfHitch = "012456789"
+        XCTAssertEqual(hitchLorem.first, .zero)
+        XCTAssertEqual(hitchLorem.last, .nine)
+        
+        XCTAssertEqual(HalfHitch.empty.first, 0)
+        XCTAssertEqual(HalfHitch.empty.last, 0)
+    }
+    
     func testLastIndexOf() {
         let hitchLorem: HalfHitch = "/true|false/"
         let hitchNeedle: HalfHitch = "/"

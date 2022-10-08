@@ -212,13 +212,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     }
 
     public override var description: String {
-        if let raw = raw() {
-            return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ?? ""
-        }
-        if let raw = mutableRaw() {
-            return String(bytesNoCopy: raw, length: count, encoding: .utf8, freeWhenDone: false) ?? ""
-        }
-        return ""
+        return toTempString()
     }
 
     @inlinable @inline(__always)
