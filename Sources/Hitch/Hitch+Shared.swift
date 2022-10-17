@@ -852,6 +852,81 @@ func escapeBinary(unicode data: UnsafePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
+func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
+                    count: Int) -> Int {
+    var read = data
+    var write = data
+    let end = data + count
+
+    let append: (UInt8, Int) -> Void = { v, advance in
+        write.pointee = v
+        write += 1
+        read += advance
+    }
+
+    while read < end {
+        // &amp;&lt;&gt;&quot;&apos;&#038;
+        if read.pointee == .ampersand && read < end - 4 {
+            
+            let char1 = read[1]
+            if char1 == .hashTag {
+
+                var tmpRead = read + 2
+                var value: UInt32 = 0
+                while tmpRead < end &&
+                        tmpRead.pointee >= .zero &&
+                        tmpRead.pointee <= .nine &&
+                        tmpRead - read < 10 {
+                    value &*= 10
+                    value &+= UInt32(tmpRead.pointee - .zero)
+                    tmpRead += 1
+                }
+                if tmpRead.pointee == .semiColon {
+                    if let scalar = UnicodeScalar(value) {
+                        for v in Character(scalar).utf8 {
+                            append(v, 0)
+                        }
+                    }
+                    read = tmpRead + 1
+                    continue
+                }
+            } else if char1 == .a &&
+                        read[2] == .m &&
+                        read[3] == .p &&
+                        read[4] == .semiColon {
+                append(.ampersand, 5); continue
+            } else if char1 == .a &&
+                        read[2] == .p &&
+                        read[3] == .o &&
+                        read[4] == .s &&
+                        read[5] == .semiColon {
+                append(.singleQuote, 6); continue
+            } else if char1 == .l &&
+                        read[2] == .t &&
+                        read[3] == .semiColon {
+                append(.lessThan, 4); continue
+                
+            } else if char1 == .g &&
+                        read[2] == .t &&
+                        read[3] == .semiColon {
+                append(.greaterThan, 4); continue
+                
+            } else if char1 == .q &&
+                        read[2] == .u &&
+                        read[3] == .o &&
+                        read[4] == .t &&
+                        read[5] == .semiColon {
+                append(.doubleQuote, 6); continue
+            }
+        }
+
+        append(read.pointee, 1)
+    }
+
+    return (write - data)
+}
+
+@inlinable @inline(__always)
 func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     // https:\/\/www.google.com\/url?q=https%3A%2F%2Fsardelkitchen.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtLqdGmEYA-MilAqQIc"
@@ -904,6 +979,23 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
     }
 
     return (write - data)
+}
+
+@inlinable @inline(__always)
+func decimal(_ v: UInt8) -> UInt32? {
+    switch v {
+    case .zero: return 0
+    case .one: return 1
+    case .two: return 2
+    case .three: return 3
+    case .four: return 4
+    case .five: return 5
+    case .six: return 6
+    case .seven: return 7
+    case .eight: return 8
+    case .nine: return 9
+    default: return nil
+    }
 }
 
 @inlinable @inline(__always)

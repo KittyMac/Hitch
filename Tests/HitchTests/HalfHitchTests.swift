@@ -307,28 +307,11 @@ final class HalfHitchTests: XCTestCase {
         
         let hitch1: HalfHitch = #"https://www.example.com/url?q=https%3A%2F%2Fother.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtL%qdGmEYA-MilAqQIc"#
         XCTAssertEqual(hitch1.percentUnescaped(), "https://www.example.com/url?q=https://other.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtL%qdGmEYA-MilAqQIc")
-        
-        //XCTAssertEqual(hitch0[0], .backSlash)
-        //XCTAssertEqual(hitch0[1], .space)
-        //XCTAssertEqual(hitch0[2], .singleQuote)
-        //XCTAssertEqual(hitch0[3], .space)
-        //XCTAssertEqual(hitch0[4], .doubleQuote)
-        //XCTAssertEqual(hitch0[5], .space)
-        //XCTAssertEqual(hitch0[6], .tab)
-        //XCTAssertEqual(hitch0[7], .space)
-        //XCTAssertEqual(hitch0[8], .newLine)
-        //XCTAssertEqual(hitch0[9], .space)
-        //XCTAssertEqual(hitch0[10], .carriageReturn)
-        //XCTAssertEqual(hitch0[11], 0)
-        //
-        //let hitch1: Hitch = Hitch(string: #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#)
-        //hitch1.unicodeUnescape()
-        //XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
-        //
-        //var hitch2: HalfHitch = HalfHitch(string: #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#)
-        //hitch2.unicodeUnescape()
-        //XCTAssertEqual(hitch2, "A ö Ж € 𝄞")
-        
+    }
+    
+    func testAmpersandUnescaping() {
+        let hitch0: HalfHitch = #"&amp;&lt;&gt;&quot;&apos;&#038;Hello&#087;&#000079;&#82;&#76;&#0068;"#
+        XCTAssertEqual(hitch0.ampersandUnescaped(), #"&<>"'&HelloWORLD"#)
     }
     
     func testComparable() {
