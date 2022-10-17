@@ -282,7 +282,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable @inline(__always)
     @discardableResult
-    public mutating func unescape() -> HalfHitch {
+    public mutating func unicodeUnescape() -> HalfHitch {
         guard maybeMutable else {
             #if DEBUG
             fatalError("unescape() called on HalfHitch pointing at immutable data")
@@ -292,31 +292,60 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             #endif
         }
         guard let raw = raw() else { return self }
-        count = unescapeBinary(data: UnsafeMutablePointer(mutating: raw),
+        count = unescapeBinary(unicode: UnsafeMutablePointer(mutating: raw),
                                count: count)
         return self
     }
 
     @inlinable @inline(__always)
     @discardableResult
-    public func unescaped() -> HalfHitch {
+    public func unicodeUnescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
         guard let raw = raw() else { return self }
 
         var local: UInt8 = .backSlash
         guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
 
-        return hitch().unescape().halfhitch()
+        return hitch().unicodeUnescape().halfhitch()
     }
 
     @inlinable @inline(__always)
     func escaped(unicode: Bool,
                  singleQuotes: Bool) -> Hitch {
         guard let raw = raw() else { return Hitch() }
-        return escapeBinary(data: UnsafeMutablePointer(mutating: raw),
+        return escapeBinary(unicode: UnsafeMutablePointer(mutating: raw),
                             count: count,
                             unicode: unicode,
                             singleQuotes: singleQuotes)
+    }
+    
+    @inlinable @inline(__always)
+    @discardableResult
+    public mutating func percentUnescape() -> HalfHitch {
+        guard maybeMutable else {
+            #if DEBUG
+            fatalError("unescape() called on HalfHitch pointing at immutable data")
+            #else
+            print("warning: unescape() called on HalfHitch pointing at immutable data")
+            return self
+            #endif
+        }
+        guard let raw = raw() else { return self }
+        count = unescapeBinary(percent: UnsafeMutablePointer(mutating: raw),
+                               count: count)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func percentUnescaped() -> HalfHitch {
+        // returns self if there was nothing to unescape, or silo'd halfhitch if there was
+        guard let raw = raw() else { return self }
+
+        var local: UInt8 = .percentSign
+        guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
+
+        return hitch().percentUnescape().halfhitch()
     }
 
     @inlinable @inline(__always)

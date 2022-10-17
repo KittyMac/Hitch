@@ -309,12 +309,12 @@ public extension Hitchable {
     func escaped(unicode: Bool,
                  singleQuotes: Bool) -> Hitch {
         if let raw = mutableRaw() {
-            return escapeBinary(data: raw,
+            return escapeBinary(unicode: raw,
                                 count: count,
                                 unicode: unicode,
                                 singleQuotes: singleQuotes)
         } else if let raw = raw() {
-            return escapeBinary(data: raw,
+            return escapeBinary(unicode: raw,
                                 count: count,
                                 unicode: unicode,
                                 singleQuotes: singleQuotes)
@@ -688,7 +688,7 @@ func doubleFromBinaryFuzzy(data: UnsafePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
-func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
+func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     var read = data
     var write = data
@@ -759,7 +759,7 @@ func unescapeBinary(data: UnsafeMutablePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
-func escapeBinary(data: UnsafePointer<UInt8>,
+func escapeBinary(unicode data: UnsafePointer<UInt8>,
                   count: Int,
                   unicode: Bool,
                   singleQuotes: Bool) -> Hitch {
@@ -849,6 +849,61 @@ func escapeBinary(data: UnsafePointer<UInt8>,
     }
 
     return writer
+}
+
+@inlinable @inline(__always)
+func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
+                    count: Int) -> Int {
+    // https:\/\/www.google.com\/url?q=https%3A%2F%2Fsardelkitchen.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtLqdGmEYA-MilAqQIc"
+    var read = data
+    var write = data
+    let end = data + count
+
+    let append: (UInt8, Int) -> Void = { v, advance in
+        write.pointee = v
+        write += 1
+        read += advance
+    }
+
+    while read < end {
+
+        if read.pointee == .percentSign && read < end-2 {
+            
+            let char1 = read[1]
+            let char2 = read[2]
+            
+            var value1: UInt8 = 0
+            if char1 >= .zero && char1 <= .nine {
+                value1 += char1 - .zero
+            } else if char1 >= .a && char1 <= .f {
+                value1 += (char1 - .a) + 10
+            } else if char1 >= .A && char1 <= .F {
+                value1 += (char1 - .A) + 10
+            } else {
+                append(read.pointee, 1)
+                continue
+            }
+            
+            var value2: UInt8 = 0
+            if char2 >= .zero && char2 <= .nine {
+                value2 += char2 - .zero
+            } else if char2 >= .a && char2 <= .f {
+                value2 += (char2 - .a) + 10
+            } else if char2 >= .A && char2 <= .F {
+                value2 += (char2 - .A) + 10
+            } else {
+                append(read.pointee, 1)
+                continue
+            }
+            
+            let ascii: UInt8 = value1 * 16 + value2
+            append(ascii, 3); continue
+        }
+
+        append(read.pointee, 1)
+    }
+
+    return (write - data)
 }
 
 @inlinable @inline(__always)

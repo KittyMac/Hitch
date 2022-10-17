@@ -328,7 +328,7 @@ final class HitchTests: XCTestCase {
     func testUnescaping() {
         // A, ö, Ж, €, 𝄞
         let hitch0: Hitch = Hitch(string: #"\\ \' \" \t \n \r"#)
-        hitch0.unescape()
+        hitch0.unicodeUnescape()
         XCTAssertEqual(hitch0[0], .backSlash)
         XCTAssertEqual(hitch0[1], .space)
         XCTAssertEqual(hitch0[2], .singleQuote)
@@ -343,11 +343,11 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch0[11], 0)
         
         let hitch1: Hitch = Hitch(string: #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#)
-        hitch1.unescape()
+        hitch1.unicodeUnescape()
         XCTAssertEqual(hitch1, "A ö Ж € 𝄞")
         
         var hitch2: HalfHitch = HalfHitch(string: #"\u0041 \u00F6 \u0416 \u20AC \u{1D11E}"#)
-        hitch2.unescape()
+        hitch2.unicodeUnescape()
         XCTAssertEqual(hitch2, "A ö Ж € 𝄞")
         
     }
