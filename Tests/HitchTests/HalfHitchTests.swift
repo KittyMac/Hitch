@@ -315,10 +315,10 @@ final class HalfHitchTests: XCTestCase {
     }
     
     func testMimeUnescaping() {
-        let hitch0: HalfHitch = #"=E2=80=94=20=C2=A0"#
-        XCTAssertEqual(hitch0.mimeUnescaped(), #"—  "#)
+        let hitch0: HalfHitch = "style=3D'test' =E2=80=94=20=C2=A0\r\n"
+        XCTAssertEqual(hitch0.mimeUnescaped(), "style='test' —  \n")
     }
-    
+        
     func testComparable() {
         let hitch1: HalfHitch = "Apple"
         let hitch2: HalfHitch = "apple"

@@ -755,6 +755,7 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
         append(read.pointee, 1)
     }
 
+    write.pointee = 0
     return (write - data)
 }
 
@@ -894,35 +895,39 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[2] == .m &&
                         read[3] == .p &&
                         read[4] == .semiColon {
-                append(.ampersand, 5); continue
+                append(.ampersand, 5)
+                continue
             } else if char1 == .a &&
                         read[2] == .p &&
                         read[3] == .o &&
                         read[4] == .s &&
                         read[5] == .semiColon {
-                append(.singleQuote, 6); continue
+                append(.singleQuote, 6)
+                continue
             } else if char1 == .l &&
                         read[2] == .t &&
                         read[3] == .semiColon {
-                append(.lessThan, 4); continue
-                
+                append(.lessThan, 4)
+                continue
             } else if char1 == .g &&
                         read[2] == .t &&
                         read[3] == .semiColon {
-                append(.greaterThan, 4); continue
-                
+                append(.greaterThan, 4)
+                continue
             } else if char1 == .q &&
                         read[2] == .u &&
                         read[3] == .o &&
                         read[4] == .t &&
                         read[5] == .semiColon {
-                append(.doubleQuote, 6); continue
+                append(.doubleQuote, 6)
+                continue
             }
         }
 
         append(read.pointee, 1)
     }
 
+    write.pointee = 0
     return (write - data)
 }
 
@@ -934,15 +939,28 @@ func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
     let end = data + count
 
     let append: (UInt8, Int) -> Void = { v, advance in
+        if v == .carriageReturn {
+            read += advance
+            return
+        }
+        
         write.pointee = v
         write += 1
         read += advance
     }
 
     while read < end {
-        // =C2=A0
         if read.pointee == .equal && read < end-2 {
             
+            // =\r\n where it is not =\r\n\r\n should be skipped
+            if read[1] == .carriageReturn &&
+                read[2] == .newLine &&
+                read[3] != .carriageReturn {
+                read += 3
+                continue
+            }
+            
+            // =C2=A0
             let char1 = read[1]
             let char2 = read[2]
             
@@ -971,12 +989,14 @@ func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
             }
             
             let ascii: UInt8 = value1 * 16 + value2
-            append(ascii, 3); continue
+            append(ascii, 3)
+            continue
         }
 
         append(read.pointee, 1)
     }
-
+    
+    write.pointee = 0
     return (write - data)
 }
 
@@ -1032,6 +1052,7 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
         append(read.pointee, 1)
     }
 
+    write.pointee = 0
     return (write - data)
 }
 
