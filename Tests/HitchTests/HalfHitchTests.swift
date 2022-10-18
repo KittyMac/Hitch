@@ -307,16 +307,22 @@ final class HalfHitchTests: XCTestCase {
         
         let hitch1: HalfHitch = #"https://www.example.com/url?q=https%3A%2F%2Fother.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtL%qdGmEYA-MilAqQIc"#
         XCTAssertEqual(hitch1.percentUnescaped(), "https://www.example.com/url?q=https://other.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtL%qdGmEYA-MilAqQIc")
+        
+        XCTAssertEqual(HalfHitch(stringLiteral: "%3A").percentUnescaped(), ":")
     }
     
     func testAmpersandUnescaping() {
-        let hitch0: HalfHitch = #"&amp;&lt;&gt;&quot;&apos;&#038;Hello&#087;&#000079;&#82;&#76;&#0068;&#8364;"#
-        XCTAssertEqual(hitch0.ampersandUnescaped(), #"&<>"'&HelloWORLD€"#)
+        let hitch0: HalfHitch = #"&amp;&lt;&gt;&quot;&apos;&nbsp;&tab;&newline;&#038;Hello&#087;&#000079;&#82;&#76;&#0068;&#8364;"#
+        XCTAssertEqual(hitch0.ampersandUnescaped(), "&<>\"' \t\n&HelloWORLD€")
+        
+        XCTAssertEqual(HalfHitch(stringLiteral: "&amp;").ampersandUnescaped(), "&")
     }
     
     func testMimeUnescaping() {
         let hitch0: HalfHitch = "style=3D'test' =E2=80=94=20=C2=A0\r\n"
         XCTAssertEqual(hitch0.mimeUnescaped(), "style='test' —  \n")
+        
+        XCTAssertEqual(HalfHitch(stringLiteral: "=3D").mimeUnescaped(), "=")
     }
         
     func testComparable() {

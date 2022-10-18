@@ -867,7 +867,8 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
 
     while read < end {
         // &amp;&lt;&gt;&quot;&apos;&#038;
-        if read.pointee == .ampersand && read < end - 4 {
+        if read.pointee == .ampersand && read < end - 2 {
+            let endCount = end - read
             
             let char1 = read[1]
             if char1 == .hashTag {
@@ -891,35 +892,66 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                     read = tmpRead + 1
                     continue
                 }
-            } else if char1 == .a &&
+            } else if endCount >= 5 &&
+                        char1 == .a &&
                         read[2] == .m &&
                         read[3] == .p &&
                         read[4] == .semiColon {
                 append(.ampersand, 5)
                 continue
-            } else if char1 == .a &&
+            } else if endCount >= 6 &&
+                        char1 == .a &&
                         read[2] == .p &&
                         read[3] == .o &&
                         read[4] == .s &&
                         read[5] == .semiColon {
                 append(.singleQuote, 6)
                 continue
-            } else if char1 == .l &&
+            } else if endCount >= 4 &&
+                        char1 == .l &&
                         read[2] == .t &&
                         read[3] == .semiColon {
                 append(.lessThan, 4)
                 continue
-            } else if char1 == .g &&
+            } else if endCount >= 4 &&
+                        char1 == .g &&
                         read[2] == .t &&
                         read[3] == .semiColon {
                 append(.greaterThan, 4)
                 continue
-            } else if char1 == .q &&
+            } else if endCount >= 6 &&
+                        char1 == .q &&
                         read[2] == .u &&
                         read[3] == .o &&
                         read[4] == .t &&
                         read[5] == .semiColon {
                 append(.doubleQuote, 6)
+                continue
+            } else if endCount >= 5 &&
+                        char1 == .t &&
+                        read[2] == .a &&
+                        read[3] == .b &&
+                        read[4] == .semiColon {
+                append(.tab, 5)
+                continue
+            } else if endCount >= 9 &&
+                        char1 == .n &&
+                        read[2] == .e &&
+                        read[3] == .w &&
+                        read[4] == .l &&
+                        read[5] == .i &&
+                        read[6] == .n &&
+                        read[7] == .e &&
+                        read[8] == .semiColon {
+                append(.newLine, 9)
+                continue
+            } else if endCount >= 6 &&
+                        char1 == .n &&
+                        read[2] == .b &&
+                        read[3] == .s &&
+                        read[4] == .p &&
+                        read[5] == .semiColon {
+                append(.space, 6)
                 continue
             }
         }
