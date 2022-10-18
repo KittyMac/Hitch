@@ -986,6 +986,14 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
 @inlinable @inline(__always)
 func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
+    
+    // We look for the presence of "=\r\n" as a sanity check to confirm
+    // this is actually mime encoded data.
+    let marker: HalfHitch = "=\r\n"
+    if chitch_firstof_raw(data, count, marker.raw(), marker.count) < 0 {
+        return count
+    }
+    
     var read = data
     var write = data
     let end = data + count
