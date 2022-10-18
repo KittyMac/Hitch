@@ -635,6 +635,29 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
 
         return Hitch(hitch: self).ampersandUnescape()
     }
+    
+    @inlinable @inline(__always)
+    @discardableResult
+    public func mimeUnescape() -> Hitch {
+        lastHash = 0
+        chitch_make_mutable(&chitch)
+        guard let raw = chitch.mutableData else { return self }
+        count = unescapeBinary(mime: raw,
+                               count: count)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func mimeUnescaped() -> Hitch {
+        // returns self if there was nothing to unescape, or silo'd halfhitch if there was
+        guard let raw = raw() else { return self }
+
+        var local: UInt8 = .equal
+        guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
+
+        return Hitch(hitch: self).mimeUnescape()
+    }
 
     @inlinable @inline(__always)
     @discardableResult

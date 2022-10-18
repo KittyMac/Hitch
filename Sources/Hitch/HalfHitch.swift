@@ -376,6 +376,35 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
         return hitch().ampersandUnescape().halfhitch()
     }
+    
+    @inlinable @inline(__always)
+    @discardableResult
+    public mutating func mimeUnescape() -> HalfHitch {
+        guard maybeMutable else {
+            #if DEBUG
+            fatalError("unescape() called on HalfHitch pointing at immutable data")
+            #else
+            print("warning: unescape() called on HalfHitch pointing at immutable data")
+            return self
+            #endif
+        }
+        guard let raw = raw() else { return self }
+        count = unescapeBinary(mime: UnsafeMutablePointer(mutating: raw),
+                               count: count)
+        return self
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    public func mimeUnescaped() -> HalfHitch {
+        // returns self if there was nothing to unescape, or silo'd halfhitch if there was
+        guard let raw = raw() else { return self }
+
+        var local: UInt8 = .equal
+        guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
+
+        return hitch().mimeUnescape().halfhitch()
+    }
 
     @inlinable @inline(__always)
     public func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
