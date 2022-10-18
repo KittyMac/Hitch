@@ -1019,8 +1019,6 @@ func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
             var value1: UInt8 = 0
             if char1 >= .zero && char1 <= .nine {
                 value1 += char1 - .zero
-            } else if char1 >= .a && char1 <= .f {
-                value1 += (char1 - .a) + 10
             } else if char1 >= .A && char1 <= .F {
                 value1 += (char1 - .A) + 10
             } else {
@@ -1031,8 +1029,6 @@ func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
             var value2: UInt8 = 0
             if char2 >= .zero && char2 <= .nine {
                 value2 += char2 - .zero
-            } else if char2 >= .a && char2 <= .f {
-                value2 += (char2 - .a) + 10
             } else if char2 >= .A && char2 <= .F {
                 value2 += (char2 - .A) + 10
             } else {
