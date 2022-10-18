@@ -798,6 +798,21 @@ func chitch_equal_raw(_ lhs: UnsafePointer<UInt8>?,
 }
 
 @inlinable @inline(__always)
+func chitch_equal_caseless_raw(_ lhs: UnsafePointer<UInt8>?,
+                      _ lhs_count: Int,
+                      _ rhs: UnsafePointer<UInt8>?,
+                      _ rhs_count: Int) -> Bool {
+    if lhs == nil && rhs == nil { return true }
+    guard lhs != nil && rhs != nil else { return false }
+    guard let lhs = lhs else { return false }
+    guard let rhs = rhs else { return false }
+    guard lhs_count == rhs_count else { return false }
+    guard lhs != rhs else { return true }
+    if lhs_count > 0 && lhs[0] != rhs[0] { return false }
+    return memcasecmp(lhs, rhs, rhs_count, true) == 0
+}
+
+@inlinable @inline(__always)
 func chitch_contains_raw(_ haystack: UnsafePointer<UInt8>?,
                          _ haystack_count: Int,
                          _ needle: UnsafePointer<UInt8>?,

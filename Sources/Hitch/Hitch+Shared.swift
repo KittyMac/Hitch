@@ -1,5 +1,7 @@
 import Foundation
 
+infix operator ~==
+
 // swiftlint:disable type_body_length
 
 public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!
@@ -161,6 +163,11 @@ public extension Hitchable {
     static func == (lhs: Self, rhs: Self) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
+    
+    @inlinable @inline(__always)
+    static func ~== (lhs: Self, rhs: Self) -> Bool {
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
 
     @inlinable @inline(__always)
     func using<T>(_ callback: (UnsafePointer<UInt8>) -> T?) -> T? {
@@ -274,8 +281,21 @@ public extension Hitchable {
     }
     
     @inlinable @inline(__always)
-    func startsAt(raw otherRaw: UnsafePointer<UInt8>, count otherCount: Int) -> Bool {
+    func equals(exact other: Hitchable) -> Bool {
+        return chitch_equal_raw(raw(), count, other.raw(), other.count)
+    }
+    
+    @inlinable @inline(__always)
+    func equals(caseless other: Hitchable) -> Bool {
+        return chitch_equal_caseless_raw(raw(), count, other.raw(), other.count)
+    }
+    
+    @inlinable @inline(__always)
+    func startsAt(raw otherRaw: UnsafePointer<UInt8>, count otherCount: Int, caseless: Bool = false) -> Bool {
         if otherCount < count { return false }
+        if caseless {
+            return chitch_equal_caseless_raw(raw(), count, otherRaw, count)
+        }
         return chitch_equal_raw(raw(), count, otherRaw, count)
     }
 

@@ -100,6 +100,20 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertTrue(hitchLorem == hitchLorem)
     }
     
+    func testCaselessEquality() {
+        XCTAssertTrue(Hitch.empty ~== Hitch.empty)
+        XCTAssertTrue(HalfHitch.empty ~== HalfHitch.empty)
+        
+        let hitch0: Hitch = "hello world"
+        let hitch1: Hitch = "hElLo WoRlD"
+        
+        let hhitch0: HalfHitch = hitch0.halfhitch()
+        let hhitch1: HalfHitch = hitch1.halfhitch()
+        
+        XCTAssertTrue(hitch0 ~== hitch1)
+        XCTAssertTrue(hhitch0 ~== hhitch1)
+    }
+    
     func testEpoch() {
         XCTAssertEqual(HalfHitch("4/30/2021 12:00:00 AM").toEpoch(), 1619740800)
         XCTAssertEqual(HalfHitch("4/30/2021 1:00:00 AM").toEpoch(), 1619744400)

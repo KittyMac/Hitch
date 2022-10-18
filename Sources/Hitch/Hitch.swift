@@ -61,6 +61,33 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         let halfhitch = HalfHitch(stringLiteral: lhs)
         return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
+    
+    @inlinable @inline(__always)
+    public static func ~== (lhs: Hitch, rhs: Hitch) -> Bool {
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func ~== (lhs: Hitch, rhs: HalfHitch) -> Bool {
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func ~== (lhs: HalfHitch, rhs: Hitch) -> Bool {
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func ~== (lhs: Hitch, rhs: StaticString) -> Bool {
+        let halfhitch = HalfHitch(stringLiteral: rhs)
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func ~== (lhs: StaticString, rhs: Hitch) -> Bool {
+        let halfhitch = HalfHitch(stringLiteral: lhs)
+        return chitch_equal_caseless_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+    }
 
     public override func isEqual(_ object: Any?) -> Bool {
         guard let object0 = object else { return false }

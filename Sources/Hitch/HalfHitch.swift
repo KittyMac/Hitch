@@ -34,6 +34,25 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                 halfhitch.lastHash2 == rhs.lastHash2 &&
                 halfhitch.lastHash3 == rhs.lastHash3
     }
+    
+    @inlinable @inline(__always)
+    public static func ~== (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func ~== (lhs: HalfHitch, rhs: StaticString) -> Bool {
+        guard lhs.count == rhs.utf8CodeUnitCount else { return false }
+        let halfhitch = HalfHitch(hashOnly: rhs)
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
+
+    @inlinable @inline(__always)
+    public static func ~== (lhs: StaticString, rhs: HalfHitch) -> Bool {
+        guard lhs.utf8CodeUnitCount == rhs.count else { return false }
+        let halfhitch = HalfHitch(stringLiteral: lhs)
+        return chitch_equal_caseless_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+    }
 
     @usableFromInline
     let sourceObject: AnyObject?
