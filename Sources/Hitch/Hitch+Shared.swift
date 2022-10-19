@@ -119,10 +119,18 @@ public extension Hitchable {
     @inlinable @inline(__always)
     func toTempString() -> String {
         if let raw = raw() {
-            return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+            return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ??
+            String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .ascii, freeWhenDone: false) ??
+            String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .isoLatin1, freeWhenDone: false) ??
+            String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .nonLossyASCII, freeWhenDone: false) ??
+            ""
         }
         if let raw = mutableRaw() {
-            return String(bytesNoCopy: raw, length: count, encoding: .utf8, freeWhenDone: false) ?? ""
+            return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ??
+            String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .ascii, freeWhenDone: false) ??
+            String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .isoLatin1, freeWhenDone: false) ??
+            String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .nonLossyASCII, freeWhenDone: false) ??
+            ""
         }
         return ""
     }
