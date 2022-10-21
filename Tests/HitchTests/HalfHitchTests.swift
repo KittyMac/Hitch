@@ -344,6 +344,11 @@ final class HalfHitchTests: XCTestCase {
         let parts0 = hitch0.components(inTwain: [.space, .carriageReturn, .newLine])
         XCTAssertEqual(parts0?[0], "this is a hello")
         XCTAssertEqual(parts0?[1], "world in twain!")
+        
+        let hitch1: HalfHitch = "this is a hello   \n\n     \r\n         world in twain!"
+        let parts1 = hitch1.components(inTwain: [.space, .carriageReturn, .newLine])
+        XCTAssertEqual(parts1?[0], "this is a hello")
+        XCTAssertEqual(parts1?[1], "world in twain!")
     }
         
     func testComparable() {

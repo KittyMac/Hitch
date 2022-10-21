@@ -287,7 +287,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     
     @inlinable @inline(__always)
     public func components(inTwain separators: [UInt8],
-                           minWidth: Int = 3) -> [HalfHitch]? {
+                           minWidth: Int = 3) -> [Hitch]? {
         // Splits strings into two which are separated by large amount of (separator) in
         // the middile
         guard let raw = raw() else { return [] }
@@ -323,21 +323,11 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         guard maxCount >= minWidth else { return nil }
         guard maxSeparatorStart < maxSeparatorEnd else { return nil }
         guard maxSeparatorEnd - maxSeparatorStart < count else { return nil }
+        guard let part0 = substring(0, maxSeparatorStart - start) else { return nil }
+        guard let part1 = substring(maxSeparatorEnd - start, end - start) else { return nil }
+        guard maxSeparatorEnd - maxSeparatorStart < count else { return nil }
         
-        let part0 = HalfHitch(sourceObject: self,
-                              raw: raw,
-                              count: count,
-                              from: 0,
-                              to: maxSeparatorStart - start)
-        let part1 = HalfHitch(sourceObject: self,
-                              raw: raw,
-                              count: count,
-                              from: maxSeparatorEnd - start,
-                              to: end - start)
-        return [
-            part0,
-            part1
-        ]
+        return [part0, part1]
     }
 
     @inlinable @inline(__always)
