@@ -1110,7 +1110,9 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             }
             
             let ascii: UInt8 = value1 * 16 + value2
-            append(ascii, 3); continue
+            if value1 >= 32 && value1 <= 126 {
+                append(ascii, 3); continue
+            }
         }
 
         append(read.pointee, 1)
