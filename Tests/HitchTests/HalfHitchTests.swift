@@ -338,6 +338,13 @@ final class HalfHitchTests: XCTestCase {
         
         XCTAssertEqual(HalfHitch(stringLiteral: "=3D").mimeUnescaped(), "=")
     }
+    
+    func testComponentInTwain() {
+        let hitch0: Hitch = "this is a hello   \n\n     \r\n         world in twain!"
+        let parts0 = hitch0.components(inTwain: [.space, .carriageReturn, .newLine])
+        XCTAssertEqual(parts0?[0], "this is a hello")
+        XCTAssertEqual(parts0?[1], "world in twain!")
+    }
         
     func testComparable() {
         let hitch1: HalfHitch = "Apple"

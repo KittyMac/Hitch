@@ -284,6 +284,61 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
         return lastHash
     }
+    
+    @inlinable @inline(__always)
+    public func components(inTwain separators: [UInt8],
+                           minWidth: Int = 3) -> [HalfHitch]? {
+        // Splits strings into two which are separated by large amount of (separator) in
+        // the middile
+        guard let raw = raw() else { return [] }
+        
+        // Find the largest run of consqutive separators
+        let start = raw
+        let end = raw + count
+        var ptr = start
+        
+        var currentCount = 0
+        var maxCount = 0
+        var separatorStart = start
+        
+        var maxSeparatorStart = start
+        var maxSeparatorEnd = start
+        while ptr < end {
+            if separators.contains(ptr.pointee) {
+                if currentCount == 0 {
+                    separatorStart = ptr
+                }
+                currentCount += 1
+            } else {
+                if currentCount > maxCount {
+                    maxSeparatorStart = separatorStart
+                    maxSeparatorEnd = ptr
+                    maxCount = currentCount
+                }
+                currentCount = 0
+            }
+            ptr += 1
+        }
+        
+        guard maxCount >= minWidth else { return nil }
+        guard maxSeparatorStart < maxSeparatorEnd else { return nil }
+        guard maxSeparatorEnd - maxSeparatorStart < count else { return nil }
+        
+        let part0 = HalfHitch(sourceObject: self,
+                              raw: raw,
+                              count: count,
+                              from: 0,
+                              to: maxSeparatorStart - start)
+        let part1 = HalfHitch(sourceObject: self,
+                              raw: raw,
+                              count: count,
+                              from: maxSeparatorEnd - start,
+                              to: end - start)
+        return [
+            part0,
+            part1
+        ]
+    }
 
     @inlinable @inline(__always)
     public func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
