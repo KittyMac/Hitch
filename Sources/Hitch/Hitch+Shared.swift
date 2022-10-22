@@ -998,6 +998,14 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                 append(0xC2, 1)
                 append(0xA9, 5)
                 continue
+            } else if endCount >= 6 &&
+                        char1 == .z &&
+                        read[2] == .w &&
+                        read[3] == .n &&
+                        read[4] == .j &&
+                        read[5] == .semiColon {
+                append(.space, 6)
+                continue
             }
         }
 
