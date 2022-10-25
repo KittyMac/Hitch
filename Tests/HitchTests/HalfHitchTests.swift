@@ -326,8 +326,8 @@ final class HalfHitchTests: XCTestCase {
     }
     
     func testAmpersandUnescaping() {
-        let hitch0: HalfHitch = #"&amp;&lt;&gt;&quot;&apos;&nbsp;&tab;&newline;&#038;Hello&#087;&#000079;&#82;&#76;&#0068;&#8364;&copy;&zwnj;&zwj;&reg;"#
-        XCTAssertEqual(hitch0.ampersandUnescaped(), "&<>\"' \t\n&HelloWORLD€©  ®")
+        let hitch0: HalfHitch = #"&amp;&lt;&gt;&quot;&apos;&nbsp;&tab;&newline;&#038;Hello&#087;&#000079;&#82;&#76;&#0068;&#8364;&copy;&zwnj;&zwj;&reg;&ndash;"#
+        XCTAssertEqual(hitch0.ampersandUnescaped(), "&<>\"' \t\n&HelloWORLD€©  ®-")
         
         XCTAssertEqual(HalfHitch(stringLiteral: "&amp;").ampersandUnescaped(), "&")
     }
