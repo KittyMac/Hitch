@@ -22,12 +22,38 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
         // skip over utf8 code points
         let ch = ptr.pointee
         if ch > 0x7f {
-            
+            var value: UInt32 = 0
             if ch & 0b11100000 == 0b11000000 {
+                value |= (UInt32(ptr[0]) & 0b00011111) << 6
+                value |= (UInt32(ptr[1]) & 0b00111111) << 0
+                if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
+                    (ptr+0).pointee = .space
+                    (ptr+1).pointee = .space
+                }
                 ptr += 1
             } else if ch & 0b11110000 == 0b11100000 {
+                value |= (UInt32(ptr[0]) & 0b00001111) << 12
+                value |= (UInt32(ptr[1]) & 0b00111111) << 6
+                value |= (UInt32(ptr[2]) & 0b00111111) << 0
+                if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
+                    (ptr+0).pointee = .space
+                    (ptr+1).pointee = .space
+                    (ptr+2).pointee = .space
+                }
                 ptr += 2
             } else if ch & 0b11111000 == 0b11110000 {
+                value |= (UInt32(ptr[0]) & 0b00000111) << 18
+                value |= (UInt32(ptr[1]) & 0b00111111) << 12
+                value |= (UInt32(ptr[2]) & 0b00111111) << 6
+                value |= (UInt32(ptr[3]) & 0b00111111) << 0
+                if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
+                    if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
+                        (ptr+0).pointee = .space
+                        (ptr+1).pointee = .space
+                        (ptr+2).pointee = .space
+                        (ptr+3).pointee = .space
+                    }
+                }
                 ptr += 3
             }
         } else {
