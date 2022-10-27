@@ -5,8 +5,8 @@ infix operator ~==
 // swiftlint:disable type_body_length
 
 @usableFromInline
-func replaceControlChars(start: UnsafeMutablePointer<UInt8>,
-                         end: UnsafeMutablePointer<UInt8>) {
+func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
+                                 end: UnsafeMutablePointer<UInt8>) {
     // Run back over the data and raplace odd control characters with spaces
     var ptr = start
     let controlChars: [UInt8] = [
@@ -1073,8 +1073,8 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
         append(read.pointee, 1)
     }
     
-    replaceControlChars(start: data,
-                        end: write)
+    replaceDanglingControlChars(start: data,
+                                end: write)
 
     write.pointee = 0
     return (write - data)
@@ -1142,8 +1142,8 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
         append(read.pointee, 1)
     }
     
-    replaceControlChars(start: data,
-                        end: write)
+    replaceDanglingControlChars(start: data,
+                                end: write)
     
     write.pointee = 0
     return (write - data)
