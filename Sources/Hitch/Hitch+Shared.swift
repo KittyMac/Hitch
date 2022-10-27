@@ -4,6 +4,43 @@ infix operator ~==
 
 // swiftlint:disable type_body_length
 
+@usableFromInline
+func replaceControlChars(start: UnsafeMutablePointer<UInt8>,
+                         end: UnsafeMutablePointer<UInt8>) {
+    // Run back over the data and raplace odd control characters with spaces
+    var ptr = start
+    let controlChars: [UInt8] = [
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0B, 0x0C, 0x0E,
+        0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A,
+        0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85,
+        0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91,
+        0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D,
+        0x9E, 0x9F, 0xAD
+    ]
+    
+    while ptr < end {
+        // skip over utf8 code points
+        let ch = ptr.pointee
+        if ch > 0x7f {
+            
+            if ch & 0b11100000 == 0b11000000 {
+                ptr += 1
+            } else if ch & 0b11110000 == 0b11100000 {
+                ptr += 2
+            } else if ch & 0b11111000 == 0b11110000 {
+                ptr += 3
+            }
+        } else {
+            // control character which is not part of a utf8 code point; fix it.
+            if controlChars.contains(ptr.pointee) {
+                ptr.pointee = .space
+            }
+        }
+        
+        ptr += 1
+    }
+}
+
 public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!
 
 public extension ArraySlice where Element == UInt8 {
@@ -1035,6 +1072,9 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
 
         append(read.pointee, 1)
     }
+    
+    replaceControlChars(start: data,
+                        end: write)
 
     write.pointee = 0
     return (write - data)
@@ -1102,38 +1142,8 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
         append(read.pointee, 1)
     }
     
-    // Run back over the data and raplace odd control characters with spaces
-    var ptr = data
-    let controlChars: [UInt8] = [
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0B, 0x0C, 0x0E,
-        0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A,
-        0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85,
-        0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91,
-        0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D,
-        0x9E, 0x9F, 0xAD
-    ]
-    
-    while ptr < write {
-        // skip over utf8 code points
-        let ch = ptr.pointee
-        if ch > 0x7f {
-            
-            if ch & 0b11100000 == 0b11000000 {
-                ptr += 1
-            } else if ch & 0b11110000 == 0b11100000 {
-                ptr += 2
-            } else if ch & 0b11111000 == 0b11110000 {
-                ptr += 3
-            }
-        } else {
-            // control character which is not part of a utf8 code point; fix it.
-            if controlChars.contains(ptr.pointee) {
-                ptr.pointee = .space
-            }
-        }
-        
-        ptr += 1
-    }
+    replaceControlChars(start: data,
+                        end: write)
     
     write.pointee = 0
     return (write - data)
