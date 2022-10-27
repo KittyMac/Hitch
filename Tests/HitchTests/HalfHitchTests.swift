@@ -342,12 +342,15 @@ final class HalfHitchTests: XCTestCase {
     func testEmlHeaderUnescaping() {
         let emlHeader0: HalfHitch = "=?UTF-8?B?T3JkZXIgQ29uZmlybWF0aW9uIOKAkyBPcmRlciAjOiAyNzU1NTQ=?="
         XCTAssertEqual(emlHeader0.emlHeaderUnescaped(), "Order Confirmation – Order #: 275554")
-
+        
         let emlHeader1: HalfHitch = "=?UTF-8?Q?style=3D'test'?="
         XCTAssertEqual(emlHeader1.emlHeaderUnescaped(), "style='test'")
-    
+        
         let emlHeader2: HalfHitch = "Order Confirmation – Order #: 275554"
         XCTAssertEqual(emlHeader2.emlHeaderUnescaped(), "Order Confirmation – Order #: 275554")
+        
+        let emlHeader3: HalfHitch = "=?UTF-8?B?U2Nod2FuJ3MgSG9tZSBEZWxpdmVyeQ==?=\r\n <schwanshomedelivery@emails.schwans.com>"
+        XCTAssertEqual(emlHeader3.emlHeaderUnescaped(), "Schwan's Home Delivery\n <schwanshomedelivery@emails.schwans.com>")
     }
 
     

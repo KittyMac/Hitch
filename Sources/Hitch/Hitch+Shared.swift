@@ -1148,8 +1148,19 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
     var read = data
     var write = data
     let end = data + count
+    
+    let append: (UInt8, Int) -> Void = { v, advance in
+        if v == .carriageReturn {
+            read += advance
+            return
+        }
         
-    while read < end-1 {
+        write.pointee = v
+        write += 1
+        read += advance
+    }
+        
+    while read < end {
         if read.pointee == .equal &&
             (read+1).pointee == .questionMark {
             // we found the beginning mark
@@ -1202,6 +1213,8 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
                 write.pointee = c
                 write += 1
             }
+        } else {
+            append(read.pointee, 1)
         }
     }
     
