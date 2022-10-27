@@ -1018,7 +1018,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[2] == .e &&
                         read[3] == .g &&
                         read[4] == .semiColon {
-                append(0xC2, 1)
+                append(0xC2, 0)
                 append(0xAE, 5)
                 continue
             } else if endCount >= 7 &&
@@ -1041,7 +1041,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
-func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
+func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     
     var read = data
@@ -1140,6 +1140,76 @@ func unescapeBinary(mime data: UnsafeMutablePointer<UInt8>,
 }
 
 @inlinable @inline(__always)
+func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
+                    count: Int) -> Int {
+    // like: =?UTF-8?B?T3JkZXIgQ29uZmlybWF0aW9uIOKAkyBPcmRlciAjOiAyNzU1NTQ=?=
+    //       =?UTF-8?B?MzY1?=
+    
+    var read = data
+    var write = data
+    let end = data + count
+        
+    while read < end-1 {
+        if read.pointee == .equal &&
+            (read+1).pointee == .questionMark {
+            // we found the beginning mark
+            read += 2
+            
+            // Gather the format (ie UTF-8, ISO-8859-1, ISO-8859-2...)
+            while read < end-1 {
+                if read.pointee == .questionMark {
+                    read += 1
+                    break
+                }
+                read += 1
+            }
+            
+            // Gather the encoding type (base64 or quoted-printable)
+            let typeOfEncoding: UInt8 = read.pointee
+            guard (read+1).pointee == .questionMark else { break }
+            guard typeOfEncoding == .B || typeOfEncoding == .Q else { break }
+            read += 2
+            
+            // advance to the end mark
+            let contentStart = read
+            var contentEnd = read
+            while read < end-1 {
+                if read.pointee == .questionMark &&
+                    (read+1).pointee == .equal {
+                    contentEnd = read
+                    read += 2
+                    break
+                }
+                read += 1
+            }
+            
+            // Now we have the format type, the encoding type, and the
+            // range of the actual content.  Decode the content and
+            // write it out.
+            let contentHitch = Hitch(bytes: contentStart,
+                                     offset: 0,
+                                     count: contentEnd - contentStart)
+            
+            if typeOfEncoding == .B {
+                guard let data = Data(base64Encoded: contentHitch.dataNoCopy(), options: [.ignoreUnknownCharacters]) else { break }
+                guard let string = String(data: data, encoding: .utf8) else { break }
+                contentHitch.replace(with: string)
+            } else if typeOfEncoding == .Q {
+                contentHitch.quotedPrintableUnescape()
+            }
+            
+            for c in contentHitch {
+                write.pointee = c
+                write += 1
+            }
+        }
+    }
+    
+    write.pointee = 0
+    return (write - data)
+}
+
+@inlinable @inline(__always)
 func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     // https:\/\/www.google.com\/url?q=https%3A%2F%2Fsardelkitchen.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtLqdGmEYA-MilAqQIc"
@@ -1185,7 +1255,7 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             }
             
             let ascii: UInt8 = value1 * 16 + value2
-            if value1 >= 32 && value1 <= 126 {
+            if ascii >= 32 && ascii <= 126 {
                 append(ascii, 3); continue
             }
         }

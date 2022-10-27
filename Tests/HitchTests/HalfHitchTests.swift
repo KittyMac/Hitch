@@ -332,12 +332,24 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(HalfHitch(stringLiteral: "&amp;").ampersandUnescaped(), "&")
     }
     
-    func testMimeUnescaping() {
+    func testQuotedPrintableUnescaping() {
         let hitch0: HalfHitch = "style=3D'test' =E2=80=94=20=C2=A0\r\n"
-        XCTAssertEqual(hitch0.mimeUnescaped(), "style='test' —  \n")
+        XCTAssertEqual(hitch0.quotedPrintableUnescaped(), "style='test' —  \n")
         
-        XCTAssertEqual(HalfHitch(stringLiteral: "=3D").mimeUnescaped(), "=")
+        XCTAssertEqual(HalfHitch(stringLiteral: "=3D").quotedPrintableUnescaped(), "=")
     }
+    
+    func testEmlHeaderUnescaping() {
+        let emlHeader0: HalfHitch = "=?UTF-8?B?T3JkZXIgQ29uZmlybWF0aW9uIOKAkyBPcmRlciAjOiAyNzU1NTQ=?="
+        XCTAssertEqual(emlHeader0.emlHeaderUnescaped(), "Order Confirmation – Order #: 275554")
+
+        let emlHeader1: HalfHitch = "=?UTF-8?Q?style=3D'test'?="
+        XCTAssertEqual(emlHeader1.emlHeaderUnescaped(), "style='test'")
+    
+        //XCTAssertEqual(hitch0.emlHeaderUnescaped(), "style='test' —  \n")
+        //XCTAssertEqual(HalfHitch(stringLiteral: "=3D").emlHeaderUnescaped(), "=")
+    }
+
     
     func testComponentInTwain() {
         let hitch0: Hitch = "this is a hello   \n\n     \r\n         world in twain!"
