@@ -4,19 +4,25 @@ infix operator ~==
 
 // swiftlint:disable type_body_length
 
-@usableFromInline
+@inlinable @inline(__always)
 func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                                  end: UnsafeMutablePointer<UInt8>) {
     // Run back over the data and raplace odd control characters with spaces
     var ptr = start
-    let controlChars: [UInt8] = [
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0B, 0x0C, 0x0E,
-        0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A,
-        0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85,
-        0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91,
-        0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D,
-        0x9E, 0x9F, 0xAD
-    ]
+    
+    let isControlChar: (UInt8) -> Bool = { ascii in
+        switch ascii {
+        case 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0B, 0x0C, 0x0E,
+            0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A,
+            0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85,
+            0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91,
+            0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D,
+            0x9E, 0x9F, 0xAD:
+            return true
+        default:
+            return false
+        }
+    }
     
     while ptr < end {
         // skip over utf8 code points
@@ -27,7 +33,7 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[0]) & 0b00011111) << 6
                 value |= (UInt32(ptr[1]) & 0b00111111) << 0
                 if let ascii = UInt8(exactly: value),
-                   controlChars.contains(ascii) {
+                   isControlChar(ascii) {
                     (ptr+0).pointee = .space
                     (ptr+1).pointee = .space
                 }
@@ -37,7 +43,7 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[1]) & 0b00111111) << 6
                 value |= (UInt32(ptr[2]) & 0b00111111) << 0
                 if let ascii = UInt8(exactly: value),
-                   controlChars.contains(ascii) {
+                   isControlChar(ascii) {
                     (ptr+0).pointee = .space
                     (ptr+1).pointee = .space
                     (ptr+2).pointee = .space
@@ -49,7 +55,7 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[2]) & 0b00111111) << 6
                 value |= (UInt32(ptr[3]) & 0b00111111) << 0
                 if let ascii = UInt8(exactly: value),
-                   controlChars.contains(ascii) {
+                   isControlChar(ascii) {
                     (ptr+0).pointee = .space
                     (ptr+1).pointee = .space
                     (ptr+2).pointee = .space
@@ -59,7 +65,7 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
             }
         } else {
             // control character which is not part of a utf8 code point; fix it.
-            if controlChars.contains(ptr.pointee) {
+            if isControlChar(ptr.pointee) {
                 ptr.pointee = .space
             }
         }
