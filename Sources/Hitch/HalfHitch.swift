@@ -448,8 +448,8 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
         guard let raw = raw() else { return self }
 
-        var local: UInt8 = .equal
-        guard chitch_contains_raw(raw, count, &local, 1) == true else { return self }
+        guard count > 2 else { return self }
+        guard (raw+0).pointee == .equal && (raw+1).pointee == .questionMark else { return self }
 
         return hitch().emlHeaderUnescape().halfhitch()
     }

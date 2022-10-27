@@ -346,8 +346,8 @@ final class HalfHitchTests: XCTestCase {
         let emlHeader1: HalfHitch = "=?UTF-8?Q?style=3D'test'?="
         XCTAssertEqual(emlHeader1.emlHeaderUnescaped(), "style='test'")
     
-        //XCTAssertEqual(hitch0.emlHeaderUnescaped(), "style='test' —  \n")
-        //XCTAssertEqual(HalfHitch(stringLiteral: "=3D").emlHeaderUnescaped(), "=")
+        let emlHeader2: HalfHitch = "Order Confirmation – Order #: 275554"
+        XCTAssertEqual(emlHeader2.emlHeaderUnescaped(), "Order Confirmation – Order #: 275554")
     }
 
     
