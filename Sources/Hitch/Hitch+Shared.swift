@@ -26,7 +26,8 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
             if ch & 0b11100000 == 0b11000000 {
                 value |= (UInt32(ptr[0]) & 0b00011111) << 6
                 value |= (UInt32(ptr[1]) & 0b00111111) << 0
-                if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
+                if let ascii = UInt8(exactly: value),
+                   controlChars.contains(ascii) {
                     (ptr+0).pointee = .space
                     (ptr+1).pointee = .space
                 }
@@ -35,7 +36,8 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[0]) & 0b00001111) << 12
                 value |= (UInt32(ptr[1]) & 0b00111111) << 6
                 value |= (UInt32(ptr[2]) & 0b00111111) << 0
-                if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
+                if let ascii = UInt8(exactly: value),
+                   controlChars.contains(ascii) {
                     (ptr+0).pointee = .space
                     (ptr+1).pointee = .space
                     (ptr+2).pointee = .space
@@ -46,13 +48,12 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[1]) & 0b00111111) << 12
                 value |= (UInt32(ptr[2]) & 0b00111111) << 6
                 value |= (UInt32(ptr[3]) & 0b00111111) << 0
-                if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
-                    if controlChars.contains(UInt8(truncatingIfNeeded: value)) {
-                        (ptr+0).pointee = .space
-                        (ptr+1).pointee = .space
-                        (ptr+2).pointee = .space
-                        (ptr+3).pointee = .space
-                    }
+                if let ascii = UInt8(exactly: value),
+                   controlChars.contains(ascii) {
+                    (ptr+0).pointee = .space
+                    (ptr+1).pointee = .space
+                    (ptr+2).pointee = .space
+                    (ptr+3).pointee = .space
                 }
                 ptr += 3
             }
