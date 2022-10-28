@@ -351,6 +351,9 @@ final class HalfHitchTests: XCTestCase {
         
         let emlHeader3: HalfHitch = "=?UTF-8?B?U2Nod2FuJ3MgSG9tZSBEZWxpdmVyeQ==?=\r\n <schwanshomedelivery@emails.schwans.com>"
         XCTAssertEqual(emlHeader3.emlHeaderUnescaped(), "Schwan's Home Delivery\n <schwanshomedelivery@emails.schwans.com>")
+        
+        let emlHeader4: HalfHitch = "=?utf-8?q?NYON=C2=AE_by_Knowlita?= <shop@nyon.nyc>"
+        XCTAssertEqual(emlHeader4.emlHeaderUnescaped(), "NYON®_by_Knowlita <shop@nyon.nyc>")
     }
 
     

@@ -1221,7 +1221,7 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
             // Gather the encoding type (base64 or quoted-printable)
             let typeOfEncoding: UInt8 = read.pointee
             guard (read+1).pointee == .questionMark else { break }
-            guard typeOfEncoding == .B || typeOfEncoding == .Q else { break }
+            guard typeOfEncoding == .B || typeOfEncoding == .b || typeOfEncoding == .Q || typeOfEncoding == .q else { break }
             read += 2
             
             // advance to the end mark
@@ -1244,11 +1244,11 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
                                      offset: 0,
                                      count: contentEnd - contentStart)
             
-            if typeOfEncoding == .B {
+            if typeOfEncoding == .B || typeOfEncoding == .b {
                 guard let data = Data(base64Encoded: contentHitch.dataNoCopy(), options: [.ignoreUnknownCharacters]) else { break }
                 guard let string = String(data: data, encoding: .utf8) else { break }
                 contentHitch.replace(with: string)
-            } else if typeOfEncoding == .Q {
+            } else if typeOfEncoding == .Q || typeOfEncoding == .q {
                 contentHitch.quotedPrintableUnescape()
             }
             
