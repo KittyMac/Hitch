@@ -357,7 +357,7 @@ final class HalfHitchTests: XCTestCase {
     }
 
     func testComponentInTwain() {
-        let hitch0: HalfHitch = "1  2  3"
+        let hitch0: HalfHitch = "     1  2  3"
         let parts0 = hitch0.components(inTwain: [.space, .carriageReturn, .newLine])
         XCTAssertEqual(parts0[0], "1")
         XCTAssertEqual(parts0[1], "2")

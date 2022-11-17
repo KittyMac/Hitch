@@ -600,11 +600,14 @@ public extension Hitchable {
             }
             
             if ptr - separatorStartPtr >= minWidth {
-                parts.append(HalfHitch(sourceObject: sourceObject,
-                                       raw: raw,
-                                       count: count,
-                                       from: textStartPtr - start,
-                                       to: separatorStartPtr - start))
+                let part = HalfHitch(sourceObject: sourceObject,
+                                     raw: raw,
+                                     count: count,
+                                     from: textStartPtr - start,
+                                     to: separatorStartPtr - start).trimmed()
+                if part.count > 0 {
+                    parts.append(part)
+                }
                 textStartPtr = ptr
             }
             
