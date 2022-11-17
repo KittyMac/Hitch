@@ -359,20 +359,20 @@ final class HalfHitchTests: XCTestCase {
     func testComponentInTwain() {
         let hitch0: HalfHitch = "1  2  3"
         let parts0 = hitch0.components(inTwain: [.space, .carriageReturn, .newLine])
-        XCTAssertEqual(parts0?[0], "1")
-        XCTAssertEqual(parts0?[1], "2")
-        XCTAssertEqual(parts0?[2], "3")
+        XCTAssertEqual(parts0[0], "1")
+        XCTAssertEqual(parts0[1], "2")
+        XCTAssertEqual(parts0[2], "3")
         
         let hitch1: Hitch = "this is a hello   \n\n     \r\n         world in twain!  and another"
         let parts1 = hitch1.components(inTwain: [.space, .carriageReturn, .newLine])
-        XCTAssertEqual(parts1?[0], "this is a hello")
-        XCTAssertEqual(parts1?[1], "world in twain!")
-        XCTAssertEqual(parts1?[2], "and another")
+        XCTAssertEqual(parts1[0], "this is a hello")
+        XCTAssertEqual(parts1[1], "world in twain!")
+        XCTAssertEqual(parts1[2], "and another")
         
         let hitch2: HalfHitch = "this is a hello   \n\n     \r\n         world in twain!"
         let parts2 = hitch2.components(inTwain: [.space, .carriageReturn, .newLine])
-        XCTAssertEqual(parts2?[0], "this is a hello")
-        XCTAssertEqual(parts2?[1], "world in twain!")
+        XCTAssertEqual(parts2[0], "this is a hello")
+        XCTAssertEqual(parts2[1], "world in twain!")
     }
         
     func testComparable() {

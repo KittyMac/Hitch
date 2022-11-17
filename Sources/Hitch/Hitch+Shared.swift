@@ -577,7 +577,7 @@ public extension Hitchable {
     
     @inlinable @inline(__always)
     func components(inTwain separators: [UInt8],
-                    minWidth: Int = 2) -> [HalfHitch]? {
+                    minWidth: Int = 2) -> [HalfHitch] {
         // Splits strings into multiple which are separated by at least minWidth separators
         guard let raw = raw() else { return [] }
         
