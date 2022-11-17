@@ -34,6 +34,11 @@ struct HitchOutputStream: TextOutputStream {
 // See unit test testCastAnyToHitch().
 public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Sequence, Comparable, Codable {
     public static let empty: Hitch = ""
+    
+    @inlinable @inline(__always)
+    public func getSourceObject() -> AnyObject? {
+        return self
+    }
 
     @inlinable @inline(__always)
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
@@ -283,51 +288,6 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
             lastHash = chitch_hash_raw(raw(), count)
         }
         return lastHash
-    }
-    
-    @inlinable @inline(__always)
-    public func components(inTwain separators: [UInt8],
-                           minWidth: Int = 3) -> [Hitch]? {
-        // Splits strings into two which are separated by large amount of (separator) in
-        // the middile
-        guard let raw = raw() else { return [] }
-        
-        // Find the largest run of consqutive separators
-        let start = raw
-        let end = raw + count
-        var ptr = start
-        
-        var currentCount = 0
-        var maxCount = 0
-        var separatorStart = start
-        
-        var maxSeparatorStart = start
-        var maxSeparatorEnd = start
-        while ptr < end {
-            if separators.contains(ptr.pointee) {
-                if currentCount == 0 {
-                    separatorStart = ptr
-                }
-                currentCount += 1
-            } else {
-                if currentCount > maxCount {
-                    maxSeparatorStart = separatorStart
-                    maxSeparatorEnd = ptr
-                    maxCount = currentCount
-                }
-                currentCount = 0
-            }
-            ptr += 1
-        }
-        
-        guard maxCount >= minWidth else { return nil }
-        guard maxSeparatorStart < maxSeparatorEnd else { return nil }
-        guard maxSeparatorEnd - maxSeparatorStart < count else { return nil }
-        guard let part0 = substring(0, maxSeparatorStart - start) else { return nil }
-        guard let part1 = substring(maxSeparatorEnd - start, end - start) else { return nil }
-        guard maxSeparatorEnd - maxSeparatorStart < count else { return nil }
-        
-        return [part0, part1]
     }
 
     @inlinable @inline(__always)

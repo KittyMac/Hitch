@@ -116,6 +116,9 @@ public protocol Hitchable {
     
     @inlinable @inline(__always)
     func mutableUsing<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T?
+    
+    @inlinable @inline(__always)
+    func getSourceObject() -> AnyObject?
 }
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
@@ -570,6 +573,53 @@ public extension Hitchable {
     @discardableResult
     func toEpoch() -> Int {
         return chitch_toepoch_raw(raw(), count)
+    }
+    
+    @inlinable @inline(__always)
+    func components(inTwain separators: [UInt8],
+                    minWidth: Int = 2) -> [HalfHitch]? {
+        // Splits strings into multiple which are separated by at least minWidth separators
+        guard let raw = raw() else { return [] }
+        
+        let sourceObject = getSourceObject()
+        
+        let start = raw
+        let end = raw + count
+        var ptr = start
+        
+        var parts: [HalfHitch] = []
+        
+        var separatorStartPtr = ptr
+        var textStartPtr = ptr
+        while ptr < end {
+            
+            separatorStartPtr = ptr
+            while separators.contains(ptr.pointee) {
+                // advance to see if this is a breaking point
+                ptr += 1
+            }
+            
+            if ptr - separatorStartPtr >= minWidth {
+                parts.append(HalfHitch(sourceObject: sourceObject,
+                                       raw: raw,
+                                       count: count,
+                                       from: textStartPtr - start,
+                                       to: separatorStartPtr - start))
+                textStartPtr = ptr
+            }
+            
+            ptr += 1
+        }
+        
+        if ptr - textStartPtr > 0 {
+            parts.append(HalfHitch(sourceObject: nil,
+                                   raw: raw,
+                                   count: count,
+                                   from: textStartPtr - start,
+                                   to: end - start))
+        }
+        
+        return parts
     }
 }
 
