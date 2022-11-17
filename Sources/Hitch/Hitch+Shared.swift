@@ -615,7 +615,7 @@ public extension Hitchable {
         }
         
         if ptr - textStartPtr > 0 {
-            parts.append(HalfHitch(sourceObject: nil,
+            parts.append(HalfHitch(sourceObject: sourceObject,
                                    raw: raw,
                                    count: count,
                                    from: textStartPtr - start,
