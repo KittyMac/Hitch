@@ -70,7 +70,11 @@ func memcasecmp(_ ptr1: UnsafePointer<UInt8>,
     if ignoreCase {
         return ptr1.withMemoryRebound(to: CChar.self, capacity: count) { ptr1 in
             return ptr2.withMemoryRebound(to: CChar.self, capacity: count) { ptr2 in
+#if os(Windows)
+                return _strnicmp(ptr1, ptr2, count)
+#else
                 return strncasecmp(ptr1, ptr2, count)
+#endif
             }
         }
     }

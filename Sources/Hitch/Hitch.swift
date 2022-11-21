@@ -157,7 +157,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
 
         fseek(file, 0, SEEK_END)
-        let size = ftell(file)
+        let size = Int(ftell(file))
         fseek(file, 0, SEEK_SET)
 
         chitch = chitch_init_capacity(size)
