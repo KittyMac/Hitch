@@ -6,7 +6,6 @@ let package = Package(
     name: "Hitch",
     products: [
         .library(name: "Hitch", targets: ["Hitch"]),
-        .library(name: "HitchLib", type: .dynamic, targets: ["Hitch"]),
     ],
     dependencies: [ ],
     targets: [
