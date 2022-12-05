@@ -286,6 +286,17 @@ public extension Hitchable {
         }
         return iterator
     }
+    
+    @inlinable @inline(__always)
+    func md5() -> Hitch? {
+        if let raw = raw() {
+            return hex_md5(raw: raw, count: count)
+        }
+        if let raw = mutableRaw() {
+            return hex_md5(raw: raw, count: count)
+        }
+        return nil
+    }
 
     @inlinable @inline(__always)
     func dataNoCopy() -> Data {

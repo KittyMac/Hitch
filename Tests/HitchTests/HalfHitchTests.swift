@@ -7,6 +7,13 @@ struct TestHalfHitchCodable: Codable {
 
 final class HalfHitchTests: XCTestCase {
     
+    func testMD5() {
+        let hello: HalfHitch = "Hello"
+        XCTAssertEqual(hello.md5(), "8B1A9953C4611296A827ABF8C47804D7")
+        
+        XCTAssertEqual(hello.dataNoCopy().md5(), "8B1A9953C4611296A827ABF8C47804D7")
+    }
+    
     func testSimpleCreate() {
         let hello: HalfHitch = "Hello"
         XCTAssertEqual(hello.description, "Hello")
