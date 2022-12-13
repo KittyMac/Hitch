@@ -20,6 +20,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     public static func == (lhs: HalfHitch, rhs: StaticString) -> Bool {
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
+        guard lhs.source != rhs.utf8Start else { return true }
         let halfhitch = HalfHitch(hashOnly: rhs)
         return lhs.lastHash1 == halfhitch.lastHash1 &&
                 lhs.lastHash2 == halfhitch.lastHash2 &&
@@ -29,6 +30,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     @inlinable @inline(__always)
     public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
         guard lhs.utf8CodeUnitCount == rhs.count else { return false }
+        guard lhs.utf8Start != rhs.source else { return true }
         let halfhitch = HalfHitch(stringLiteral: lhs)
         return halfhitch.lastHash1 == rhs.lastHash1 &&
                 halfhitch.lastHash2 == rhs.lastHash2 &&
