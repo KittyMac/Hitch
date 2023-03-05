@@ -266,7 +266,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     
     @inlinable @inline(__always)
     public func export() -> (UnsafePointer<UInt8>?, Int) {
-        defer { chitch = chitch_empty() }
+        defer { release() }
         if let raw = chitch.universalData {
             return (raw, count)
         }
@@ -275,7 +275,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
 
     @inlinable @inline(__always)
     public func exportAsData() -> Data {
-        defer { chitch = chitch_empty() }
+        defer { release() }
         if let raw = chitch.universalData {
             return Data(bytes: raw, count: count)
         }
