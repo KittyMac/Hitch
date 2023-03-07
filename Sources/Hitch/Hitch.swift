@@ -264,9 +264,12 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
     
+    /// Give the raw memory for this string back to the caller, then
+    /// forget about it. It becomes the responsibility of the caller
+    /// to release this memory
     @inlinable @inline(__always)
     public func export() -> (UnsafePointer<UInt8>?, Int) {
-        defer { release() }
+        defer { chitch = chitch_empty() }
         if let raw = chitch.universalData {
             return (raw, count)
         }
