@@ -587,6 +587,12 @@ public extension Hitchable {
     }
     
     @inlinable @inline(__always)
+    @discardableResult
+    func toEpoch2() -> Int {
+        return chitch_toepoch2_raw(raw(), count)
+    }
+    
+    @inlinable @inline(__always)
     func components(inTwain separators: [UInt8],
                     minWidth: Int = 2) -> [HalfHitch] {
         // Splits strings into multiple which are separated by at least minWidth separators

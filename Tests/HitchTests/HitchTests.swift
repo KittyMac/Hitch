@@ -38,6 +38,17 @@ final class HitchTests: XCTestCase {
         }
     }
     
+    func testHitchInSet() {
+        var collection = Set<Hitch>()
+        
+        collection.insert("12345")
+        collection.insert("54321")
+        
+        XCTAssertEqual(collection.contains("12345"), true)
+        XCTAssertEqual(collection.contains("54321"), true)
+        XCTAssertEqual(collection.contains("HELLO"), false)
+    }
+    
     func testContentsOfFileError() {
         XCTAssertNil(Hitch(contentsOfFile: "/tmp/doesnotexist1343.html"))
     }
@@ -176,6 +187,7 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(Hitch("4/30/2021 1:19:27 PM").toEpoch(), 1619788767)
         XCTAssertEqual(Hitch("4/30/2021 11:59:59 PM").toEpoch(), 1619827199)
         
+        XCTAssertEqual(Hitch("2023-03-16 20:59:32.808000").toEpoch2(), 1679000372)
     }
     
     func testData() {

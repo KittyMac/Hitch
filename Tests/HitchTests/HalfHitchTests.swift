@@ -130,6 +130,7 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(HalfHitch("4/30/2021 1:19:27 PM").toEpoch(), 1619788767)
         XCTAssertEqual(HalfHitch("4/30/2021 11:59:59 PM").toEpoch(), 1619827199)
         
+        XCTAssertEqual(HalfHitch("2023-03-16 20:59:32.808000").toEpoch2(), 1679000372)
     }
         
     func testExtract() {
