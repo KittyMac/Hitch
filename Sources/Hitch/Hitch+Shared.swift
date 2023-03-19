@@ -531,12 +531,24 @@ public extension Hitchable {
         guard lhsPos <= rhsPos else { return nil }
         return Hitch(chitch: chitch_init_substring_raw(raw(), count, lhsPos, rhsPos))
     }
-
+    
     @inlinable @inline(__always)
     @discardableResult
     func extract(_ lhs: Hitchable, _ rhs: Hitchable) -> Hitch? {
+        return extract(lhs, [rhs])
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    func extract(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
+        return extract(lhs, [rhs])
+    }
+
+    @inlinable @inline(__always)
+    @discardableResult
+    func extract(_ lhs: Hitchable, _ rhs: [Hitchable]) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
+        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else {
             return substring(lhsPos + lhs.count, count)
         }
         return substring(lhsPos + lhs.count, rhsPos)
@@ -544,9 +556,9 @@ public extension Hitchable {
 
     @inlinable @inline(__always)
     @discardableResult
-    func extract(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
+    func extract(_ lhs: HalfHitch, _ rhs: [HalfHitch]) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
+        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else {
             return substring(lhsPos + lhs.count, count)
         }
         return substring(lhsPos + lhs.count, rhsPos)
