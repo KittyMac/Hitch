@@ -1227,3 +1227,181 @@ func chitch_using<T>(_ string: String, _ block: (UnsafePointer<UInt8>, Int) -> T
         return block(raw2, count)
     }
 }
+
+// Given the data in a Hitch, encode it using base32 and characters which
+// are "domain safe" (A-Z,a-z,0-9)
+fileprivate let encodeTable: [UInt8] = [.A, .B, .C, .D, .E, .F, .G, .H, .I, .J, .K, .L, .M, .N, .O, .P, .Q, .R, .S, .T, .U, .V, .W, .X, .Y, .Z, .two, .three, .four, .five, .six, .seven]
+fileprivate let pad: UInt8 = .minus
+
+func chitch_base32_encode(data: Data) -> Hitch? {
+    let original = Hitch(data: data)
+    let result = Hitch(capacity: data.count * 8)
+    
+    guard let src_start = original.raw() else { return nil }
+    let src_end = src_start + original.count
+    
+    var ptr = src_start
+    while ptr <= src_end - 5 {
+        result.append( encodeTable[Int(ptr[0] >> 3)] )
+        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
+        result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
+        result.append( encodeTable[Int((ptr[3] & 0b01111100) >> 2)] )
+        result.append( encodeTable[Int((ptr[3] & 0b00000011) << 3 | ptr[4] >> 5)] )
+        result.append( encodeTable[Int((ptr[4] & 0b00011111))] )
+        ptr += 5
+    }
+    
+    let extra = src_end - ptr
+    
+    switch extra {
+    case 1:
+        result.append( encodeTable[Int(ptr[0] >> 3)] )
+        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+    case 2:
+        result.append( encodeTable[Int(ptr[0] >> 3)] )
+        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4)] )
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+    case 3:
+        result.append( encodeTable[Int(ptr[0] >> 3)] )
+        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
+        result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
+        //result.append(pad)
+        //result.append(pad)
+        //result.append(pad)
+    case 4:
+        result.append( encodeTable[Int(ptr[0] >> 3)] )
+        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
+        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
+        result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
+        result.append( encodeTable[Int((ptr[3] & 0b01111100) >> 2)] )
+        result.append( encodeTable[Int((ptr[3] & 0b00000011) << 3)] )
+        //result.append(pad)
+    default:
+        break
+    }
+    
+    return result
+}
+
+let __: UInt8 = 255
+let decodeTable: [UInt8] = [
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x00 - 0x0F
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x10 - 0x1F
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x20 - 0x2F
+    __,__,26,27, 28,29,30,31, __,__,__,__, __,__,__,__,  // 0x30 - 0x3F
+    __, 0, 1, 2,  3, 4, 5, 6,  7, 8, 9,10, 11,12,13,14,  // 0x40 - 0x4F
+    15,16,17,18, 19,20,21,22, 23,24,25,__, __,__,__,__,  // 0x50 - 0x5F
+    __, 0, 1, 2,  3, 4, 5, 6,  7, 8, 9,10, 11,12,13,14,  // 0x60 - 0x6F
+    15,16,17,18, 19,20,21,22, 23,24,25,__, __,__,__,__,  // 0x70 - 0x7F
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x80 - 0x8F
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x90 - 0x9F
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0xA0 - 0xAF
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0xB0 - 0xBF
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0xC0 - 0xCF
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0xD0 - 0xDF
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0xE0 - 0xEF
+    __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0xF0 - 0xFF
+]
+
+
+func chitch_base32_decode(halfHitch original: HalfHitch) -> Data? {
+    let result = Hitch(capacity: original.count / 8 + 5)
+    
+    guard let src_start = original.raw() else { return nil }
+    let src_end = src_start + original.count
+    
+    // sanity check the string:
+    var ptr = src_start
+        
+    // proceed with the decoding
+    var value0: UInt8 = 0
+    var value1: UInt8 = 0
+    var value2: UInt8 = 0
+    var value3: UInt8 = 0
+    var value4: UInt8 = 0
+    var value5: UInt8 = 0
+    var value6: UInt8 = 0
+    var value7: UInt8 = 0
+    
+    while ptr <= src_end - 8 {
+        guard ptr.pointee >= .A && ptr.pointee <= .Z ||
+                ptr.pointee >= .two && ptr.pointee <= .seven ||
+                ptr.pointee == .minus else {
+            return nil
+        }
+        
+        value0 = decodeTable[Int(ptr[0])]
+        value1 = decodeTable[Int(ptr[1])]
+        value2 = decodeTable[Int(ptr[2])]
+        value3 = decodeTable[Int(ptr[3])]
+        value4 = decodeTable[Int(ptr[4])]
+        value5 = decodeTable[Int(ptr[5])]
+        value6 = decodeTable[Int(ptr[6])]
+        value7 = decodeTable[Int(ptr[7])]
+        
+        result.append( value0 << 3 | value1 >> 2 )
+        result.append( value1 << 6 | value2 << 1 | value3 >> 4 )
+        result.append( value3 << 4 | value4 >> 1 )
+        result.append( value4 << 7 | value5 << 2 | value6 >> 3 )
+        result.append( value6 << 5 | value7 )
+        
+        ptr += 8
+    }
+    
+    let extra = src_end - ptr
+    
+    switch extra {
+    case 2:
+        value0 = decodeTable[Int(ptr[0])]
+        value1 = decodeTable[Int(ptr[1])]
+        result.append( value0 << 3 | value1 >> 2 )
+    case 4:
+        value0 = decodeTable[Int(ptr[0])]
+        value1 = decodeTable[Int(ptr[1])]
+        value2 = decodeTable[Int(ptr[2])]
+        value3 = decodeTable[Int(ptr[3])]
+        result.append( value0 << 3 | value1 >> 2 )
+        result.append( value1 << 6 | value2 << 1 | value3 >> 4 )
+    case 5:
+        value0 = decodeTable[Int(ptr[0])]
+        value1 = decodeTable[Int(ptr[1])]
+        value2 = decodeTable[Int(ptr[2])]
+        value3 = decodeTable[Int(ptr[3])]
+        value4 = decodeTable[Int(ptr[4])]
+        result.append( value0 << 3 | value1 >> 2 )
+        result.append( value1 << 6 | value2 << 1 | value3 >> 4 )
+        result.append( value3 << 4 | value4 >> 1 )
+    case 7:
+        value0 = decodeTable[Int(ptr[0])]
+        value1 = decodeTable[Int(ptr[1])]
+        value2 = decodeTable[Int(ptr[2])]
+        value3 = decodeTable[Int(ptr[3])]
+        value4 = decodeTable[Int(ptr[4])]
+        value5 = decodeTable[Int(ptr[5])]
+        value6 = decodeTable[Int(ptr[6])]
+        result.append( value0 << 3 | value1 >> 2 )
+        result.append( value1 << 6 | value2 << 1 | value3 >> 4 )
+        result.append( value3 << 4 | value4 >> 1 )
+        result.append( value4 << 7 | value5 << 2 | value6 >> 3 )
+    default:
+        break
+    }
+    
+    return result.dataCopy()
+}

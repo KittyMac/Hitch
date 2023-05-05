@@ -28,6 +28,7 @@ public extension Data {
             return hex_md5(raw: bytes, count: count)
         }
     }
+    
 }
 
 // MARK: - Functions
