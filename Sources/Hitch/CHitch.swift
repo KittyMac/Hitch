@@ -1341,6 +1341,7 @@ func chitch_base32_decode(halfHitch original: HalfHitch) -> Data? {
     
     while ptr <= src_end - 8 {
         guard ptr.pointee >= .A && ptr.pointee <= .Z ||
+                ptr.pointee >= .a && ptr.pointee <= .z ||
                 ptr.pointee >= .two && ptr.pointee <= .seven ||
                 ptr.pointee == .minus else {
             return nil
