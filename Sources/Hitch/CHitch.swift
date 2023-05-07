@@ -1446,10 +1446,10 @@ func chitch_extract_block(match prefix: HalfHitch,
                 // continue until ending }, ignoring contents of all strings
                 var bracketCount = 0
                 while ptr < endPtr {
-                    if ptr[0] == .openBrace {
+                    if ptr[0] == .openBracket {
                         bracketCount += 1
                     }
-                    if ptr[0] == .closeBrace {
+                    if ptr[0] == .closeBracket {
                         bracketCount -= 1
                         if (bracketCount <= 0) {
                             ptr += 1
@@ -1474,7 +1474,7 @@ func chitch_extract_block(match prefix: HalfHitch,
                 }
                 
                 // make new substring
-                return source.substring(prefixStartPtr - sourcePtr, ptr - prefixStartPtr)
+                return source.substring(prefixStartPtr - sourcePtr, ptr - sourcePtr)
             }
             
         } else {
