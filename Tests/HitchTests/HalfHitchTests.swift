@@ -7,6 +7,36 @@ struct TestHalfHitchCodable: Codable {
 
 final class HalfHitchTests: XCTestCase {
     
+    func testCodeBlock() {
+        let source: HalfHitch = """
+        let x = 5;
+        let y = 2;
+        
+        function add(x,y) {
+            // this is a "sample {} code block"
+            let f = function() {
+                return undefined;
+            }
+            return x+y;
+        }
+        
+        print("Hello World!");
+        """
+        
+        let result: Hitch = """
+        function add(x,y) {
+            // this is a "sample {} code block"
+            let f = function() {
+                return undefined;
+            }
+            return x+y;
+        }
+        
+        """
+        
+        XCTAssertEqual(source.extractCodeBlock(match: "function add"), result)
+    }
+    
     func testBase32() {
         let tests: [HalfHitch: HalfHitch] = [
             "": "",

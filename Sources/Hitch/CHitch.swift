@@ -1406,3 +1406,81 @@ func chitch_base32_decode(halfHitch original: HalfHitch) -> Data? {
     
     return result.dataCopy()
 }
+
+
+func chitch_extract_block(match prefix: HalfHitch,
+                          source: HalfHitch) -> Hitch? {
+    // Extracts a "code block" from the provided source after matching the
+    // prefix. Think of this as an easy method for returning a function or
+    // dictionary defined in a source file.
+    guard let prefixPtr = prefix.raw() else { return nil }
+    guard let sourcePtr = source.raw() else { return nil }
+
+    let prefixCount = prefix.count
+    let sourceCount = source.count
+    
+    let startPtr = sourcePtr
+    let endPtr = sourcePtr + sourceCount
+    var ptr = startPtr
+    var prefixStartPtr = startPtr
+    
+    // 1. find prefix
+    while ptr < (endPtr - prefixCount) {
+        
+        if ptr[0] == prefixPtr[0] &&
+            ptr[1] == prefixPtr[1] {
+            
+            prefixStartPtr = ptr
+            
+            var isPrefix = true
+            for idx in 0..<prefixCount-1 {
+                if ptr[0] == prefix[idx] {
+                    ptr += 1
+                } else {
+                    isPrefix = false
+                    break
+                }
+            }
+            
+            if isPrefix {
+                // continue until ending }, ignoring contents of all strings
+                var bracketCount = 0
+                while ptr < endPtr {
+                    if ptr[0] == .openBrace {
+                        bracketCount += 1
+                    }
+                    if ptr[0] == .closeBrace {
+                        bracketCount -= 1
+                        if (bracketCount <= 0) {
+                            ptr += 1
+                            break
+                        }
+                    }
+                    if ptr[0] == .doubleQuote ||
+                        ptr[0] == .singleQuote ||
+                        ptr[0] == .backtick {
+                        let endingChar = ptr[0]
+                        
+                        ptr += 1
+                        while ptr < endPtr {
+                            if ptr[0] == endingChar && ptr[-1] != .backSlash {
+                                break
+                            }
+                            ptr += 1
+                        }
+                    }
+                
+                    ptr += 1
+                }
+                
+                // make new substring
+                return source.substring(prefixStartPtr - sourcePtr, ptr - prefixStartPtr)
+            }
+            
+        } else {
+            ptr += 1
+        }
+    }
+    
+    return nil
+}
