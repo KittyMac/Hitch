@@ -1156,7 +1156,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     }
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
-    guard var tm_hour = intFromBinary(data: hourPtr, count: hourCount) else { return 0 }
+    guard let tm_hour = intFromBinary(data: hourPtr, count: hourCount) else { return 0 }
     
     // minute
     minutePtr = ptr
@@ -1213,6 +1213,126 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     return tm_sec + tm_min*60 + tm_hour*3600 + tm_yday*86400 + (tm_year-70)*31536000 + ((tm_year-69)/4)*86400 - ((tm_year-1)/100)*86400 + ((tm_year+299)/400)*86400
 }
 
+@inlinable @inline(__always)
+func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
+                               _ count: Int) -> Int {
+    // Handles just this one date format very efficiently. Timezone is always considered to be UTC
+    // 2023-03-16 20:59:32.808000
+    // 2023-05-10T21:28:17Z
+    guard let raw = raw else { return 0 }
+    guard count > 0 else { return 0 }
+        
+    var monthPtr = raw
+    var monthCount = 0
+    var dayPtr = raw
+    var dayCount = 0
+    var yearPtr = raw
+    var yearCount = 0
+    var hourPtr = raw
+    var hourCount = 0
+    var minutePtr = raw
+    var minuteCount = 0
+    var secondPtr = raw
+    var secondCount = 0
+    var ptr = raw
+    let ptrEnd = raw + count
+    
+    // year
+    yearPtr = ptr
+    while ptr.pointee != .minus && ptr < ptrEnd {
+        ptr += 1
+        yearCount += 1
+    }
+    ptr += 1
+    guard ptr < ptrEnd else { return 0 }
+    guard var tm_year = intFromBinary(data: yearPtr, count: yearCount) else { return 0 }
+    
+    // month
+    monthPtr = ptr
+    while ptr.pointee != .minus && ptr < ptrEnd {
+        ptr += 1
+        monthCount += 1
+    }
+    ptr += 1
+    guard ptr < ptrEnd else { return 0 }
+    guard var tm_month = intFromBinary(data: monthPtr, count: monthCount) else { return 0 }
+    
+    // day
+    dayPtr = ptr
+    while ptr.pointee != .T && ptr < ptrEnd {
+        ptr += 1
+        dayCount += 1
+    }
+    ptr += 1
+    guard ptr < ptrEnd else { return 0 }
+    guard let tm_day = intFromBinary(data: dayPtr, count: dayCount) else { return 0 }
+    
+    
+    
+    // hour
+    hourPtr = ptr
+    while ptr.pointee != .colon && ptr < ptrEnd {
+        ptr += 1
+        hourCount += 1
+    }
+    ptr += 1
+    guard ptr < ptrEnd else { return 0 }
+    guard let tm_hour = intFromBinary(data: hourPtr, count: hourCount) else { return 0 }
+    
+    // minute
+    minutePtr = ptr
+    while ptr.pointee != .colon && ptr < ptrEnd {
+        ptr += 1
+        minuteCount += 1
+    }
+    ptr += 1
+    guard ptr < ptrEnd else { return 0 }
+    guard let tm_min = intFromBinary(data: minutePtr, count: minuteCount) else { return 0 }
+    
+    // second
+    secondPtr = ptr
+    while ptr.pointee != .Z && ptr < ptrEnd {
+        ptr += 1
+        secondCount += 1
+    }
+    ptr += 1
+    guard ptr <= ptrEnd else { return 0 }
+    guard let tm_sec = intFromBinary(data: secondPtr, count: secondCount) else { return 0 }
+            
+    /* tm_sec seconds after the minute [0-60] */
+    /* tm_min minutes after the hour [0-59] */
+    /* tm_hour hours since midnight [0-23] */
+    /* tm_mday day of the month [1-31] */
+    /* tm_mon months since January [0-11] */
+    /* tm_year years since 1900 */
+    /* tm_yday days since January 1 [0-365] */
+    /* tm_isdst Daylight Savings Time flag */
+    /* tm_gmtoff offset from UTC in seconds */
+
+    tm_year -= 1900
+    tm_month -= 1
+    
+    // Source adapted from https://dox.ipxe.org/time_8c.html
+    let days_to_month_start: [Int] = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 ]
+    
+    var is_leap_year = false
+    if tm_year % 4 == 0 {
+        is_leap_year = true
+    }
+    if tm_year % 100 == 0 {
+        is_leap_year = false
+    }
+    if tm_year % 400 == 100 {
+        is_leap_year = true
+    }
+    
+    var tm_yday = (tm_day - 1) + days_to_month_start[ tm_month ]
+    if tm_month >= 2 && is_leap_year {
+        tm_yday += 1
+    }
+        
+    return tm_sec + tm_min*60 + tm_hour*3600 + tm_yday*86400 + (tm_year-70)*31536000 + ((tm_year-69)/4)*86400 - ((tm_year-1)/100)*86400 + ((tm_year+299)/400)*86400
+}
 
 @usableFromInline
 func chitch_using<T>(_ string: String, _ block: (UnsafePointer<UInt8>, Int) -> T) -> T {

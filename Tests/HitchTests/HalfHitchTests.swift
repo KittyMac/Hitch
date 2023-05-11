@@ -31,7 +31,6 @@ final class HalfHitchTests: XCTestCase {
             }
             return x+y;
         }
-        
         """
         
         XCTAssertEqual(source.extractCodeBlock(match: "function add"), result)
@@ -178,6 +177,8 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(HalfHitch("4/30/2021 11:59:59 PM").toEpoch(), 1619827199)
         
         XCTAssertEqual(HalfHitch("2023-03-16 20:59:32.808000").toEpoch2(), 1679000372)
+        
+        XCTAssertEqual(HalfHitch("2023-05-10T21:28:17Z").toEpochISO8601(), 1683754097)
     }
         
     func testExtract() {
