@@ -278,8 +278,12 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
 
     @inlinable @inline(__always)
     public func exportAsData() -> Data {
-        defer { release() }
+        if let raw = chitch.mutableData {
+            defer { chitch = chitch_empty() }
+            return Data(bytesNoCopy: raw, count: count, deallocator: .free)
+        }
         if let raw = chitch.universalData {
+            defer { release() }
             return Data(bytes: raw, count: count)
         }
         return Data()
