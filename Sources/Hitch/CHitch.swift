@@ -1353,6 +1353,33 @@ func chitch_using<T>(_ string: String, _ block: (UnsafePointer<UInt8>, Int) -> T
 fileprivate let encodeTable: [UInt8] = [.A, .B, .C, .D, .E, .F, .G, .H, .I, .J, .K, .L, .M, .N, .O, .P, .Q, .R, .S, .T, .U, .V, .W, .X, .Y, .Z, .two, .three, .four, .five, .six, .seven]
 fileprivate let pad: UInt8 = .minus
 
+// Note: i hate this but without these broken out as then own methods
+// the swift compiler is too slow.
+@inlinable @inline(__always)
+func chitch_base32_tableIdx4(v: UInt8, b: UInt8, c: UInt8, d: UInt8, e: UInt8) -> Int {
+    return Int((v & b) << c | d >> e)
+}
+
+@inlinable @inline(__always)
+func chitch_base32_tableIdx1_right(v: UInt8, b: UInt8, c: UInt8) -> Int {
+    return Int((v & b) >> c)
+}
+
+@inlinable @inline(__always)
+func chitch_base32_tableIdx1_left(v: UInt8, b: UInt8, c: UInt8) -> Int {
+    return Int((v & b) << c)
+}
+
+@inlinable @inline(__always)
+func chitch_base32_tableIdx2(v: UInt8, b: UInt8) -> Int {
+    return Int(v & b)
+}
+
+@inlinable @inline(__always)
+func chitch_base32_tableIdx0(v: UInt8, b: UInt8) -> Int {
+    return Int(v >> b)
+}
+
 func chitch_base32_encode(data: Data) -> Hitch? {
     let original = Hitch(data: data)
     let result = Hitch(capacity: data.count * 8)
@@ -1362,14 +1389,14 @@ func chitch_base32_encode(data: Data) -> Hitch? {
     
     var ptr = src_start
     while ptr <= src_end - 5 {
-        result.append( encodeTable[Int(ptr[0] >> 3)] )
-        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
-        result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
-        result.append( encodeTable[Int((ptr[3] & 0b01111100) >> 2)] )
-        result.append( encodeTable[Int((ptr[3] & 0b00000011) << 3 | ptr[4] >> 5)] )
-        result.append( encodeTable[Int((ptr[4] & 0b00011111))] )
+        result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[1], b: 0b00111110, c: 1)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[1], b: 0b00000001, c: 4, d: ptr[2], e: 4)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[2], b: 0b00001111, c: 1, d: ptr[3], e: 7)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[3], b: 0b01111100, c: 2)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[3], b: 0b00000011, c: 3, d: ptr[4], e: 5)] )
+        result.append( encodeTable[chitch_base32_tableIdx2(v: ptr[4], b: 0b00011111)] )
         ptr += 5
     }
     
@@ -1377,27 +1404,27 @@ func chitch_base32_encode(data: Data) -> Hitch? {
     
     switch extra {
     case 1:
-        result.append( encodeTable[Int(ptr[0] >> 3)] )
-        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
+        result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
     case 2:
-        result.append( encodeTable[Int(ptr[0] >> 3)] )
-        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4)] )
+        result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[1], b: 0b00111110, c: 1)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_left(v: ptr[1], b: 0b00000001, c: 4)] )
     case 3:
-        result.append( encodeTable[Int(ptr[0] >> 3)] )
-        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
-        result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
+        result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[1], b: 0b00111110, c: 1)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[1], b: 0b00000001, c: 4, d: ptr[2], e: 4)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[2], b: 0b00001111, c: 1, d: ptr[3], e: 7)] )
     case 4:
-        result.append( encodeTable[Int(ptr[0] >> 3)] )
-        result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
-        result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
-        result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
-        result.append( encodeTable[Int((ptr[3] & 0b01111100) >> 2)] )
-        result.append( encodeTable[Int((ptr[3] & 0b00000011) << 3)] )
+        result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[1], b: 0b00111110, c: 1)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[1], b: 0b00000001, c: 4, d: ptr[2], e: 4)] )
+        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[2], b: 0b00001111, c: 1, d: ptr[3], e: 7)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[3], b: 0b01111100, c: 2)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_left(v: ptr[3], b: 0b00000011, c: 3)] )
     default:
         break
     }
