@@ -456,7 +456,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard let raw = raw() else { return self }
 
         guard count > 2 else { return self }
-        guard (raw+0).pointee == .equal && (raw+1).pointee == .questionMark else { return self }
+        guard raw[0] == .equal && raw[1] == .questionMark else { return self }
 
         return hitch().emlHeaderUnescape().halfhitch()
     }
@@ -512,7 +512,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         // advance the start past all whitespace
         while ptr < end {
             trimmedStart = ptr
-            if isWhitespace(ptr.pointee) == false {
+            if isWhitespace(ptr[0]) == false {
                 break
             }
             ptr += 1
@@ -521,7 +521,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         // advance the start past all whitespace
         ptr = end - 1
         while ptr >= start {
-            if isWhitespace(ptr.pointee) == false {
+            if isWhitespace(ptr[0]) == false {
                 break
             }
             trimmedEnd = ptr

@@ -26,7 +26,7 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
     
     while ptr < end {
         // skip over utf8 code points
-        let ch = ptr.pointee
+        let ch = ptr[0]
         if ch > 0x7f {
             var value: UInt32 = 0
             if ch & 0b11100000 == 0b11000000 {
@@ -34,8 +34,8 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[1]) & 0b00111111) << 0
                 if let ascii = UInt8(exactly: value),
                    isControlChar(ascii) {
-                    (ptr+0).pointee = .space
-                    (ptr+1).pointee = .space
+                    ptr[0] = .space
+                    ptr[1] = .space
                 }
                 ptr += 1
             } else if ch & 0b11110000 == 0b11100000 {
@@ -44,9 +44,9 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[2]) & 0b00111111) << 0
                 if let ascii = UInt8(exactly: value),
                    isControlChar(ascii) {
-                    (ptr+0).pointee = .space
-                    (ptr+1).pointee = .space
-                    (ptr+2).pointee = .space
+                    ptr[0] = .space
+                    ptr[1] = .space
+                    ptr[2] = .space
                 }
                 ptr += 2
             } else if ch & 0b11111000 == 0b11110000 {
@@ -56,17 +56,17 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                 value |= (UInt32(ptr[3]) & 0b00111111) << 0
                 if let ascii = UInt8(exactly: value),
                    isControlChar(ascii) {
-                    (ptr+0).pointee = .space
-                    (ptr+1).pointee = .space
-                    (ptr+2).pointee = .space
-                    (ptr+3).pointee = .space
+                    ptr[0] = .space
+                    ptr[1] = .space
+                    ptr[2] = .space
+                    ptr[3] = .space
                 }
                 ptr += 3
             }
         } else {
             // control character which is not part of a utf8 code point; fix it.
-            if isControlChar(ptr.pointee) {
-                ptr.pointee = .space
+            if isControlChar(ptr[0]) {
+                ptr[0] = .space
             }
         }
         
@@ -133,7 +133,7 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
     public mutating func next() -> UInt8? {
         if ptr >= end { return nil }
         ptr += 1
-        return ptr.pointee
+        return ptr[0]
     }
 }
 
@@ -397,7 +397,7 @@ public extension Hitchable {
         guard var ptr = raw() else { return false }
         let end = ptr + count
         while ptr < end {
-            let char = ptr.pointee
+            let char = ptr[0]
             if unicode && char > 0x7f {
                 return true
             } else if singleQuotes && char == .singleQuote {
@@ -629,7 +629,7 @@ public extension Hitchable {
         while ptr < end {
             
             separatorStartPtr = ptr
-            while separators.contains(ptr.pointee) {
+            while separators.contains(ptr[0]) {
                 // advance to see if this is a breaking point
                 ptr += 1
             }
@@ -881,14 +881,14 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
     let end = data + count
 
     let append: (UInt8, Int) -> Void = { v, advance in
-        write.pointee = v
+        write[0] = v
         write += 1
         read += advance
     }
 
     while read < end {
 
-        if read.pointee == .backSlash {
+        if read[0] == .backSlash {
             switch read[1] {
             case .backSlash: append(.backSlash, 2); continue
             case .forwardSlash: append(.forwardSlash, 2); continue
@@ -903,7 +903,7 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
                 let convert: (() -> Bool) -> Void = { endCondition in
                     var value: UInt32 = 0
                     while read < end && endCondition() == false {
-                        guard let byte = hex(read.pointee) else { break }
+                        guard let byte = hex(read[0]) else { break }
                         value &*= 16
                         value &+= byte
                         read += 1
@@ -919,9 +919,9 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
                     // like: \u{1D11E}
                     read += 3
                     convert {
-                        return read.pointee == .closeBracket
+                        return read[0] == .closeBracket
                     }
-                    if read.pointee == .closeBracket {
+                    if read[0] == .closeBracket {
                         read += 1
                     }
                 } else {
@@ -938,10 +938,10 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
             }
         }
 
-        append(read.pointee, 1)
+        append(read[0], 1)
     }
 
-    write.pointee = 0
+    write[0] = 0
     return (write - data)
 }
 
@@ -956,7 +956,7 @@ func escapeBinary(unicode data: UnsafePointer<UInt8>,
     let end = data + count
 
     while read < end {
-        let ch = read.pointee
+        let ch = read[0]
 
         if unicode && ch > 0x7f {
             writer.append(.backSlash)
@@ -1046,14 +1046,14 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
     let end = data + count
 
     let append: (UInt8, Int) -> Void = { v, advance in
-        write.pointee = v
+        write[0] = v
         write += 1
         read += advance
     }
 
     while read < end {
         // &amp;&lt;&gt;&quot;&apos;&#038;
-        if read.pointee == .ampersand && read < end - 2 {
+        if read[0] == .ampersand && read < end - 2 {
             let endCount = end - read
             
             let char1 = read[1]
@@ -1062,14 +1062,14 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                 var tmpRead = read + 2
                 var value: UInt32 = 0
                 while tmpRead < end &&
-                        tmpRead.pointee >= .zero &&
-                        tmpRead.pointee <= .nine &&
+                        tmpRead[0] >= .zero &&
+                        tmpRead[0] <= .nine &&
                         tmpRead - read < 10 {
                     value &*= 10
-                    value &+= UInt32(tmpRead.pointee - .zero)
+                    value &+= UInt32(tmpRead[0] - .zero)
                     tmpRead += 1
                 }
-                if tmpRead.pointee == .semiColon {
+                if tmpRead[0] == .semiColon {
                     if let scalar = UnicodeScalar(value) {
                         for v in Character(scalar).utf8 {
                             append(v, 0)
@@ -1191,13 +1191,13 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
             }
         }
 
-        append(read.pointee, 1)
+        append(read[0], 1)
     }
     
     replaceDanglingControlChars(start: data,
                                 end: write)
 
-    write.pointee = 0
+    write[0] = 0
     return (write - data)
 }
 
@@ -1215,13 +1215,13 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
             return
         }
         
-        write.pointee = v
+        write[0] = v
         write += 1
         read += advance
     }
 
     while read < end {
-        if read.pointee == .equal && read < end-2 {
+        if read[0] == .equal && read < end-2 {
             
             // =\r\n where it is not =\r\n\r\n should be skipped
             if read[1] == .carriageReturn &&
@@ -1241,7 +1241,7 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
             } else if char1 >= .A && char1 <= .F {
                 value1 += (char1 - .A) + 10
             } else {
-                append(read.pointee, 1)
+                append(read[0], 1)
                 continue
             }
             
@@ -1251,7 +1251,7 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
             } else if char2 >= .A && char2 <= .F {
                 value2 += (char2 - .A) + 10
             } else {
-                append(read.pointee, 1)
+                append(read[0], 1)
                 continue
             }
             
@@ -1260,13 +1260,13 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
             continue
         }
 
-        append(read.pointee, 1)
+        append(read[0], 1)
     }
     
     replaceDanglingControlChars(start: data,
                                 end: write)
     
-    write.pointee = 0
+    write[0] = 0
     return (write - data)
 }
 
@@ -1286,20 +1286,20 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
             return
         }
         
-        write.pointee = v
+        write[0] = v
         write += 1
         read += advance
     }
         
     while read < end {
-        if read.pointee == .equal &&
-            (read+1).pointee == .questionMark {
+        if read[0] == .equal &&
+            read[1] == .questionMark {
             // we found the beginning mark
             read += 2
             
             // Gather the format (ie UTF-8, ISO-8859-1, ISO-8859-2...)
             while read < end-1 {
-                if read.pointee == .questionMark {
+                if read[0] == .questionMark {
                     read += 1
                     break
                 }
@@ -1307,8 +1307,8 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
             }
             
             // Gather the encoding type (base64 or quoted-printable)
-            let typeOfEncoding: UInt8 = read.pointee
-            guard (read+1).pointee == .questionMark else { break }
+            let typeOfEncoding: UInt8 = read[0]
+            guard read[1] == .questionMark else { break }
             guard typeOfEncoding == .B || typeOfEncoding == .b || typeOfEncoding == .Q || typeOfEncoding == .q else { break }
             read += 2
             
@@ -1316,8 +1316,8 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
             let contentStart = read
             var contentEnd = read
             while read < end-1 {
-                if read.pointee == .questionMark &&
-                    (read+1).pointee == .equal {
+                if read[0] == .questionMark &&
+                    read[1] == .equal {
                     contentEnd = read
                     read += 2
                     break
@@ -1341,15 +1341,15 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
             }
             
             for c in contentHitch {
-                write.pointee = c
+                write[0] = c
                 write += 1
             }
         } else {
-            append(read.pointee, 1)
+            append(read[0], 1)
         }
     }
     
-    write.pointee = 0
+    write[0] = 0
     return (write - data)
 }
 
@@ -1362,14 +1362,14 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
     let end = data + count
 
     let append: (UInt8, Int) -> Void = { v, advance in
-        write.pointee = v
+        write[0] = v
         write += 1
         read += advance
     }
 
     while read < end {
 
-        if read.pointee == .percentSign && read < end-2 {
+        if read[0] == .percentSign && read < end-2 {
             
             let char1 = read[1]
             let char2 = read[2]
@@ -1382,7 +1382,7 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             } else if char1 >= .A && char1 <= .F {
                 value1 += (char1 - .A) + 10
             } else {
-                append(read.pointee, 1)
+                append(read[0], 1)
                 continue
             }
             
@@ -1394,7 +1394,7 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             } else if char2 >= .A && char2 <= .F {
                 value2 += (char2 - .A) + 10
             } else {
-                append(read.pointee, 1)
+                append(read[0], 1)
                 continue
             }
             
@@ -1404,10 +1404,10 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             }
         }
 
-        append(read.pointee, 1)
+        append(read[0], 1)
     }
 
-    write.pointee = 0
+    write[0] = 0
     return (write - data)
 }
 

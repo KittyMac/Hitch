@@ -196,7 +196,7 @@ extension Hitch {
             var questionMarkValueIdx = -1
 
             while currentFormatPtr < endFormatPtr {
-                let formatChar = currentFormatPtr.pointee
+                let formatChar = currentFormatPtr[0]
 
                 // if formatChar == .backSlash {
                 //    currentFormatPtr += 2
@@ -218,7 +218,7 @@ extension Hitch {
                     var currentBracketPtr = currentFormatPtr + 1
 
                     while currentBracketPtr < endFormatPtr {
-                        let bracketChar = currentBracketPtr.pointee
+                        let bracketChar = currentBracketPtr[0]
 
                         if bracketChar == .space || bracketChar == .tab || bracketChar == .newLine || bracketChar == .carriageReturn {
                             isUnbounded = false

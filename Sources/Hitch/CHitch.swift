@@ -16,7 +16,7 @@ struct Needle: Equatable {
         self.hitch = hitch
         self.bytes = bytes
         self.count = hitch.count
-        self.startingByte = bytes.pointee
+        self.startingByte = bytes[0]
     }
 }
 
@@ -278,8 +278,8 @@ func chitch_tolower_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int) {
     let end = lhs + lhs_count
     var c: UInt8 = 0
     while ptr < end {
-        c = ptr.pointee
-        ptr.pointee = toLower(c)
+        c = ptr[0]
+        ptr[0] = toLower(c)
         ptr += 1
     }
 }
@@ -293,8 +293,8 @@ func chitch_toupper_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int) {
     let end = lhs + lhs_count
     var c: UInt8 = 0
     while ptr < end {
-        c = ptr.pointee
-        ptr.pointee = toUpper(c)
+        c = ptr[0]
+        ptr[0] = toUpper(c)
         ptr += 1
     }
 }
@@ -306,16 +306,16 @@ func chitch_trim(_ c0: inout CHitch) {
     var start = c0_data
     var end = c0_data + c0.count - 1
 
-    var c = start.pointee
+    var c = start[0]
     while start < end && isWhitespace(c) {
         start += 1
-        c = start.pointee
+        c = start[0]
     }
 
-    c = end.pointee
+    c = end[0]
     while end > start && isWhitespace(c) {
         end -= 1
-        c = end.pointee
+        c = end[0]
     }
 
     c0.count = end - start + 1
@@ -372,7 +372,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 
         while old_ptr_a >= start {
             // is this the thing we need to replace?
-            if (old_ptr_a.pointee == find_start_lower || old_ptr_a.pointee == find_start_upper) &&
+            if (old_ptr_a[0] == find_start_lower || old_ptr_a[0] == find_start_upper) &&
                 old_ptr_a + find_count <= old_end &&
                 memcasecmp(old_ptr_a, find_data, find_count, ignoreCase) == 0 {
 
@@ -416,7 +416,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 
         while old_ptr <= old_end {
             // is this the thing we need to replace?
-            if (old_ptr.pointee == find_start_lower || old_ptr.pointee == find_start_upper) &&
+            if (old_ptr[0] == find_start_lower || old_ptr[0] == find_start_upper) &&
                 old_ptr + find_count <= old_end &&
                     memcasecmp(old_ptr, find_data, find_count, ignoreCase) == 0 {
                 old_ptr += find_count
@@ -426,7 +426,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
                 }
                 new_ptr += replace_count
             } else {
-                new_ptr.pointee = old_ptr.pointee
+                new_ptr[0] = old_ptr[0]
                 new_ptr += 1
                 old_ptr += 1
             }
@@ -524,7 +524,7 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
                 }
                 new_ptr += replace_count
             } else {
-                new_ptr.pointee = old_ptr.pointee
+                new_ptr[0] = old_ptr[0]
                 new_ptr += 1
                 old_ptr += 1
             }
@@ -574,13 +574,13 @@ func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafePointer<UInt8>?
     var ptr = c0_data + c0.count
     let end = rhs + rhs_count
 
-    ptr.pointee = rhs.pointee
+    ptr[0] = rhs[0]
     ptr += 1
     rhs += 1
 
     while rhs < end {
-        if rhs.pointee == .dot && isDigit(rhs[-1]) && isDigit(rhs[1]) {
-            ptr.pointee = rhs.pointee
+        if rhs[0] == .dot && isDigit(rhs[-1]) && isDigit(rhs[1]) {
+            ptr[0] = rhs[0]
             ptr += 1; rhs += 1
 
             // copy over the precisions
@@ -588,21 +588,21 @@ func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafePointer<UInt8>?
             while rhs < end && precisionCount > 0 {
                 precisionCount -= 1
 
-                if isDigit(rhs.pointee) == false {
+                if isDigit(rhs[0]) == false {
                     break
                 }
 
-                ptr.pointee = rhs.pointee
+                ptr[0] = rhs[0]
                 ptr += 1; rhs += 1
             }
 
             // skip any more digits
-            while precisionCount == 0 && rhs < end && isDigit(rhs.pointee) {
+            while precisionCount == 0 && rhs < end && isDigit(rhs[0]) {
                 rhs += 1
             }
 
         } else {
-            ptr.pointee = rhs.pointee
+            ptr[0] = rhs[0]
             ptr += 1; rhs += 1
         }
     }
@@ -630,7 +630,7 @@ func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafePoin
     var ptr = c0_data + c0.count
     let start = c0_data + position
     while ptr >= start {
-        ptr[rhs_count] = ptr.pointee
+        ptr[rhs_count] = ptr[0]
         ptr -= 1
     }
 
@@ -639,7 +639,7 @@ func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafePoin
     var dst_ptr = c0_data + position
     let end = dst_ptr + rhs_count
     while dst_ptr < end {
-        dst_ptr.pointee = src_ptr.pointee
+        dst_ptr[0] = src_ptr[0]
         dst_ptr += 1
         src_ptr += 1
     }
@@ -686,7 +686,7 @@ func chitch_insert_int(_ c0: inout CHitch, _ position: Int, _ rhs_in: Int) {
         var rhs = rhs_in
 
         if rhs >= 0 && rhs <= 9 {
-            ptr.pointee = .zero + UInt8(rhs)
+            ptr[0] = .zero + UInt8(rhs)
             ptr -= 1
             len = 1
         } else {
@@ -696,13 +696,13 @@ func chitch_insert_int(_ c0: inout CHitch, _ position: Int, _ rhs_in: Int) {
             }
 
             while ptr > raw && rhs > 0 {
-                ptr.pointee = .zero + UInt8(rhs % 10)
+                ptr[0] = .zero + UInt8(rhs % 10)
                 ptr -= 1
                 rhs /= 10
             }
 
             if neg {
-                ptr.pointee = .minus
+                ptr[0] = .minus
                 ptr -= 1
             }
 
@@ -725,7 +725,7 @@ func chitch_hash_raw(_ lhs: UnsafePointer<UInt8>?,
     var hash: Int = 0
     var idx: Int = 0
     while lhsPtr < lhsEnd {
-        let char = Int(lhsPtr.pointee)
+        let char = Int(lhsPtr[0])
         hash = (hash &+ char &* idx) &* (hash &+ char &* idx)
         idx += 1
         lhsPtr += 1
@@ -744,7 +744,7 @@ func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
     var hash3: Int = 0
     var idx: Int = 2
     while lhsPtr < lhsEnd {
-        let char = Int(lhsPtr.pointee)
+        let char = Int(lhsPtr[0])
         hash1 = (hash1 &+ char &* idx) &* (hash1 &+ char &* idx)
         hash2 = hash2 &+ (char &* idx) &* (char &* idx) &* (hash2 &+ char &* idx)
         hash3 = (hash3 &- char &* idx) &* (hash3 &+ char &* idx &+ char &+ idx) &+ char &* idx
@@ -776,8 +776,8 @@ func chitch_cmp_raw(_ lhs: UnsafePointer<UInt8>?,
     var lhsPtr = lhs
     var rhsPtr = rhs
     while lhsPtr < lhsEnd {
-        if lhsPtr.pointee != rhsPtr.pointee {
-            return Int(lhsPtr.pointee) - Int(rhsPtr.pointee)
+        if lhsPtr[0] != rhsPtr[0] {
+            return Int(lhsPtr[0]) - Int(rhsPtr[0])
         }
         lhsPtr += 1
         rhsPtr += 1
@@ -858,9 +858,9 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     let haystack_end = haystack + haystack_count - needle_count
     
     let needle_count_minus_one = needle_count - 1
-    let needle_start_pointee = needle.pointee
+    let needle_start_pointee = needle[0]
     let needle_end = needle + needle_count_minus_one
-    let needle_end_pointee = needle_end.pointee
+    let needle_end_pointee = needle_end[0]
 
     var ptr = haystack
     var ptr2 = haystack + needle_count_minus_one
@@ -868,7 +868,7 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     
     if needle_count == 1 {
         while ptr <= haystack_end {
-            if ptr.pointee == needle_start_pointee {
+            if ptr[0] == needle_start_pointee {
                 return (ptr - haystack)
             }
             ptr += 1
@@ -878,12 +878,12 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     
     var found = true
     while ptr <= haystack_end {
-        if ptr.pointee == needle_start_pointee && ptr2.pointee == needle_end_pointee {
+        if ptr[0] == needle_start_pointee && ptr2[0] == needle_end_pointee {
             ptr2 = ptr + 1
             needle2 = needle + 1
             found = true
             while needle2 < needle_end {
-                if ptr2.pointee != needle2.pointee {
+                if ptr2[0] != needle2[0] {
                     found = false
                     break
                 }
@@ -922,7 +922,7 @@ func chitch_lastof_raw(_ haystack: UnsafePointer<UInt8>?,
     var found = true
 
     while ptr >= start {
-        if ptr.pointee == needle_start {
+        if ptr[0] == needle_start {
             switch needle_count {
             case 1: return (ptr - haystack)
             case 2: if ptr[1] == needle[1] { return (ptr - haystack) }; break
@@ -992,7 +992,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // month
     monthPtr = ptr
-    while ptr.pointee != .forwardSlash && ptr < ptrEnd {
+    while ptr[0] != .forwardSlash && ptr < ptrEnd {
         ptr += 1
         monthCount += 1
     }
@@ -1002,7 +1002,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // day
     dayPtr = ptr
-    while ptr.pointee != .forwardSlash && ptr < ptrEnd {
+    while ptr[0] != .forwardSlash && ptr < ptrEnd {
         ptr += 1
         dayCount += 1
     }
@@ -1012,7 +1012,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // year
     yearPtr = ptr
-    while ptr.pointee != .space && ptr < ptrEnd {
+    while ptr[0] != .space && ptr < ptrEnd {
         ptr += 1
         yearCount += 1
     }
@@ -1022,7 +1022,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // hour
     hourPtr = ptr
-    while ptr.pointee != .colon && ptr < ptrEnd {
+    while ptr[0] != .colon && ptr < ptrEnd {
         ptr += 1
         hourCount += 1
     }
@@ -1032,7 +1032,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // minute
     minutePtr = ptr
-    while ptr.pointee != .colon && ptr < ptrEnd {
+    while ptr[0] != .colon && ptr < ptrEnd {
         ptr += 1
         minuteCount += 1
     }
@@ -1042,7 +1042,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr.pointee != .space && ptr < ptrEnd {
+    while ptr[0] != .space && ptr < ptrEnd {
         ptr += 1
         secondCount += 1
     }
@@ -1050,7 +1050,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     guard ptr < ptrEnd else { return 0 }
     guard let tm_sec = intFromBinary(data: secondPtr, count: secondCount) else { return 0 }
     
-    if ptr.pointee == .p || ptr.pointee == .P {
+    if ptr[0] == .p || ptr[0] == .P {
         if tm_hour != 12 {
             tm_hour += 12
         }
@@ -1118,7 +1118,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // year
     yearPtr = ptr
-    while ptr.pointee != .minus && ptr < ptrEnd {
+    while ptr[0] != .minus && ptr < ptrEnd {
         ptr += 1
         yearCount += 1
     }
@@ -1128,7 +1128,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // month
     monthPtr = ptr
-    while ptr.pointee != .minus && ptr < ptrEnd {
+    while ptr[0] != .minus && ptr < ptrEnd {
         ptr += 1
         monthCount += 1
     }
@@ -1138,7 +1138,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // day
     dayPtr = ptr
-    while ptr.pointee != .space && ptr < ptrEnd {
+    while ptr[0] != .space && ptr < ptrEnd {
         ptr += 1
         dayCount += 1
     }
@@ -1150,7 +1150,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // hour
     hourPtr = ptr
-    while ptr.pointee != .colon && ptr < ptrEnd {
+    while ptr[0] != .colon && ptr < ptrEnd {
         ptr += 1
         hourCount += 1
     }
@@ -1160,7 +1160,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // minute
     minutePtr = ptr
-    while ptr.pointee != .colon && ptr < ptrEnd {
+    while ptr[0] != .colon && ptr < ptrEnd {
         ptr += 1
         minuteCount += 1
     }
@@ -1170,7 +1170,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr.pointee != .dot && ptr < ptrEnd {
+    while ptr[0] != .dot && ptr < ptrEnd {
         ptr += 1
         secondCount += 1
     }
@@ -1239,7 +1239,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // year
     yearPtr = ptr
-    while ptr.pointee != .minus && ptr < ptrEnd {
+    while ptr[0] != .minus && ptr < ptrEnd {
         ptr += 1
         yearCount += 1
     }
@@ -1249,7 +1249,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // month
     monthPtr = ptr
-    while ptr.pointee != .minus && ptr < ptrEnd {
+    while ptr[0] != .minus && ptr < ptrEnd {
         ptr += 1
         monthCount += 1
     }
@@ -1259,7 +1259,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // day
     dayPtr = ptr
-    while ptr.pointee != .T && ptr < ptrEnd {
+    while ptr[0] != .T && ptr < ptrEnd {
         ptr += 1
         dayCount += 1
     }
@@ -1271,7 +1271,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // hour
     hourPtr = ptr
-    while ptr.pointee != .colon && ptr < ptrEnd {
+    while ptr[0] != .colon && ptr < ptrEnd {
         ptr += 1
         hourCount += 1
     }
@@ -1281,7 +1281,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // minute
     minutePtr = ptr
-    while ptr.pointee != .colon && ptr < ptrEnd {
+    while ptr[0] != .colon && ptr < ptrEnd {
         ptr += 1
         minuteCount += 1
     }
@@ -1291,7 +1291,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr.pointee != .Z && ptr < ptrEnd {
+    while ptr[0] != .Z && ptr < ptrEnd {
         ptr += 1
         secondCount += 1
     }
@@ -1338,7 +1338,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
 func chitch_using<T>(_ string: String, _ block: (UnsafePointer<UInt8>, Int) -> T) -> T {
     return string.withCString { bytes in
         var ptr = bytes
-        while ptr.pointee != 0 {
+        while ptr[0] != 0 {
             ptr += 1
         }
         let raw = UnsafeMutableRawPointer(mutating: bytes)
@@ -1473,10 +1473,10 @@ func chitch_base32_decode(halfHitch original: HalfHitch) -> Data? {
     var value7: UInt8 = 0
     
     while ptr <= src_end - 8 {
-        guard ptr.pointee >= .A && ptr.pointee <= .Z ||
-                ptr.pointee >= .a && ptr.pointee <= .z ||
-                ptr.pointee >= .two && ptr.pointee <= .seven ||
-                ptr.pointee == .minus else {
+        guard ptr[0] >= .A && ptr[0] <= .Z ||
+                ptr[0] >= .a && ptr[0] <= .z ||
+                ptr[0] >= .two && ptr[0] <= .seven ||
+                ptr[0] == .minus else {
             return nil
         }
         

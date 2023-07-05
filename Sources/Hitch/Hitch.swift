@@ -544,8 +544,8 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
             var length = string.count
             if let precision = precision {
                 var ptr = string_raw
-                while ptr.pointee != 0 {
-                    let c = UInt8(ptr.pointee)
+                while ptr[0] != 0 {
+                    let c = UInt8(ptr[0])
                     if c == .dot {
                         length = Swift.min(length, ptr - string_raw + precision + 1)
                         break
@@ -716,7 +716,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         guard let raw = raw() else { return self }
 
         guard count > 2 else { return self }
-        guard (raw+0).pointee == .equal && (raw+1).pointee == .questionMark else { return self }
+        guard raw[0] == .equal && raw[1] == .questionMark else { return self }
 
         return Hitch(hitch: self).emlHeaderUnescape()
     }
