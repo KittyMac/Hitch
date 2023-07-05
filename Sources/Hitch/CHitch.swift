@@ -1379,30 +1379,17 @@ func chitch_base32_encode(data: Data) -> Hitch? {
     case 1:
         result.append( encodeTable[Int(ptr[0] >> 3)] )
         result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
     case 2:
         result.append( encodeTable[Int(ptr[0] >> 3)] )
         result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
         result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
         result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4)] )
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
     case 3:
         result.append( encodeTable[Int(ptr[0] >> 3)] )
         result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
         result.append( encodeTable[Int((ptr[1] & 0b00111110) >> 1)] )
         result.append( encodeTable[Int((ptr[1] & 0b00000001) << 4 | ptr[2] >> 4)] )
         result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
-        //result.append(pad)
-        //result.append(pad)
-        //result.append(pad)
     case 4:
         result.append( encodeTable[Int(ptr[0] >> 3)] )
         result.append( encodeTable[Int((ptr[0] & 0b00000111) << 2 | ptr[1] >> 6)] )
@@ -1411,7 +1398,6 @@ func chitch_base32_encode(data: Data) -> Hitch? {
         result.append( encodeTable[Int((ptr[2] & 0b00001111) << 1 | ptr[3] >> 7)] )
         result.append( encodeTable[Int((ptr[3] & 0b01111100) >> 2)] )
         result.append( encodeTable[Int((ptr[3] & 0b00000011) << 3)] )
-        //result.append(pad)
     default:
         break
     }
