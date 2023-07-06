@@ -33,13 +33,13 @@ public extension Data {
 
 // MARK: - Functions
 
-@inlinable @inline(__always)
+ @inlinable
 func hex_md5(raw: UnsafePointer<UInt8>, count: Int) -> Hitch? {
     let bufferPtr = UnsafeBufferPointer(start: raw, count: count)
     return rstr2hex(rstr_md5(bufferPtr))
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func rstr2tr(_ input: UnsafeBufferPointer<UInt8>) -> String {
     var output: String = ""
     
@@ -53,7 +53,7 @@ func rstr2tr(_ input: UnsafeBufferPointer<UInt8>) -> String {
 /*
  * Convert a raw string to a hex string
  */
-@inlinable @inline(__always)
+ @inlinable
 func rstr2hex(_ input: Hitch) -> Hitch {
     let hexTab: [UInt8] = [.zero, .one, .two, .three, .four, .five, .six, .seven, .eight, .nine, .A, .B, .C, .D, .E, .F]
     let output = Hitch()
@@ -74,7 +74,7 @@ func rstr2hex(_ input: Hitch) -> Hitch {
  * Convert a raw string to an array of little-endian words
  * Characters >255 have their high-byte silently ignored.
  */
-@inlinable @inline(__always)
+ @inlinable
 func rstr2binl(_ input: UnsafeBufferPointer<UInt8>) -> [Int32] {
     var output: [Int: Int32] = [:]
     
@@ -90,7 +90,7 @@ func rstr2binl(_ input: UnsafeBufferPointer<UInt8>) -> [Int32] {
 /*
  * Convert an array of little-endian words to a string
  */
-@inlinable @inline(__always)
+ @inlinable
 func binl2rstr(_ input: [Int32]) -> Hitch {
     let output = Hitch(capacity: input.count * 32 / 8)
     
@@ -106,7 +106,7 @@ func binl2rstr(_ input: [Int32]) -> Hitch {
 /*
  * Calculate the MD5 of a raw string
  */
-@inlinable @inline(__always)
+ @inlinable
 func rstr_md5(_ input: UnsafeBufferPointer<UInt8>) -> Hitch {
     return binl2rstr(binl_md5(rstr2binl(input), input.count * 8))
 }
@@ -114,7 +114,7 @@ func rstr_md5(_ input: UnsafeBufferPointer<UInt8>) -> Hitch {
 /*
  * Add integers, wrapping at 2^32.
  */
-@inlinable @inline(__always)
+ @inlinable
 func safe_add(_ x: Int32, _ y: Int32) -> Int32 {
     return x &+ y
 }
@@ -122,7 +122,7 @@ func safe_add(_ x: Int32, _ y: Int32) -> Int32 {
 /*
  * Bitwise rotate a 32-bit number to the left.
  */
-@inlinable @inline(__always)
+ @inlinable
 func bit_rol(_ num: Int32, _ cnt: Int32) -> Int32 {
     // num >>>
     return (num << cnt) | zeroFillRightShift(num, (32 - cnt))
@@ -132,27 +132,27 @@ func bit_rol(_ num: Int32, _ cnt: Int32) -> Int32 {
 /*
  * These funcs implement the four basic operations the algorithm uses.
  */
-@inlinable @inline(__always)
+ @inlinable
 func md5_cmn(_ q: Int32, _ a: Int32, _ b: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
     return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s), b)
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func md5_ff(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
     return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t)
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func md5_gg(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
     return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t)
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func md5_hh(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
     return md5_cmn(b ^ c ^ d, a, b, x, s, t)
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func md5_ii(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
     return md5_cmn(c ^ (b | (~d)), a, b, x, s, t)
 }
@@ -161,7 +161,7 @@ func md5_ii(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int
 /*
  * Calculate the MD5 of an array of little-endian words, and a bit length.
  */
-@inlinable @inline(__always)
+ @inlinable
 func binl_md5(_ input: [Int32], _ len: Int) -> [Int32] {
     /* append padding */
     
@@ -266,12 +266,12 @@ func binl_md5(_ input: [Int32], _ len: Int) -> [Int32] {
 }
 
 // MARK: - Helper
-@inlinable @inline(__always)
+ @inlinable
 func length(_ dictionary: [Int: Int32]) -> Int {
     return (dictionary.keys.max() ?? 0) + 1
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func dictionary2array(_ dictionary: [Int: Int32]) -> [Int32] {
     var array = Array<Int32>(repeating: 0, count: dictionary.keys.count)
     
@@ -282,7 +282,7 @@ func dictionary2array(_ dictionary: [Int: Int32]) -> [Int32] {
     return array
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func unwrap(_ value: Int32?, _ fallback: Int32 = 0) -> Int32 {
     if let value = value {
         return value
@@ -291,7 +291,7 @@ func unwrap(_ value: Int32?, _ fallback: Int32 = 0) -> Int32 {
     return fallback
 }
 
-@inlinable @inline(__always)
+ @inlinable
 func zeroFillRightShift(_ num: Int32, _ count: Int32) -> Int32 {
     let value = UInt32(bitPattern: num) >> UInt32(bitPattern: count)
     return Int32(bitPattern: value)
