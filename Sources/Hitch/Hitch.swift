@@ -317,6 +317,10 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
                 components.append(
                     HalfHitch(sourceObject: self, raw: raw, count: rawCount, from: currentIdx, to: nextIdx)
                 )
+            } else {
+                components.append(
+                    ""
+                )
             }
             currentIdx = nextIdx + separatorCount
         }
@@ -324,6 +328,10 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         if currentIdx != rawCount {
             components.append(
                 HalfHitch(sourceObject: self, raw: raw, count: rawCount, from: currentIdx, to: rawCount)
+            )
+        } else {
+            components.append(
+                ""
             )
         }
 

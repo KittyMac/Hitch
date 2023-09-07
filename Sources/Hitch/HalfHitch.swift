@@ -481,6 +481,10 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                 components.append(
                     HalfHitch(sourceObject: sourceObject, raw: raw, count: rawCount, from: currentIdx, to: nextIdx)
                 )
+            } else {
+                components.append(
+                    ""
+                )
             }
             currentIdx = nextIdx + separatorCount
         }
@@ -488,6 +492,10 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         if currentIdx != rawCount {
             components.append(
                 HalfHitch(sourceObject: sourceObject, raw: raw, count: rawCount, from: currentIdx, to: rawCount)
+            )
+        } else {
+            components.append(
+                ""
             )
         }
 

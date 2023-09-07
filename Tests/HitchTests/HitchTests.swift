@@ -601,10 +601,14 @@ final class HitchTests: XCTestCase {
     private func splitTest(_ separator: HalfHitch, _ hitch: Hitch, _ result: [Hitch]) {
         let hhresult = result.map { $0.halfhitch() }
         let stringJoinedResult = result.map { $0.description }.joined(separator: "!")
-        
-        let parts: [HalfHitch] = hitch.components(separatedBy: separator)
-        XCTAssertEqual(parts, hhresult)
+                
+        let parts: [String] = hitch.description.components(separatedBy: separator.description)
+        XCTAssertEqual(parts, hhresult.map { $0.toString() })
         XCTAssertEqual(parts.map { $0.description }.joined(separator: "!").description, stringJoinedResult)
+        
+        let parts1: [HalfHitch] = hitch.components(separatedBy: separator)
+        XCTAssertEqual(parts1, hhresult)
+        XCTAssertEqual(parts1.map { $0.description }.joined(separator: "!").description, stringJoinedResult)
         
         let parts2: [HalfHitch] = hitch.halfhitch().components(separatedBy: separator)
         XCTAssertEqual(parts2, hhresult)
@@ -618,8 +622,9 @@ final class HitchTests: XCTestCase {
     func testSplit0() {
         splitTest("\n", "hello world", ["hello world"])
         splitTest(",", "1,2,3,4,5,6,7,8,9,10,11,12,13,14", ["1","2","3","4","5","6","7","8","9","10","11","12","13","14"])
-        splitTest(" ", "   hello       world   again   ", ["hello","world","again"])
+        splitTest(" ", "   hello       world   again   ", ["", "", "", "hello", "", "", "", "", "", "", "world", "", "", "again", "", "", ""])
         splitTest("<->", "   hello<->world<->again   ", ["   hello","world","again   "])
+        splitTest(",", "-111.6721066,35.2336899,3111,W SHANNON DR,,,,,86001,,a7d9e14ded9387d9", ["-111.6721066","35.2336899","3111","W SHANNON DR","","","","","86001","","a7d9e14ded9387d9"])
     }
     
     func testExportAsData() {
