@@ -735,8 +735,8 @@ func chitch_hash_raw(_ lhs: UnsafePointer<UInt8>?,
 
  @inlinable
 func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
-                          _ lhs_count: Int) -> (Int,Int,Int) {
-    guard let lhs = lhs else { return (0,0,0) }
+                          _ lhs_count: Int) -> Int {
+    guard let lhs = lhs else { return 0 }
     let lhsEnd = lhs + min(lhs_count, 128)
     var lhsPtr = lhs
     var hash1: Int = 0
@@ -751,7 +751,7 @@ func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
         idx += 1
         lhsPtr += 1
     }
-    return (hash1,hash2,hash3)
+    return hash1 ^ hash2 ^ hash3
 }
 
  @inlinable
