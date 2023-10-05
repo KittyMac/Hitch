@@ -87,37 +87,37 @@ extension Hitch {
         }
     }
 
-     @inlinable
+    @inlinable
     public convenience init(_ format: HalfHitch, _ values: Any?...) {
         self.init()
         self.insert(format: format, index: count, values: values)
     }
 
-     @inlinable
+    @inlinable
     public convenience init(_ format: HalfHitch, values: [Any?]) {
         self.init()
         self.append(format: format, values: values)
     }
 
-     @inlinable
+    @inlinable
     @discardableResult
     public func append(format: HalfHitch, _ values: Any?...) -> Self {
         return insert(format: format, index: count, values: values)
     }
 
-     @inlinable
+    @inlinable
     @discardableResult
     public func append(format: HalfHitch, values: [Any?]) -> Self {
         return insert(format: format, index: count, values: values)
     }
 
-     @inlinable
+    @inlinable
     @discardableResult
     public func insert(format: HalfHitch, index: Int, _ values: Any?...) -> Self {
         return insert(format: format, index: index, values: values)
     }
 
-     @inlinable
+    @inlinable
     @discardableResult
     public func insert(format: HalfHitch, index: Int, values: [Any?]) -> Self {
 

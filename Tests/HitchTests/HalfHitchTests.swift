@@ -53,6 +53,11 @@ final class HalfHitchTests: XCTestCase {
         }
     }
     
+    func testFirst() {
+        let hello: Hitch = "d2579a0d728d7bfb198dabd280738c3e8a4d2718"
+        XCTAssertEqual(hello.clamp(32).description, "d2579a0d728d7bfb198dabd280738c3e")
+    }
+    
     func testMD5() {
         let hello: HalfHitch = "Hello"
         XCTAssertEqual(hello.md5(), "8B1A9953C4611296A827ABF8C47804D7")

@@ -46,7 +46,7 @@ struct CHitch {
 
     public init() { }
 
-     @inlinable
+    @inlinable
     var universalData: UnsafePointer<UInt8>? {
         if castedMutableData != nil { return castedMutableData }
         return staticData
