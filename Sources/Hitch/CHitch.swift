@@ -1,5 +1,8 @@
 import Foundation
 
+@usableFromInline
+internal let nullPad = 4
+
 // Ported from cHitch.c.
 
 @usableFromInline
@@ -56,8 +59,11 @@ struct CHitch {
 // MARK: - Utility
 
  @inlinable
-func nullify(_ chitch: CHitch) {
-    if chitch.count <= chitch.capacity {
+func nullify(_ chitch: inout CHitch) {
+    if chitch.count < chitch.capacity {
+        chitch.mutableData?[chitch.count] = 0
+    } else {
+        chitch_sanity(&chitch, chitch.capacity + 1)
         chitch.mutableData?[chitch.count] = 0
     }
 }
@@ -142,9 +148,9 @@ func chitch_init_capacity(_ capacity: Int) -> CHitch {
     var c = CHitch()
     c.count = 0
     c.capacity = capacity
-    c.mutableData = chitch_internal_malloc(capacity + 1)
+    c.mutableData = chitch_internal_malloc(capacity + nullPad)
     c.castedMutableData = UnsafePointer(c.mutableData)
-    nullify(c)
+    nullify(&c)
     return c
 }
 
@@ -154,10 +160,10 @@ func chitch_init_raw(_ raw: UnsafeMutablePointer<UInt8>?, _ count: Int) -> CHitc
     var c = CHitch()
     c.count = count
     c.capacity = count
-    c.mutableData = chitch_internal_malloc(count + 1)
+    c.mutableData = chitch_internal_malloc(count + nullPad)
     c.castedMutableData = UnsafePointer(c.mutableData)
     c.mutableData?.assign(from: raw, count: count)
-    nullify(c)
+    nullify(&c)
     return c
 }
 
@@ -167,10 +173,10 @@ func chitch_init_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int) -> CHitch {
     var c = CHitch()
     c.count = count
     c.capacity = count
-    c.mutableData = chitch_internal_malloc(count + 1)
+    c.mutableData = chitch_internal_malloc(count + nullPad)
     c.castedMutableData = UnsafePointer(c.mutableData)
     c.mutableData?.assign(from: raw, count: count)
-    nullify(c)
+    nullify(&c)
     return c
 }
 
@@ -239,9 +245,9 @@ func chitch_realloc(_ c0: inout CHitch, _ newCapacity: Int) {
     if let c0_data = c0.mutableData {
         c0.count = min(c0.count, newCapacity)
         c0.capacity = newCapacity
-        c0.mutableData = chitch_internal_realloc(c0_data, newCapacity + 1)
+        c0.mutableData = chitch_internal_realloc(c0_data, newCapacity + nullPad)
         c0.castedMutableData = UnsafePointer(c0.mutableData)
-        nullify(c0)
+        nullify(&c0)
         return
     }
     if let _ = c0.staticData {
@@ -253,17 +259,17 @@ func chitch_realloc(_ c0: inout CHitch, _ newCapacity: Int) {
  @inlinable
 func chitch_resize(_ c0: inout CHitch, _ newCapacity: Int) {
     if newCapacity > c0.capacity {
-        chitch_realloc(&c0, newCapacity + 1)
+        chitch_realloc(&c0, newCapacity)
     } else if newCapacity < c0.capacity {
         c0.count = newCapacity
-        nullify(c0)
+        nullify(&c0)
     }
 }
 
  @inlinable
 func chitch_sanity(_ c0: inout CHitch, _ desiredCapacity: Int) {
     if desiredCapacity > c0.capacity {
-        chitch_realloc(&c0, desiredCapacity + 1)
+        chitch_realloc(&c0, desiredCapacity)
     }
 }
 
@@ -321,11 +327,11 @@ func chitch_trim(_ c0: inout CHitch) {
     c0.count = end - start + 1
     
     if start == c0.mutableData {
-        nullify(c0)
+        nullify(&c0)
         return
     }
     memmove(c0_data, start, c0.count)
-    nullify(c0)
+    nullify(&c0)
 }
 
  @inlinable
@@ -401,7 +407,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         }
 
         c0.count = capacity_required
-        nullify(c0)
+        nullify(&c0)
     } else {
         // Our array can stay the same size as we perform the replacement. Since we can go front to
         // back we don't need to know the number of occurrences a priori.
@@ -433,7 +439,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         }
 
         c0.count = (new_ptr - start) - 1
-        nullify(c0)
+        nullify(&c0)
     }
 }
 
@@ -499,7 +505,7 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
         }
 
         c0.count = capacity_required
-        nullify(c0)
+        nullify(&c0)
     } else {
         // Our array can stay the same size as we perform the replacement. Since we can go front to
         // back we don't need to know the number of occurrences a priori.
@@ -534,7 +540,7 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
         if c0.count < 0 {
             c0.count = 0
         }
-        nullify(c0)
+        nullify(&c0)
     }
 }
 
@@ -548,7 +554,7 @@ func chitch_concat(_ c0: inout CHitch, _ rhs: UnsafePointer<UInt8>?, _ rhs_count
 
     (c0_data + c0.count).assign(from: rhs, count: rhs_count)
     c0.count += rhs_count
-    nullify(c0)
+    nullify(&c0)
 }
 
  @inlinable
@@ -559,7 +565,7 @@ func chitch_concat_char(_ c0: inout CHitch, _ rhs: UInt8) {
 
     c0_data[c0.count] = rhs
     c0.count += 1
-    nullify(c0)
+    nullify(&c0)
 }
 
  @inlinable
@@ -608,7 +614,7 @@ func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafePointer<UInt8>?
     }
 
     c0.count = ptr - c0_data
-    nullify(c0)
+    nullify(&c0)
 }
 
  @inlinable
@@ -645,7 +651,7 @@ func chitch_insert_raw(_ c0: inout CHitch, _ position_in: Int, _ rhs: UnsafePoin
     }
 
     c0.count += rhs_count
-    nullify(c0)
+    nullify(&c0)
 }
 
  @inlinable

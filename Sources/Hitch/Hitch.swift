@@ -168,7 +168,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
 
         fclose(file)
         chitch.count = size
-        nullify(chitch)
+        nullify(&chitch)
     }
 
     required public init (stringLiteral: StaticString, copyOnWrite: Bool) {
@@ -233,7 +233,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public init(garbage: Int) {
         chitch = chitch_init_capacity(garbage)
         chitch.count = garbage
-        nullify(chitch)
+        nullify(&chitch)
     }
 
     public override init() {
