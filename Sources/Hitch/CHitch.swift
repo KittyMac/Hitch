@@ -1,7 +1,7 @@
 import Foundation
 
 @usableFromInline
-internal let nullPad = 4
+internal let nullPad = 2
 
 // Ported from cHitch.c.
 
@@ -60,7 +60,7 @@ struct CHitch {
 
  @inlinable
 func nullify(_ chitch: inout CHitch) {
-    if chitch.count < chitch.capacity {
+    if chitch.count <= chitch.capacity {
         chitch.mutableData?[chitch.count] = 0
     } else {
         chitch_sanity(&chitch, chitch.capacity + 1)
