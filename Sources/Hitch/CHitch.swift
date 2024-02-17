@@ -728,11 +728,10 @@ func chitch_hash_raw(_ lhs: UnsafePointer<UInt8>?,
     guard let lhs = lhs else { return 0 }
     let lhsEnd = lhs + min(lhs_count, 128)
     var lhsPtr = lhs
-    var hash: Int = 0
+    var hash: Int = 5381
     var idx: Int = 0
     while lhsPtr < lhsEnd {
-        let char = Int(lhsPtr[0])
-        hash = (hash &+ char &* idx) &* (hash &+ char &* idx)
+        hash = (( hash << 5) &+ hash) &+ Int(lhsPtr[0])
         idx += 1
         lhsPtr += 1
     }
@@ -745,19 +744,14 @@ func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
     guard let lhs = lhs else { return 0 }
     let lhsEnd = lhs + min(lhs_count, 128)
     var lhsPtr = lhs
-    var hash1: Int = 0
-    var hash2: Int = 0
-    var hash3: Int = 0
-    var idx: Int = 2
+    var hash: Int = 5381
+    var idx: Int = 0
     while lhsPtr < lhsEnd {
-        let char = Int(lhsPtr[0])
-        hash1 = (hash1 &+ char &* idx) &* (hash1 &+ char &* idx)
-        hash2 = hash2 &+ (char &* idx) &* (char &* idx) &* (hash2 &+ char &* idx)
-        hash3 = (hash3 &- char &* idx) &* (hash3 &+ char &* idx &+ char &+ idx) &+ char &* idx
+        hash = (( hash << 5) &+ hash) &+ Int(lhsPtr[0])
         idx += 1
         lhsPtr += 1
     }
-    return hash1 ^ hash2 ^ hash3
+    return hash
 }
 
  @inlinable
