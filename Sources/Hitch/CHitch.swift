@@ -855,6 +855,17 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     guard let needle = needle else { return -1 }
     guard needle_count <= haystack_count else { return -1 }
 
+    if haystack[haystack_count] == 0,
+       needle[needle_count] == 0 {
+        if let found = strstr(haystack, needle) {
+            return found.withMemoryRebound(to: UInt8.self, capacity: needle_count) { pointer in
+                return pointer - UnsafeMutablePointer(mutating: haystack)
+            }
+        }
+        return -1
+    }
+    
+    
     let haystack_end = haystack + haystack_count - needle_count
     
     let needle_count_minus_one = needle_count - 1
@@ -864,7 +875,6 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
 
     var ptr = haystack
     var ptr2 = haystack + needle_count_minus_one
-    var needle2 = needle
     
     if needle_count == 1 {
         while ptr <= haystack_end {
@@ -876,24 +886,11 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
         return -1
     }
     
-    var found = true
     while ptr <= haystack_end {
-        if ptr[0] == needle_start_pointee && ptr2[0] == needle_end_pointee {
-            ptr2 = ptr + 1
-            needle2 = needle + 1
-            found = true
-            while needle2 < needle_end {
-                if ptr2[0] != needle2[0] {
-                    found = false
-                    break
-                }
-                ptr2 += 1
-                needle2 += 1
-            }
-            if found {
-                return (ptr - haystack)
-            }
-            ptr2 = ptr + needle_count_minus_one
+        if ptr.pointee == needle_start_pointee,
+           ptr2.pointee == needle_end_pointee,
+           memcmp(ptr, needle, needle_count) == 0 {
+            return (ptr - haystack)
         }
         ptr += 1
         ptr2 += 1
