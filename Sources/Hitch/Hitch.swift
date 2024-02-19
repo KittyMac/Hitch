@@ -214,6 +214,10 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public init(utf8 raw: UnsafePointer<UInt8>) {
         chitch = chitch_init_raw(raw, strlen(raw))
     }
+    
+    public init(utf8 raw: UnsafePointer<CChar>) {
+        chitch = chitch_init_raw(UnsafeRawPointer(raw).assumingMemoryBound(to: UInt8.self), strlen(raw))
+    }
 
     public init(data: Data) {
         chitch = chitch_empty()

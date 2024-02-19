@@ -115,6 +115,14 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.maybeMutable = true
         lastHash1 = chitch_multihash_raw(self.source, self.count)
     }
+    
+    public init(utf8 raw: UnsafePointer<CChar>) {
+        self.sourceObject = nil
+        self.source = UnsafeRawPointer(raw).assumingMemoryBound(to: UInt8.self)
+        self.count = strlen(raw)
+        self.maybeMutable = true
+        lastHash1 = chitch_multihash_raw(self.source, self.count)
+    }
 
     public init(sourceObject: AnyObject?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceObject = sourceObject
