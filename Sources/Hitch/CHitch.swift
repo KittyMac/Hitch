@@ -180,6 +180,19 @@ func chitch_init_raw(_ raw: UnsafePointer<UInt8>?, _ count: Int) -> CHitch {
     return c
 }
 
+@inlinable
+func chitch_init_own(_ raw: UnsafeMutablePointer<UInt8>?, _ count: Int) -> CHitch {
+   guard let raw = raw else { return chitch_empty() }
+   var c = CHitch()
+   c.count = count
+   c.capacity = count
+   c.mutableData = raw
+   c.castedMutableData = UnsafePointer(c.mutableData)
+   c.mutableData?.assign(from: raw, count: count)
+   nullify(&c)
+   return c
+}
+
  @inlinable
 func chitch_init_string(_ string: String) -> CHitch {
     return chitch_using(string, chitch_init_raw)
