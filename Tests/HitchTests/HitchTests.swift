@@ -42,15 +42,15 @@ final class HitchTests: XCTestCase {
         let hitch = Hitch(string: "")
         
         hitch.append(number: 1)
-        XCTAssertEqual(strcmp(hitch.raw(), "1"), 0)
+        XCTAssertEqual(strcmp(hitch.raw()!, "1"), 0)
         hitch.append(number: 2)
-        XCTAssertEqual(strcmp(hitch.raw(), "12"), 0)
+        XCTAssertEqual(strcmp(hitch.raw()!, "12"), 0)
         hitch.append(number: 3)
-        XCTAssertEqual(strcmp(hitch.raw(), "123"), 0)
+        XCTAssertEqual(strcmp(hitch.raw()!, "123"), 0)
         hitch.append(number: 4)
-        XCTAssertEqual(strcmp(hitch.raw(), "1234"), 0)
+        XCTAssertEqual(strcmp(hitch.raw()!, "1234"), 0)
         hitch.append(number: 5)
-        XCTAssertEqual(strcmp(hitch.raw(), "12345"), 0)
+        XCTAssertEqual(strcmp(hitch.raw()!, "12345"), 0)
         
         XCTAssertEqual(hitch, "12345")
     }

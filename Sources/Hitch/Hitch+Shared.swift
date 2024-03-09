@@ -873,52 +873,75 @@ func doubleFromBinaryFuzzy(data: UnsafePointer<UInt8>,
     return value
 }
 
- @inlinable
+@inlinable
+func append(_ v: UInt8,
+            _ advance: Int,
+            _ write: inout UnsafeMutablePointer<UInt8>,
+            _ read: inout UnsafeMutablePointer<UInt8>) {
+    write[0] = v
+    write += 1
+    read += advance
+}
+
+@inlinable
+func append2(_ v: UInt8,
+             _ advance: Int,
+             _ write: inout UnsafeMutablePointer<UInt8>,
+             _ read: inout UnsafeMutablePointer<UInt8>) {
+    if v == .carriageReturn {
+        read += advance
+        return
+    }
+
+    write[0] = v
+    write += 1
+    read += advance
+}
+
+@inlinable
+func convert(_ write: inout UnsafeMutablePointer<UInt8>,
+             _ read: inout UnsafeMutablePointer<UInt8>,
+             _ end: UnsafeMutablePointer<UInt8>,
+             _ endCondition: (UnsafeMutablePointer<UInt8>) -> Bool) -> Void {
+    var value: UInt32 = 0
+    while read < end && endCondition(read) == false {
+        guard let byte = hex(read[0]) else { break }
+        value &*= 16
+        value &+= byte
+        read += 1
+    }
+    if let scalar = UnicodeScalar(value) {
+        for v in Character(scalar).utf8 {
+            append(v, 0, &write, &read)
+        }
+    }
+}
+
+@inlinable
 func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     var read = data
     var write = data
     let end = data + count
 
-    let append: (UInt8, Int) -> Void = { v, advance in
-        write[0] = v
-        write += 1
-        read += advance
-    }
-
     while read < end {
 
         if read[0] == .backSlash {
             switch read[1] {
-            case .backSlash: append(.backSlash, 2); continue
-            case .forwardSlash: append(.forwardSlash, 2); continue
-            case .singleQuote: append(.singleQuote, 2); continue
-            case .doubleQuote: append(.doubleQuote, 2); continue
-            case .r: append(.carriageReturn, 2); continue
-            case .f: append(.formFeed, 2); continue
-            case .t: append(.tab, 2); continue
-            case .n: append(.newLine, 2); continue
-            case .b: append(.bell, 2); continue
+            case .backSlash: append(.backSlash, 2, &write, &read); continue
+            case .forwardSlash: append(.forwardSlash, 2, &write, &read); continue
+            case .singleQuote: append(.singleQuote, 2, &write, &read); continue
+            case .doubleQuote: append(.doubleQuote, 2, &write, &read); continue
+            case .r: append(.carriageReturn, 2, &write, &read); continue
+            case .f: append(.formFeed, 2, &write, &read); continue
+            case .t: append(.tab, 2, &write, &read); continue
+            case .n: append(.newLine, 2, &write, &read); continue
+            case .b: append(.bell, 2, &write, &read); continue
             case .u:
-                let convert: (() -> Bool) -> Void = { endCondition in
-                    var value: UInt32 = 0
-                    while read < end && endCondition() == false {
-                        guard let byte = hex(read[0]) else { break }
-                        value &*= 16
-                        value &+= byte
-                        read += 1
-                    }
-                    if let scalar = UnicodeScalar(value) {
-                        for v in Character(scalar).utf8 {
-                            append(v, 0)
-                        }
-                    }
-                }
-
                 if read[2] == .openBracket {
                     // like: \u{1D11E}
                     read += 3
-                    convert {
+                    convert(&write, &read, end) { read in
                         return read[0] == .closeBracket
                     }
                     if read[0] == .closeBracket {
@@ -928,7 +951,7 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
                     // like: \u20AC
                     read += 2
                     let start = read
-                    convert {
+                    convert(&write, &read, end) { read in
                         return read - start >= 4
                     }
                 }
@@ -938,7 +961,7 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
             }
         }
 
-        append(read[0], 1)
+        append(read[0], 1, &write, &read)
     }
 
     write[0] = 0
@@ -1045,12 +1068,6 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
     var write = data
     let end = data + count
 
-    let append: (UInt8, Int) -> Void = { v, advance in
-        write[0] = v
-        write += 1
-        read += advance
-    }
-
     while read < end {
         // &amp;&lt;&gt;&quot;&apos;&#038;
         if read[0] == .ampersand && read < end - 2 {
@@ -1072,7 +1089,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                 if tmpRead[0] == .semiColon {
                     if let scalar = UnicodeScalar(value) {
                         for v in Character(scalar).utf8 {
-                            append(v, 0)
+                            append(v, 0, &write, &read)
                         }
                     }
                     read = tmpRead + 1
@@ -1083,7 +1100,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[2] == .m &&
                         read[3] == .p &&
                         read[4] == .semiColon {
-                append(.ampersand, 5)
+                append(.ampersand, 5, &write, &read)
                 continue
             } else if endCount >= 6 &&
                         char1 == .a &&
@@ -1091,19 +1108,19 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[3] == .o &&
                         read[4] == .s &&
                         read[5] == .semiColon {
-                append(.singleQuote, 6)
+                append(.singleQuote, 6, &write, &read)
                 continue
             } else if endCount >= 4 &&
                         char1 == .l &&
                         read[2] == .t &&
                         read[3] == .semiColon {
-                append(.lessThan, 4)
+                append(.lessThan, 4, &write, &read)
                 continue
             } else if endCount >= 4 &&
                         char1 == .g &&
                         read[2] == .t &&
                         read[3] == .semiColon {
-                append(.greaterThan, 4)
+                append(.greaterThan, 4, &write, &read)
                 continue
             } else if endCount >= 6 &&
                         char1 == .q &&
@@ -1111,14 +1128,14 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[3] == .o &&
                         read[4] == .t &&
                         read[5] == .semiColon {
-                append(.doubleQuote, 6)
+                append(.doubleQuote, 6, &write, &read)
                 continue
             } else if endCount >= 5 &&
                         char1 == .t &&
                         read[2] == .a &&
                         read[3] == .b &&
                         read[4] == .semiColon {
-                append(.tab, 5)
+                append(.tab, 5, &write, &read)
                 continue
             } else if endCount >= 9 &&
                         char1 == .n &&
@@ -1129,7 +1146,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[6] == .n &&
                         read[7] == .e &&
                         read[8] == .semiColon {
-                append(.newLine, 9)
+                append(.newLine, 9, &write, &read)
                 continue
             } else if endCount >= 6 &&
                         char1 == .n &&
@@ -1137,7 +1154,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[3] == .s &&
                         read[4] == .p &&
                         read[5] == .semiColon {
-                append(.space, 6)
+                append(.space, 6, &write, &read)
                 continue
             } else if endCount >= 6 &&
                         char1 == .b &&
@@ -1145,7 +1162,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[3] == .l &&
                         read[4] == .l &&
                         read[5] == .semiColon {
-                append(.astericks, 6)
+                append(.astericks, 6, &write, &read)
                 continue
             } else if endCount >= 6 &&
                         char1 == .c &&
@@ -1153,8 +1170,8 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[3] == .p &&
                         read[4] == .y &&
                         read[5] == .semiColon {
-                append(0xC2, 1)
-                append(0xA9, 5)
+                append(0xC2, 1, &write, &read)
+                append(0xA9, 5, &write, &read)
                 continue
             } else if endCount >= 6 &&
                         char1 == .z &&
@@ -1162,22 +1179,22 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[3] == .n &&
                         read[4] == .j &&
                         read[5] == .semiColon {
-                append(.space, 6)
+                append(.space, 6, &write, &read)
                 continue
             } else if endCount >= 5 &&
                         char1 == .z &&
                         read[2] == .w &&
                         read[3] == .j &&
                         read[4] == .semiColon {
-                append(.space, 5)
+                append(.space, 5, &write, &read)
                 continue
             } else if endCount >= 5 &&
                         char1 == .r &&
                         read[2] == .e &&
                         read[3] == .g &&
                         read[4] == .semiColon {
-                append(0xC2, 0)
-                append(0xAE, 5)
+                append(0xC2, 0, &write, &read)
+                append(0xAE, 5, &write, &read)
                 continue
             } else if endCount >= 7 &&
                         char1 == .n &&
@@ -1186,12 +1203,12 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                         read[4] == .s &&
                         read[5] == .h &&
                         read[6] == .semiColon {
-                append(.minus, 7)
+                append(.minus, 7, &write, &read)
                 continue
             }
         }
 
-        append(read[0], 1)
+        append(read[0], 1, &write, &read)
     }
     
     replaceDanglingControlChars(start: data,
@@ -1208,17 +1225,6 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
     var read = data
     var write = data
     let end = data + count
-
-    let append: (UInt8, Int) -> Void = { v, advance in
-        if v == .carriageReturn {
-            read += advance
-            return
-        }
-        
-        write[0] = v
-        write += 1
-        read += advance
-    }
 
     while read < end {
         if read[0] == .equal && read < end-2 {
@@ -1241,7 +1247,7 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
             } else if char1 >= .A && char1 <= .F {
                 value1 += (char1 - .A) + 10
             } else {
-                append(read[0], 1)
+                append2(read[0], 1, &write, &read)
                 continue
             }
             
@@ -1251,16 +1257,16 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
             } else if char2 >= .A && char2 <= .F {
                 value2 += (char2 - .A) + 10
             } else {
-                append(read[0], 1)
+                append2(read[0], 1, &write, &read)
                 continue
             }
             
             let ascii: UInt8 = value1 * 16 + value2
-            append(ascii, 3)
+            append2(ascii, 3, &write, &read)
             continue
         }
 
-        append(read[0], 1)
+        append2(read[0], 1, &write, &read)
     }
     
     replaceDanglingControlChars(start: data,
@@ -1279,18 +1285,7 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
     var read = data
     var write = data
     let end = data + count
-    
-    let append: (UInt8, Int) -> Void = { v, advance in
-        if v == .carriageReturn {
-            read += advance
-            return
-        }
-        
-        write[0] = v
-        write += 1
-        read += advance
-    }
-        
+            
     while read < end {
         if read[0] == .equal &&
             read[1] == .questionMark {
@@ -1345,7 +1340,7 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
                 write += 1
             }
         } else {
-            append(read[0], 1)
+            append2(read[0], 1, &write, &read)
         }
     }
     
@@ -1360,12 +1355,6 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
     var read = data
     var write = data
     let end = data + count
-
-    let append: (UInt8, Int) -> Void = { v, advance in
-        write[0] = v
-        write += 1
-        read += advance
-    }
 
     while read < end {
 
@@ -1382,7 +1371,7 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             } else if char1 >= .A && char1 <= .F {
                 value1 += (char1 - .A) + 10
             } else {
-                append(read[0], 1)
+                append(read[0], 1, &write, &read)
                 continue
             }
             
@@ -1394,17 +1383,17 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
             } else if char2 >= .A && char2 <= .F {
                 value2 += (char2 - .A) + 10
             } else {
-                append(read[0], 1)
+                append(read[0], 1, &write, &read)
                 continue
             }
             
             let ascii: UInt8 = value1 * 16 + value2
             if ascii >= 32 && ascii <= 126 {
-                append(ascii, 3); continue
+                append(ascii, 3, &write, &read); continue
             }
         }
 
-        append(read[0], 1)
+        append(read[0], 1, &write, &read)
     }
 
     write[0] = 0
