@@ -118,7 +118,7 @@ public protocol Hitchable {
     func mutableUsing<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T?
     
     @inlinable
-    func getSourceObject() -> AnyObject?
+    func getSourceObject() -> Any?
 }
 
 public struct HitchableIterator: Sequence, IteratorProtocol {

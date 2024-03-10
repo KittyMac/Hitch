@@ -36,7 +36,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public static let empty: Hitch = ""
     
     @inlinable
-    public func getSourceObject() -> AnyObject? {
+    public func getSourceObject() -> Any? {
         return self
     }
 

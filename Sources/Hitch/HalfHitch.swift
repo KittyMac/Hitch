@@ -51,7 +51,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     }
 
     @usableFromInline
-    let sourceObject: AnyObject?
+    let sourceObject: Any?
 
     @usableFromInline
     let source: UnsafePointer<UInt8>?
@@ -65,7 +65,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     let lastHash1: Int
     
     @inlinable
-    public func getSourceObject() -> AnyObject? {
+    public func getSourceObject() -> Any? {
         return sourceObject
     }
 
@@ -124,7 +124,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         lastHash1 = chitch_multihash_raw(self.source, self.count)
     }
 
-    public init(sourceObject: AnyObject?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
+    public init(sourceObject: Any?, raw: UnsafePointer<UInt8>, count: Int, from: Int, to: Int) {
         self.sourceObject = sourceObject
         self.source = raw + from
         self.count = to - from
@@ -171,6 +171,20 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         self.source = nil
         self.count = 0
         self.maybeMutable = false
+        lastHash1 = chitch_multihash_raw(self.source, self.count)
+    }
+    
+    public init(data: Data) {
+        self.sourceObject = data
+        self.count = data.count
+        self.maybeMutable = false
+        
+        self.source = data.withUnsafeBytes { unsafeRawBufferPointer in
+            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
+            guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
+            return bytes
+        }
+        
         lastHash1 = chitch_multihash_raw(self.source, self.count)
     }
 

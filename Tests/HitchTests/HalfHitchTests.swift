@@ -185,6 +185,14 @@ final class HalfHitchTests: XCTestCase {
         
         XCTAssertEqual(HalfHitch("2023-05-10T21:28:17Z").toEpochISO8601(), 1683754097)
     }
+    
+    func testData() {
+        let loremData = hitchLorem.dataNoCopy()
+        let hitchLorem2 = HalfHitch(data: loremData)
+        
+        XCTAssertEqual(hitchLorem.halfhitch(), hitchLorem2)
+    }
+
         
     func testExtract() {
         let test1: HalfHitch = """
