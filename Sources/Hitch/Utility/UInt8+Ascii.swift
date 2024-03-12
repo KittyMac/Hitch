@@ -3,6 +3,28 @@ import Foundation
 // swiftlint:disable identifier_name
 
 public extension UInt8 {
+    
+    @inlinable
+    func htod() -> UInt8 {
+        if self >= .zero && self <= .nine {
+            return self - .zero
+        } else if self >= .a && self <= .z {
+            return self - .a + 10
+        } else if self >= .A && self <= .Z {
+            return self - .A + 10
+        }
+        return 0
+    }
+    
+    @inlinable
+    func isWhitspace() -> Bool {
+        switch self {
+        case .space, .newLine, .carriageReturn, .tab:
+            return true
+        default:
+            return false
+        }
+    }
 
     static let null: UInt8 = 0
     static let startOfHeading: UInt8 = 1

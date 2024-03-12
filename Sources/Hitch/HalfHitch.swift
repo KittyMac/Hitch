@@ -175,15 +175,15 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     }
     
     public init(data: Data) {
-        self.sourceObject = data
-        self.count = data.count
-        self.maybeMutable = false
+        // Ideally we find a way to do this without a data copy, but unfortunately
+        // withUnsafeBytes() does not garauntee the data live outside the life
+        // of the closure
+        let hitch = Hitch(data: data)
         
-        self.source = data.withUnsafeBytes { unsafeRawBufferPointer in
-            let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
-            guard let bytes = unsafeBufferPointer.baseAddress else { return nil }
-            return bytes
-        }
+        self.sourceObject = hitch
+        self.count = hitch.count
+        self.maybeMutable = false
+        self.source = hitch.raw()
         
         lastHash1 = chitch_multihash_raw(self.source, self.count)
     }

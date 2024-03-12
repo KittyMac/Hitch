@@ -53,6 +53,23 @@ final class HalfHitchTests: XCTestCase {
         }
     }
     
+    func testBase64() {
+        let tests: [HalfHitch: HalfHitch] = [
+            "": "",
+            "f": "Zg==",
+            "fo": "Zm8=",
+            "foo": "Zm9v",
+            "foob": "Zm9vYg==",
+            "fooba": "Zm9vYmE=",
+            "foobar": "Zm9vYmFy",
+        ]
+
+        for (test, result) in tests {
+            XCTAssertEqual(test.dataNoCopy().base64Encoded(), result)
+            XCTAssertEqual(test.dataNoCopy(), result.base64Decoded())
+        }
+    }
+    
     func testFirst() {
         let hello: Hitch = "d2579a0d728d7bfb198dabd280738c3e8a4d2718"
         XCTAssertEqual(hello.clamp(32).description, "d2579a0d728d7bfb198dabd280738c3e")
