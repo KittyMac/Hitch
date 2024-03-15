@@ -1009,7 +1009,7 @@ func escapeBinary(unicode data: UnsafePointer<UInt8>,
 
             var hasFoundBits = false
             for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
-                let hex = hex2((value >> shift) & 0xF)
+                let hex = hex((value >> shift) & 0xF)
                 if hex != .zero || shift <= 12 {
                     hasFoundBits = true
                 }
@@ -1418,6 +1418,23 @@ public func decimal(_ v: UInt8) -> UInt32? {
 }
 
 @inlinable
+public func decimal(_ v: UInt8) -> UInt8? {
+    switch v {
+    case .zero: return 0
+    case .one: return 1
+    case .two: return 2
+    case .three: return 3
+    case .four: return 4
+    case .five: return 5
+    case .six: return 6
+    case .seven: return 7
+    case .eight: return 8
+    case .nine: return 9
+    default: return nil
+    }
+}
+
+@inlinable
 public func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -1441,7 +1458,7 @@ public func hex(_ v: UInt8) -> UInt32? {
 }
 
 @inlinable
-public func hex2(_ v: UInt32) -> UInt8 {
+public func hex(_ v: UInt32) -> UInt8 {
     switch v {
     case 0: return .zero
     case 1: return .one
