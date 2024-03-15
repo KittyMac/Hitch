@@ -1400,8 +1400,8 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
     return (write - data)
 }
 
- @inlinable
-func decimal(_ v: UInt8) -> UInt32? {
+@inlinable
+public func decimal(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
     case .one: return 1
@@ -1417,8 +1417,8 @@ func decimal(_ v: UInt8) -> UInt32? {
     }
 }
 
- @inlinable
-func hex(_ v: UInt8) -> UInt32? {
+@inlinable
+public func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
     case .one: return 1
@@ -1440,8 +1440,8 @@ func hex(_ v: UInt8) -> UInt32? {
     }
 }
 
- @inlinable
-func hex2(_ v: UInt32) -> UInt8 {
+@inlinable
+public func hex2(_ v: UInt32) -> UInt8 {
     switch v {
     case 0: return .zero
     case 1: return .one
