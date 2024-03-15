@@ -36,7 +36,7 @@ public extension HalfHitch {
     }
     
     func base64Decoded() -> Data? {
-        return Data(base64Encoded: dataNoCopy())
+        return Data(base64Encoded: dataNoCopy(), options: [.ignoreUnknownCharacters])
     }
 }
 
