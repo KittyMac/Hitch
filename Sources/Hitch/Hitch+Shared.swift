@@ -905,7 +905,7 @@ func convert(_ write: inout UnsafeMutablePointer<UInt8>,
              _ endCondition: (UnsafeMutablePointer<UInt8>) -> Bool) -> Void {
     var value: UInt32 = 0
     while read < end && endCondition(read) == false {
-        guard let byte = hex(read[0]) else { break }
+        guard let byte: UInt32 = hex(read[0]) else { break }
         value &*= 16
         value &+= byte
         read += 1
@@ -1009,7 +1009,7 @@ func escapeBinary(unicode data: UnsafePointer<UInt8>,
 
             var hasFoundBits = false
             for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
-                let hex = hex((value >> shift) & 0xF)
+                let hex = hex2((value >> shift) & 0xF)
                 if hex != .zero || shift <= 12 {
                     hasFoundBits = true
                 }
@@ -1458,7 +1458,53 @@ public func hex(_ v: UInt8) -> UInt32? {
 }
 
 @inlinable
-public func hex(_ v: UInt32) -> UInt8 {
+public func hex(_ v: UInt8) -> UInt8? {
+    switch v {
+    case .zero: return 0
+    case .one: return 1
+    case .two: return 2
+    case .three: return 3
+    case .four: return 4
+    case .five: return 5
+    case .six: return 6
+    case .seven: return 7
+    case .eight: return 8
+    case .nine: return 9
+    case .a, .A: return 10
+    case .b, .B: return 11
+    case .c, .C: return 12
+    case .d, .D: return 13
+    case .e, .E: return 14
+    case .f, .F: return 15
+    default: return nil
+    }
+}
+
+@inlinable
+public func hex2(_ v: UInt32) -> UInt8 {
+    switch v {
+    case 0: return .zero
+    case 1: return .one
+    case 2: return .two
+    case 3: return .three
+    case 4: return .four
+    case 5: return .five
+    case 6: return .six
+    case 7: return .seven
+    case 8: return .eight
+    case 9: return .nine
+    case 10: return .A
+    case 11: return .B
+    case 12: return .C
+    case 13: return .D
+    case 14: return .E
+    case 15: return .F
+    default: return .questionMark
+    }
+}
+
+@inlinable
+public func hex2(_ v: UInt8) -> UInt8 {
     switch v {
     case 0: return .zero
     case 1: return .one
