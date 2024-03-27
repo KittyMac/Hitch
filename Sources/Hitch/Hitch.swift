@@ -243,6 +243,42 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         chitch.count = garbage
         nullify(&chitch)
     }
+    
+    public init<T: FixedWidthInteger>(number: T) {
+        var nCount = 0
+        var n = number
+        if n == 0 {
+            nCount = 1
+        }
+        if n < 0 {
+            nCount = 1
+        }
+        while n != 0 {
+            n = n / 10
+            nCount += 1
+        }
+        chitch = chitch_init_capacity(nCount)
+        
+        n = number
+        if n < 0 {
+            chitch_concat_char(&chitch, .minus)
+            n = n * -1
+        }
+        if n == 0 {
+            chitch_concat_char(&chitch, .zero)
+        }
+        
+        if var end = chitch.mutableData {
+            end += nCount - 1
+            while n != 0 {
+                end.pointee = UInt8((n % 10) + 48)
+                end -= 1
+                n = n / 10
+            }
+        }
+        chitch.count = nCount
+        nullify(&chitch)
+    }
 
     public override init() {
         chitch = chitch_empty()

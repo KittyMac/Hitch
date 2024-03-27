@@ -517,6 +517,14 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hitch, "Hello world again")
     }
     
+    func testInitFromInts() {
+        XCTAssertEqual(Hitch(number: 0), "0")
+        XCTAssertEqual(Hitch(number: 5), "5")
+        XCTAssertEqual(Hitch(number: -5), "-5")
+        XCTAssertEqual(Hitch(number: 123456789), "123456789")
+        XCTAssertEqual(Hitch(number: -123456789), "-123456789")
+    }
+    
     func testSplitToInt() {
         let hitch: Hitch = "1,2,3,4,52345,-6,7,8134,9,-72,  5  ,  2  4  "
         var array = [Int]()
