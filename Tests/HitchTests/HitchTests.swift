@@ -14,6 +14,27 @@ struct TestHitchCodable: Codable {
 
 final class HitchTests: XCTestCase {
     
+    func testEnumerator() {
+            let url = URL(fileURLWithPath: ".")
+            if let enumerator = FileManager.default.enumerator(at: url,
+                                                               includingPropertiesForKeys: [.isRegularFileKey],
+                                                               options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+                                                                   print("BEFORE")
+                for case let fileURL as URL in enumerator {
+                    do {
+                        let fileAttributes = try fileURL.resourceValues(forKeys:[.isRegularFileKey])
+                    
+                        print(fileURL.path)
+                        if fileAttributes.isRegularFile == true && fileURL.pathExtension == "swift" {
+                        
+                        }
+                    } catch { print(error, fileURL) }
+                }
+                print("AFTER")
+            }
+        }
+    
+    
     func testCastAnyToHitch() {
         let unknown: Any? = [
             "test": Hitch(string: "test2")
@@ -238,6 +259,15 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(test1.extract(#""value2""#, ",")?.toInt(fuzzy: true) ?? 0, 27)
         XCTAssertEqual(test1.extract(#"value3"#, ",")?.toInt(fuzzy: true) ?? 0, 27)
         XCTAssertEqual(test1.extract(#""value4": ""#, "\""), "6.0")
+    }
+    
+    func testExtractAndDelete() {
+        let test1: Hitch = Hitch(string: "Avalue0ABvalue1B")
+        
+        let test2: Hitch = "Bvalue1B"
+        
+        XCTAssertEqual(test1.extractAndDelete("A", "A"), "value0")
+        XCTAssertEqual(test1, test2)
     }
     
     func testIndexOf() {

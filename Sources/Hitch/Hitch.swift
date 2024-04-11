@@ -440,6 +440,42 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         chitch_replace(&chitch, hitch.chitch, with.chitch, ignoreCase)
         return self
     }
+    
+    @inlinable
+    @discardableResult
+    public func extractAndDelete(_ lhs: Hitchable, _ rhs: Hitchable) -> Hitch? {
+        return extractAndDelete(lhs, [rhs])
+    }
+
+    @inlinable
+    @discardableResult
+    public func extractAndDelete(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
+        return extractAndDelete(lhs, [rhs])
+    }
+
+    @inlinable
+    @discardableResult
+    public func extractAndDelete(_ lhs: Hitchable, _ rhs: [Hitchable]) -> Hitch? {
+        guard let lhsPos = firstIndex(of: lhs) else { return nil }
+        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else {
+            defer { replace(from: lhsPos, to: count, with: "") }
+            return substring(lhsPos + lhs.count, count)
+        }
+        defer { replace(from: lhsPos, to: rhsPos + rhs.count, with: "") }
+        return substring(lhsPos + lhs.count, rhsPos)
+    }
+
+    @inlinable
+    @discardableResult
+    public func extractAndDelete(_ lhs: HalfHitch, _ rhs: [HalfHitch]) -> Hitch? {
+        guard let lhsPos = firstIndex(of: lhs) else { return nil }
+        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else {
+            defer { replace(from: lhsPos, to: count, with: "") }
+            return substring(lhsPos + lhs.count, count)
+        }
+        defer { replace(from: lhsPos, to: rhsPos + rhs.count, with: "") }
+        return substring(lhsPos + lhs.count, rhsPos)
+    }
 
     @inlinable
     @discardableResult
