@@ -548,9 +548,7 @@ public extension Hitchable {
     @discardableResult
     func extract(_ lhs: Hitchable, _ rhs: [Hitchable]) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else {
-            return substring(lhsPos + lhs.count, count)
-        }
+        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else { return nil }
         return substring(lhsPos + lhs.count, rhsPos)
     }
 
@@ -558,9 +556,7 @@ public extension Hitchable {
     @discardableResult
     func extract(_ lhs: HalfHitch, _ rhs: [HalfHitch]) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else {
-            return substring(lhsPos + lhs.count, count)
-        }
+        guard let rhsPos = rhs.compactMap({ firstIndex(of: $0, offset: lhsPos + lhs.count) }).min() else { return nil }
         return substring(lhsPos + lhs.count, rhsPos)
     }
 

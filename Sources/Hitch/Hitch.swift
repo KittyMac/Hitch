@@ -445,12 +445,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     @discardableResult
     public func extractAndDelete(_ lhs: Hitchable, _ rhs: Hitchable) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
-            defer {
-                replace(from: lhsPos, to: count, with: "")
-            }
-            return substring(lhsPos + lhs.count, count)
-        }
+        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else { return nil }
         defer {
             replace(from: lhsPos, to: rhsPos + rhs.count, with: "")
         }
@@ -461,12 +456,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     @discardableResult
     public func extractAndDelete(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
-        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else {
-            defer {
-                replace(from: lhsPos, to: count, with: "")
-            }
-            return substring(lhsPos + lhs.count, count)
-        }
+        guard let rhsPos = firstIndex(of: rhs, offset: lhsPos + lhs.count) else { return nil }
         defer {
             replace(from: lhsPos, to: rhsPos + rhs.count, with: "")
         }
