@@ -261,12 +261,18 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(test1.extract(#""value4": ""#, "\""), "6.0")
     }
     
-    func testExtractAndDelete() {
+    func testExtractAndDelete0() {
         let test1: Hitch = Hitch(string: "Avalue0ABvalue1B")
-        
-        let test2: Hitch = "Bvalue1B"
-        
+        let test2: Hitch = ""
         XCTAssertEqual(test1.extractAndDelete("A", "A"), "value0")
+        XCTAssertEqual(test1.extractAndDelete("B", "B"), "value1")
+        XCTAssertEqual(test1, test2)
+    }
+    
+    func testExtractAndDelete1() {
+        let test1: Hitch = Hitch(string: "Avalue0ABvalue1B")
+        let test2: Hitch = ""
+        XCTAssertEqual(test1.extractAndDelete("A", "ABvalue1B"), "value0")
         XCTAssertEqual(test1, test2)
     }
     
