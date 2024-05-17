@@ -1346,15 +1346,21 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
 
 @usableFromInline
 func chitch_using<T>(_ string: String, _ block: (UnsafePointer<UInt8>, Int) -> T) -> T {
-    return string.withCString { bytes in
-        var ptr = bytes
-        while ptr[0] != 0 {
-            ptr += 1
+    return string.utf8CString.withUnsafeBytes { bytes in
+        if let raw2 = bytes.baseAddress?.bindMemory(to: UInt8.self, capacity: bytes.count) {
+            return block(raw2, bytes.count - 1)
         }
-        let raw = UnsafeMutableRawPointer(mutating: bytes)
-        let count = ptr - bytes
-        let raw2 = raw.bindMemory(to: UInt8.self, capacity: count)
-        return block(raw2, count)
+        
+        return string.withCString { bytes in
+            var ptr = bytes
+            while ptr[0] != 0 {
+                ptr += 1
+            }
+            let raw = UnsafeMutableRawPointer(mutating: bytes)
+            let count = ptr - bytes
+            let raw2 = raw.bindMemory(to: UInt8.self, capacity: count)
+            return block(raw2, count)
+        }
     }
 }
 
