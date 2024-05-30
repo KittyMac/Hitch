@@ -659,6 +659,12 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(Hitch(string: "   Hello Hello Hello Hello Hello Hello Hello Hello   ").replace(occurencesOf: "Hello", with: "12345"), "   12345 12345 12345 12345 12345 12345 12345 12345   ")
     }
     
+    func testReplace3() {
+        // replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false)
+        XCTAssertEqual(Hitch(string: "\"\"\"\"\"").replace(occurencesOf: "\"", with: "\"\""), "\"\"\"\"\"\"\"\"\"\"")
+    }
+
+    
     private func splitTest(_ separator: HalfHitch, _ hitch: Hitch, _ result: [Hitch]) {
         let hhresult = result.map { $0.halfhitch() }
         let stringJoinedResult = result.map { $0.description }.joined(separator: "!")
