@@ -375,7 +375,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 
         let capacity_required = c0_count + (replace_count - find_count) * num_occurences
 
-        chitch_sanity(&c0, capacity_required + 512)
+        chitch_sanity(&c0, capacity_required)
         guard let c0_data = c0.mutableData else { return }
 
         // work our way from back to front, copying and replacing as we go
