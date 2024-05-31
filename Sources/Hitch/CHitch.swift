@@ -868,6 +868,7 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     guard let needle = needle else { return -1 }
     guard needle_count <= haystack_count else { return -1 }
 
+    /*
     if needle_count > 1,
        haystack[haystack_count] == 0,
        needle[needle_count] == 0 {
@@ -878,7 +879,7 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
         }
         return -1
     }
-    
+    */
     
     let haystack_end = haystack + haystack_count - needle_count
     
