@@ -868,7 +868,8 @@ func chitch_firstof_raw(_ haystack: UnsafePointer<UInt8>?,
     guard let needle = needle else { return -1 }
     guard needle_count <= haystack_count else { return -1 }
 
-    if haystack[haystack_count] == 0,
+    if needle_count > 1,
+       haystack[haystack_count] == 0,
        needle[needle_count] == 0 {
         if let found = strstr(haystack, needle) {
             return found.withMemoryRebound(to: UInt8.self, capacity: needle_count) { pointer in

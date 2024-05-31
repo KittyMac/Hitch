@@ -489,6 +489,14 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(Hitch(string: "5") > Hitch(string: "5.1.2"), "5" > "5.1.2")
     }
     
+    func testFirstIndexOfNull() {
+        for _ in 0..<10000 {
+            let hitch: Hitch = "none"
+            let idx = hitch.firstIndex(of: .null)
+            XCTAssertEqual(idx, nil)
+        }
+    }
+        
     func testAppendValue() {
         let values = [
             12345,
