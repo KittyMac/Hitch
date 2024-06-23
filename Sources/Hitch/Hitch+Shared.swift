@@ -4,7 +4,7 @@ infix operator ~==
 
 // swiftlint:disable type_body_length
 
- @inlinable
+@inlinable
 func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                                  end: UnsafeMutablePointer<UInt8>) {
     // Run back over the data and raplace odd control characters with spaces
@@ -72,6 +72,67 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
         
         ptr += 1
     }
+}
+
+@inlinable
+func reduceToPrintableAscii(start: UnsafeMutablePointer<UInt8>,
+                            end: UnsafeMutablePointer<UInt8>) -> Int {
+    // Run back over the data and raplace odd control characters with spaces
+    var ptr = start
+    var writePtr = start
+    
+    let isAscii: (UInt8) -> Bool = { ascii in
+        return ascii >= 32 && ascii <= 126
+    }
+    
+    while ptr < end {
+        // skip over utf8 code points
+        let ch = ptr[0]
+        if ch > 0x7f {
+            var value: UInt32 = 0
+            if ch & 0b11100000 == 0b11000000 {
+                value |= (UInt32(ptr[0]) & 0b00011111) << 6
+                value |= (UInt32(ptr[1]) & 0b00111111) << 0
+                if let ascii = UInt8(exactly: value),
+                   isAscii(ascii) == true {
+                    writePtr[0] = ascii
+                    writePtr += 1
+                }
+                ptr += 1
+            } else if ch & 0b11110000 == 0b11100000 {
+                value |= (UInt32(ptr[0]) & 0b00001111) << 12
+                value |= (UInt32(ptr[1]) & 0b00111111) << 6
+                value |= (UInt32(ptr[2]) & 0b00111111) << 0
+                if let ascii = UInt8(exactly: value),
+                   isAscii(ascii) == true {
+                    writePtr[0] = ascii
+                    writePtr += 1
+                }
+                ptr += 2
+            } else if ch & 0b11111000 == 0b11110000 {
+                value |= (UInt32(ptr[0]) & 0b00000111) << 18
+                value |= (UInt32(ptr[1]) & 0b00111111) << 12
+                value |= (UInt32(ptr[2]) & 0b00111111) << 6
+                value |= (UInt32(ptr[3]) & 0b00111111) << 0
+                if let ascii = UInt8(exactly: value),
+                   isAscii(ascii) == true {
+                    writePtr[0] = ascii
+                    writePtr += 1
+                }
+                ptr += 3
+            }
+        } else {
+            // control character which is not part of a utf8 code point; fix it.
+            if isAscii(ptr[0]) {
+                writePtr[0] = ptr[0]
+                writePtr += 1
+            }
+        }
+        
+        ptr += 1
+    }
+    
+    return writePtr - start
 }
 
 public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!

@@ -106,6 +106,17 @@ final class HitchTests: XCTestCase {
         XCTAssertEqual(hello, "hello")
     }
     
+    func testToAscii() {
+        // strips all non-ascii characters
+        let ascii0 = Hitch(string: "‎MtiolHig").ascii() // starts with \u200e
+        let ascii1 = Hitch(string: "MtiolHig").ascii()
+        XCTAssertEqual(ascii0.count, 8)
+        XCTAssertEqual(ascii0, "MtiolHig")
+        XCTAssertEqual(ascii1.count, 8)
+        XCTAssertEqual(ascii1, "MtiolHig")
+        XCTAssertEqual(ascii0, ascii1)
+    }
+    
     func testToLower() {
         let hello = Hitch(string: "Hello")
         XCTAssertEqual(hello.lowercase().description, "hello")

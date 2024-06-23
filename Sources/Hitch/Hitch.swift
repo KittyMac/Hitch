@@ -472,6 +472,18 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
         return self
     }
+    
+    @inlinable
+    @discardableResult
+    public func ascii() -> Self {
+        lastHash = 0
+        chitch_make_mutable(&chitch)
+        if let ptr = chitch.mutableData {
+            count = reduceToPrintableAscii(start: ptr,
+                                           end: ptr + chitch.count)
+        }
+        return self
+    }
 
     @inlinable
     @discardableResult
