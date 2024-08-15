@@ -201,6 +201,17 @@ final class HalfHitchTests: XCTestCase {
         XCTAssertEqual(HalfHitch("2023-03-16 20:59:32.808000").toEpoch2(), 1679000372)
         
         XCTAssertEqual(HalfHitch("2023-05-10T21:28:17Z").toEpochISO8601(), 1683754097)
+        
+        
+        XCTAssertEqual(Int(ISO8601DateFormatter().date(from: "2024-08-14T21:00:47-04:00")!.timeIntervalSince1970), 1723683647)
+        XCTAssertEqual(HalfHitch("2024-08-14T21:00:47-04:00").toEpochISO8601(), 1723683647)
+        XCTAssertEqual(Int(ISO8601DateFormatter().date(from: "2024-08-14T21:00:47+04:00")!.timeIntervalSince1970), 1723654847)
+        XCTAssertEqual(HalfHitch("2024-08-14T21:00:47+04:00").toEpochISO8601(), 1723654847)
+        
+        XCTAssertEqual(Int(ISO8601DateFormatter().date(from: "2024-08-14T21:00:47-0400")!.timeIntervalSince1970), 1723683647)
+        XCTAssertEqual(HalfHitch("2024-08-14T21:00:47-0400").toEpochISO8601(), 1723683647)
+        XCTAssertEqual(Int(ISO8601DateFormatter().date(from: "2024-08-14T21:00:47+0400")!.timeIntervalSince1970), 1723654847)
+        XCTAssertEqual(HalfHitch("2024-08-14T21:00:47+0400").toEpochISO8601(), 1723654847)
     }
     
     func testData() {

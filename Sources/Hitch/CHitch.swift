@@ -1231,6 +1231,8 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     // Handles just this one date format very efficiently. Timezone is always considered to be UTC
     // 2023-03-16 20:59:32.808000
     // 2023-05-10T21:28:17Z
+    // 2024-08-14T21:00:47-04:00
+    // 2024-08-14T21:00:47-0400
     guard let raw = raw else { return 0 }
     guard count > 0 else { return 0 }
         
@@ -1303,11 +1305,31 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr[0] != .Z && ptr < ptrEnd {
+    while ptr[0] != .Z && ptr[0] != .minus && ptr[0] != .plus && ptr < ptrEnd {
         ptr += 1
         secondCount += 1
     }
     ptr += 1
+    
+    // timezone
+    var tm_gmtoff = 0
+    if ptr[0] == .Z {
+        // already UTC
+    } else if ptrEnd - ptr >= 4,
+              ptr[-1] == .minus || ptr[-1] == .plus {
+        let colonOffset = ptr[2] == .colon ? 1 : 0
+        if let tzHours = intFromBinary(data: ptr, count: 2),
+           let tzMinutes = intFromBinary(data: ptr+2+colonOffset, count: 2) {
+            if ptr[-1] == .minus {
+                tm_gmtoff += tzHours * 60 * 60
+                tm_gmtoff += tzMinutes * 60
+            } else {
+                tm_gmtoff -= tzHours * 60 * 60
+                tm_gmtoff -= tzMinutes * 60
+            }
+        }
+    }
+    
     guard ptr <= ptrEnd else { return 0 }
     guard let tm_sec = intFromBinary(data: secondPtr, count: secondCount) else { return 0 }
             
@@ -1343,7 +1365,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
         tm_yday += 1
     }
         
-    return tm_sec + tm_min*60 + tm_hour*3600 + tm_yday*86400 + (tm_year-70)*31536000 + ((tm_year-69)/4)*86400 - ((tm_year-1)/100)*86400 + ((tm_year+299)/400)*86400
+    return tm_sec + tm_min*60 + tm_hour*3600 + tm_yday*86400 + (tm_year-70)*31536000 + ((tm_year-69)/4)*86400 - ((tm_year-1)/100)*86400 + ((tm_year+299)/400)*86400 + tm_gmtoff
 }
 
 @usableFromInline
