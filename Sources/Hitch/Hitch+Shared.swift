@@ -272,10 +272,18 @@ public extension Hitchable {
     @inlinable
     func toString() -> String {
         if let raw = raw() {
-            return String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .utf8) ?? ""
+            return String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .utf8) ??
+            String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .ascii) ??
+            String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .isoLatin1) ??
+            String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .nonLossyASCII) ??
+            ""
         }
         if let raw = mutableRaw() {
-            return String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .utf8) ?? ""
+            return String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .utf8) ??
+            String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .ascii) ??
+            String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .isoLatin1) ??
+            String(data: Data(bytesNoCopy: raw, count: count, deallocator: .none), encoding: .nonLossyASCII) ??
+            ""
         }
         return ""
     }
