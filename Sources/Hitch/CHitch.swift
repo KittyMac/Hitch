@@ -756,18 +756,27 @@ func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
                           _ lhs_count: Int) -> Int {
     guard let lhs = lhs else { return 0 }
     let intSize = MemoryLayout<Int>.size
-    guard lhs_count >= intSize else { return chitch_hash_raw(lhs, lhs_count) }
-    
-    return lhs.withMemoryRebound(to: Int.self, capacity: lhs_count / intSize) { pointer in
-        let lhsEnd = pointer + min(lhs_count / intSize, 32)
-        var lhsPtr = pointer
-        var hash: Int = 5381
-        while lhsPtr < lhsEnd {
-            hash = (( hash << 5) &+ hash) &+ lhsPtr[0]
-            lhsPtr += 1
-        }
-        return hash
+    // is our data size > the size of an int
+    guard lhs_count >= intSize else {
+        return chitch_hash_raw(lhs, lhs_count)
     }
+    // is the pointer int aligned?
+    guard UInt(bitPattern: lhs) % UInt(lhs_count / 8) == 0 else {
+        return chitch_hash_raw(lhs, lhs_count)
+    }
+    // can we cast is to the int?
+    guard let pointer = UnsafePointer<Int>(bitPattern: UInt(bitPattern: lhs)) else {
+        return chitch_hash_raw(lhs, lhs_count)
+    }
+    
+    let lhsEnd = pointer + min(lhs_count / intSize, 32)
+    var lhsPtr = pointer
+    var hash: Int = 5381
+    while lhsPtr < lhsEnd {
+        hash = (( hash << 5) &+ hash) &+ lhsPtr[0]
+        lhsPtr += 1
+    }
+    return hash
 }
 
  @inlinable
