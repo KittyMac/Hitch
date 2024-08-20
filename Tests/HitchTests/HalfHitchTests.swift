@@ -90,6 +90,8 @@ final class HalfHitchTests: XCTestCase {
     func testHashValue() {
         let hello: HalfHitch = "Hello"
         XCTAssertEqual(hello.hashValue, 210676686969)
+        
+        XCTAssertEqual(hitchLorem.hashValue, -7313112045928675463)
     }
             
     func testIteration() {
