@@ -741,16 +741,14 @@ func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
     guard let lhs = lhs else { return 0 }
     let lhsEnd = lhs + min(lhs_count, 128)
     var lhsPtr = lhs
-    var hash: UInt8 = 0
+    var hash: Int = 5381
     var idx: Int = 0
-    
     while lhsPtr < lhsEnd {
-        hash = (( hash << 3) &+ hash) &+ lhsPtr[0]
+        hash = (( hash << 5) &+ hash) &+ Int(lhsPtr[0])
         idx += 1
         lhsPtr += 1
     }
-    
-    return Int(hash) * 65536
+    return hash
 }
 
  @inlinable

@@ -11,9 +11,8 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     @inlinable
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
-        guard lhs.count == rhs.count else { return false }
-        guard lhs.lastHash1 == rhs.lastHash1 else { return false }
-        return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
+        return lhs.count == rhs.count &&
+                lhs.lastHash1 == rhs.lastHash1
     }
 
     @inlinable
@@ -21,17 +20,15 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
         guard lhs.source != rhs.utf8Start else { return true }
         let halfhitch = HalfHitch(hashOnly: rhs)
-        guard lhs.lastHash1 == halfhitch.lastHash1 else { return false }
-        return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+        return lhs.lastHash1 == halfhitch.lastHash1
     }
 
     @inlinable
     public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
         guard lhs.utf8CodeUnitCount == rhs.count else { return false }
         guard lhs.utf8Start != rhs.source else { return true }
-        let halfhitch = HalfHitch(stringLiteral: lhs)
-        guard halfhitch.lastHash1 == rhs.lastHash1 else { return false }
-        return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
+        let halfhitch = HalfHitch(hashOnly: lhs)
+        return halfhitch.lastHash1 == rhs.lastHash1
     }
     
     @inlinable
