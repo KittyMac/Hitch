@@ -736,47 +736,21 @@ func chitch_insert_int(_ c0: inout CHitch, _ position: Int, _ rhs_in: Int) {
 // MARK: - IMMUTABLE METHODS
 
  @inlinable
-func chitch_hash_raw(_ lhs: UnsafePointer<UInt8>?,
-                     _ lhs_count: Int) -> Int {
-    guard let lhs = lhs else { return 0 }
-    let lhsEnd = lhs + min(lhs_count, 128)
-    var lhsPtr = lhs
-    var hash: Int = 5381
-    var idx: Int = 0
-    while lhsPtr < lhsEnd {
-        hash = (( hash << 5) &+ hash) &+ Int(lhsPtr[0])
-        idx += 1
-        lhsPtr += 1
-    }
-    return hash
-}
-
- @inlinable
 func chitch_multihash_raw(_ lhs: UnsafePointer<UInt8>?,
                           _ lhs_count: Int) -> Int {
     guard let lhs = lhs else { return 0 }
-    let intSize = MemoryLayout<Int>.size
-    // is our data size > the size of an int
-    guard lhs_count >= intSize else {
-        return chitch_hash_raw(lhs, lhs_count)
-    }
-    // is the pointer int aligned?
-    guard UInt(bitPattern: lhs) % UInt(lhs_count / 8) == 0 else {
-        return chitch_hash_raw(lhs, lhs_count)
-    }
-    // can we cast is to the int?
-    guard let pointer = UnsafePointer<Int>(bitPattern: UInt(bitPattern: lhs)) else {
-        return chitch_hash_raw(lhs, lhs_count)
-    }
+    let lhsEnd = lhs + min(lhs_count, 128)
+    var lhsPtr = lhs
+    var hash: UInt8 = 0
+    var idx: Int = 0
     
-    let lhsEnd = pointer + min(lhs_count / intSize, 32)
-    var lhsPtr = pointer
-    var hash: Int = 5381
     while lhsPtr < lhsEnd {
-        hash = (( hash << 5) &+ hash) &+ lhsPtr[0]
+        hash = (( hash << 3) &+ hash) &+ lhsPtr[0]
+        idx += 1
         lhsPtr += 1
     }
-    return hash
+    
+    return Int(hash) * 65536
 }
 
  @inlinable

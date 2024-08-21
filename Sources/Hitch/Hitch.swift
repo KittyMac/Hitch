@@ -338,7 +338,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     @inlinable
     public override var hash: Int {
         if lastHash == 0 {
-            lastHash = chitch_hash_raw(raw(), count)
+            lastHash = chitch_multihash_raw(raw(), count)
         }
         return lastHash
     }

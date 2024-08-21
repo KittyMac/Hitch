@@ -89,9 +89,31 @@ final class HalfHitchTests: XCTestCase {
     
     func testHashValue() {
         let hello: HalfHitch = "Hello"
-        XCTAssertEqual(hello.hashValue, 210676686969)
+        XCTAssertEqual(hello.hashValue, 4980736)
         
-        XCTAssertEqual(hitchLorem.hashValue, -7313112045928675463)
+        XCTAssertEqual(hitchLorem.hashValue, 5505024)
+        XCTAssertEqual(halfhitchLorem.hashValue, 5505024)
+        
+        // force memory unaligned hash
+        let unaligned0: HalfHitch = "Hello World this is a somewhat long string"
+        let unaligned1: HalfHitch = " Hello World this is a somewhat long string"
+        let unaligned2: HalfHitch = "  Hello World this is a somewhat long string"
+        let unaligned3: HalfHitch = "   Hello World this is a somewhat long string"
+        let unaligned4: HalfHitch = "    Hello World this is a somewhat long string"
+        let unaligned5: HalfHitch = "     Hello World this is a somewhat long string"
+        let unaligned6: HalfHitch = "      Hello World this is a somewhat long string"
+        let unaligned7: HalfHitch = "       Hello World this is a somewhat long string"
+        
+        // NOTE: all of these should have the same hash if our alignment correction is working
+        XCTAssertEqual(HalfHitch(source: unaligned0, from: 0, to: 0 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned1, from: 1, to: 1 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned2, from: 2, to: 2 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned3, from: 3, to: 3 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned4, from: 4, to: 4 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned5, from: 5, to: 5 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned6, from: 6, to: 6 + unaligned0.count).hashValue, 15728640)
+        XCTAssertEqual(HalfHitch(source: unaligned7, from: 7, to: 7 + unaligned0.count).hashValue, 15728640)
+
     }
             
     func testIteration() {
