@@ -84,7 +84,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     
     @inlinable
     public var description: String {
-        return toTempString()
+        return toString()
     }
 
     public init?(contentsOfFile path: String) {

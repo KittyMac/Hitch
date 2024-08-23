@@ -290,7 +290,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     }
 
     public override var description: String {
-        return toTempString()
+        return toString()
     }
 
     @inlinable
