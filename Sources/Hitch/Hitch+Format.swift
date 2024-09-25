@@ -129,8 +129,8 @@ extension Hitch {
             switch value.type {
             case .null: scratch.append(nullHitch)
             case .int: scratch.append(number: value.int ?? 0)
-            case .double: scratch.append(double: value.double ?? 0.0, precision: fieldPrecision)
-            case .hitch: scratch.append(value.hitch ?? Hitch.empty, precision: fieldPrecision)
+            case .double: scratch.append(double: value.double ?? 0.0, precision: fieldPrecision >= 1 ? fieldPrecision : defaultPrecision)
+            case .hitch: scratch.append(value.hitch ?? Hitch.empty, precision: fieldPrecision >= 1 ? fieldPrecision : nil)
             }
         }
 
@@ -280,10 +280,6 @@ extension Hitch {
                     if questionMarkOffset >= 0 {
                         questionMarkValueIdx += questionMarkOffset
                         formatterIndex = Swift.min(questionMarkValueIdx, values.count - 1)
-                    }
-
-                    if formatterPrecision < 0 {
-                        formatterPrecision = defaultPrecision
                     }
 
                     // Ok, we have a format block. If it's unbounded, then we

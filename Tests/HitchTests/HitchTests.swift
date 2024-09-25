@@ -14,6 +14,13 @@ struct TestHitchCodable: Codable {
 
 final class HitchTests: XCTestCase {
     
+    func testFormatString() {
+        let h = "2061597409.20841497919669064"
+        let h2 = #""{0}""# <<< [h]
+        
+        XCTAssertEqual(h2, #""2061597409.20841497919669064""#)
+    }
+    
     func testEnumerator() {
             let url = URL(fileURLWithPath: ".")
             if let enumerator = FileManager.default.enumerator(at: url,
