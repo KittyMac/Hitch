@@ -9,13 +9,13 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     
     public static let empty: HalfHitch = ""
 
-    @inlinable
+
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
         return lhs.count == rhs.count &&
                 lhs.lastHash1 == rhs.lastHash1
     }
 
-    @inlinable
+
     public static func == (lhs: HalfHitch, rhs: StaticString) -> Bool {
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
         guard lhs.source != rhs.utf8Start else { return true }
@@ -23,7 +23,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return lhs.lastHash1 == halfhitch.lastHash1
     }
 
-    @inlinable
+
     public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
         guard lhs.utf8CodeUnitCount == rhs.count else { return false }
         guard lhs.utf8Start != rhs.source else { return true }
@@ -31,45 +31,45 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return halfhitch.lastHash1 == rhs.lastHash1
     }
     
-    @inlinable
+
     public static func ~== (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func ~== (lhs: HalfHitch, rhs: StaticString) -> Bool {
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
         let halfhitch = HalfHitch(hashOnly: rhs)
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
     }
 
-    @inlinable
+
     public static func ~== (lhs: StaticString, rhs: HalfHitch) -> Bool {
         guard lhs.utf8CodeUnitCount == rhs.count else { return false }
         let halfhitch = HalfHitch(stringLiteral: lhs)
         return chitch_equal_caseless_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
 
-    @usableFromInline
+    
     let sourceObject: Any?
 
-    @usableFromInline
+    
     let source: UnsafePointer<UInt8>?
 
-    @usableFromInline
+    
     let maybeMutable: Bool
 
     public var count: Int
 
-    @usableFromInline
+    
     let lastHash1: Int
     
-    @inlinable
+
     public func getSourceObject() -> Any? {
         return sourceObject
     }
 
-    @inlinable
+
     public static func using<T>(data: Data, from: Int = 0, to: Int = -1, _ callback: (HalfHitch) -> T?) -> T? {
         return data.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -82,7 +82,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         }
     }
     
-    @inlinable
+
     public var description: String {
         return toTempString()
     }
@@ -285,7 +285,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         try container.encode(description)
     }
 
-    @inlinable
+
     public func hitch() -> Hitch {
         if let raw = source {
             return Hitch(bytes: raw, offset: 0, count: count)
@@ -293,17 +293,17 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return Hitch()
     }
 
-    @inlinable
+
     public func raw() -> UnsafePointer<UInt8>? {
         return source
     }
 
-    @inlinable
+
     public func mutableRaw() -> UnsafeMutablePointer<UInt8>? {
         return nil
     }
 
-    @inlinable
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(lastHash1)
     }
@@ -312,7 +312,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return lastHash1
     }
 
-    @inlinable
+
     @discardableResult
     public mutating func unicodeUnescape() -> HalfHitch {
         guard maybeMutable else {
@@ -329,7 +329,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func unicodeUnescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -341,7 +341,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return hitch().unicodeUnescape().halfhitch()
     }
 
-    @inlinable
+
     func escaped(unicode: Bool,
                  singleQuotes: Bool) -> Hitch {
         guard let raw = raw() else { return Hitch() }
@@ -351,7 +351,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
                             singleQuotes: singleQuotes)
     }
     
-    @inlinable
+
     @discardableResult
     public mutating func percentUnescape() -> HalfHitch {
         guard maybeMutable else {
@@ -368,7 +368,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func percentUnescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -380,7 +380,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return hitch().percentUnescape().halfhitch()
     }
     
-    @inlinable
+
     @discardableResult
     public mutating func ampersandUnescape() -> HalfHitch {
         guard maybeMutable else {
@@ -397,7 +397,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func ampersandUnescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -409,7 +409,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return hitch().ampersandUnescape().halfhitch()
     }
     
-    @inlinable
+
     @discardableResult
     public mutating func quotedPrintableUnescape() -> HalfHitch {
         guard maybeMutable else {
@@ -426,7 +426,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func quotedPrintableUnescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -438,7 +438,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return hitch().quotedPrintableUnescape().halfhitch()
     }
     
-    @inlinable
+
     @discardableResult
     public mutating func emlHeaderUnescape() -> HalfHitch {
         guard maybeMutable else {
@@ -455,7 +455,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func emlHeaderUnescaped() -> HalfHitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -467,7 +467,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return hitch().emlHeaderUnescape().halfhitch()
     }
 
-    @inlinable
+
     public func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
         guard let raw = raw() else { return [] }
         guard let separatorRaw = separator.raw() else { return [] }
@@ -508,13 +508,13 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         return components
     }
 
-    @inlinable
+
     public func components(separatedBy separator: HalfHitch) -> [Hitch] {
         let hhcomponents: [HalfHitch] = components(separatedBy: separator)
         return hhcomponents.map { $0.hitch() }
     }
     
-    @inlinable
+
     public func trimmed() -> HalfHitch {
         guard let start = raw() else { return self }
         let end = start + count

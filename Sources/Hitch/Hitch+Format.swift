@@ -1,20 +1,20 @@
 import Foundation
 
-@usableFromInline
+
 let trueHitch: Hitch = "true"
-@usableFromInline
+
 let falseHitch: Hitch = "false"
-@usableFromInline
+
 let errorHitch: Hitch = "error"
-@usableFromInline
+
 let nullHitch: Hitch = "null"
 
-@usableFromInline
+
 let defaultPrecision = 15
 
 extension Hitch {
 
-    @usableFromInline
+    
     enum ValueType {
         case null
         case int
@@ -22,16 +22,16 @@ extension Hitch {
         case hitch
     }
 
-    @usableFromInline
+    
     struct TypedValue {
-        @usableFromInline
+        
         let type: ValueType
 
-        @usableFromInline
+        
         let hitch: Hitch?
-        @usableFromInline
+        
         let int: Int?
-        @usableFromInline
+        
         let double: Double?
 
         init() {
@@ -63,14 +63,14 @@ extension Hitch {
         }
     }
 
-    @usableFromInline
+    
     enum Alignment {
         case left
         case center
         case right
     }
 
-    @usableFromInline
+    
     internal func getTypedValue(_ value: Any?) -> TypedValue {
         // Note: this is a slow path
         switch value {
@@ -87,37 +87,37 @@ extension Hitch {
         }
     }
 
-    @inlinable
+
     public convenience init(_ format: HalfHitch, _ values: Any?...) {
         self.init()
         self.insert(format: format, index: count, values: values)
     }
 
-    @inlinable
+
     public convenience init(_ format: HalfHitch, values: [Any?]) {
         self.init()
         self.append(format: format, values: values)
     }
 
-    @inlinable
+
     @discardableResult
     public func append(format: HalfHitch, _ values: Any?...) -> Self {
         return insert(format: format, index: count, values: values)
     }
 
-    @inlinable
+
     @discardableResult
     public func append(format: HalfHitch, values: [Any?]) -> Self {
         return insert(format: format, index: count, values: values)
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(format: HalfHitch, index: Int, _ values: Any?...) -> Self {
         return insert(format: format, index: index, values: values)
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(format: HalfHitch, index: Int, values: [Any?]) -> Self {
 

@@ -4,7 +4,7 @@ infix operator ~==
 
 // swiftlint:disable type_body_length
 
-@inlinable
+
 func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
                                  end: UnsafeMutablePointer<UInt8>) {
     // Run back over the data and raplace odd control characters with spaces
@@ -74,7 +74,7 @@ func replaceDanglingControlChars(start: UnsafeMutablePointer<UInt8>,
     }
 }
 
-@inlinable
+
 func reduceToPrintableAscii(start: UnsafeMutablePointer<UInt8>,
                             end: UnsafeMutablePointer<UInt8>) -> Int {
     // Run back over the data and raplace odd control characters with spaces
@@ -140,7 +140,6 @@ public let nullptr = UnsafePointer<UInt8>(bitPattern: 1)!
 public extension ArraySlice where Element == UInt8 {
 
     @discardableResult
-    @inline(__always)
     func toInt() -> Int? {
         return self.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -151,7 +150,6 @@ public extension ArraySlice where Element == UInt8 {
     }
 
     @discardableResult
-    @inline(__always)
     func toDouble() -> Double? {
         return self.withUnsafeBytes { unsafeRawBufferPointer in
             let unsafeBufferPointer = unsafeRawBufferPointer.bindMemory(to: UInt8.self)
@@ -163,34 +161,34 @@ public extension ArraySlice where Element == UInt8 {
 }
 
 public protocol Hitchable {
-    @inlinable
+
     func raw() -> UnsafePointer<UInt8>?
 
-    @inlinable
+
     func mutableRaw() -> UnsafeMutablePointer<UInt8>?
 
-    @inlinable
+
     var count: Int { get }
 
-    @inlinable
+
     func using<T>(_ block: (UnsafePointer<UInt8>?, Int) -> T?) -> T?
     
-    @inlinable
+
     func mutableUsing<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T?
     
-    @inlinable
+
     func getSourceObject() -> Any?
 }
 
 public struct HitchableIterator: Sequence, IteratorProtocol {
-    @usableFromInline
+    
     internal var ptr: UnsafePointer<UInt8> = nullptr
-    @usableFromInline
+    
     internal var end: UnsafePointer<UInt8> = nullptr
     
     public init() { }
 
-    @inlinable
+
     public mutating func next() -> UInt8? {
         if ptr >= end { return nil }
         ptr += 1
@@ -200,7 +198,7 @@ public struct HitchableIterator: Sequence, IteratorProtocol {
 
 typealias HitchArray = [Hitch]
 extension HitchArray {
-    @inlinable
+
     func joined(separator: HalfHitch) -> Hitch {
         var count = 0
         for part in self {
@@ -219,7 +217,7 @@ extension HitchArray {
 
 typealias HalfHitchArray = [HalfHitch]
 extension HalfHitchArray {
-    @inlinable
+
     func joined(separator: HalfHitch) -> Hitch {
         var count = 0
         for part in self {
@@ -238,19 +236,19 @@ extension HalfHitchArray {
 
 public extension Hitchable {
     
-    @inlinable
+
     var first: UInt8 {
         guard count > 0 else { return 0 }
         return self[0]
     }
     
-    @inlinable
+
     var last: UInt8 {
         guard count > 0 else { return 0 }
         return self[count-1]
     }
 
-    @inlinable
+
     func toTempString() -> String {
         if let raw = raw() {
             return String(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), length: count, encoding: .utf8, freeWhenDone: false) ??
@@ -269,7 +267,7 @@ public extension Hitchable {
         return ""
     }
 
-    @inlinable
+
     func toString() -> String {
         if let raw = raw() {
             return String(data: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none), encoding: .utf8) ??
@@ -288,7 +286,7 @@ public extension Hitchable {
         return ""
     }
 
-    @inlinable
+
     func using<T>(_ block: (UnsafePointer<UInt8>?, Int) -> T?) -> T? {
         if let raw = raw() {
             return block(raw, count)
@@ -296,7 +294,7 @@ public extension Hitchable {
         return nil
     }
     
-    @inlinable
+
     func mutableUsing<T>(_ block: (UnsafeMutablePointer<UInt8>?, Int) -> T?) -> T? {
         if let raw = mutableRaw() {
             return block(raw, count)
@@ -304,22 +302,22 @@ public extension Hitchable {
         return nil
     }
 
-    @inlinable
+
     static func < (lhs: Self, rhs: Self) -> Bool {
         return chitch_cmp_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count) < 0
     }
 
-    @inlinable
+
     static func == (lhs: Self, rhs: Self) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
     
-    @inlinable
+
     static func ~== (lhs: Self, rhs: Self) -> Bool {
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     func using<T>(_ callback: (UnsafePointer<UInt8>) -> T?) -> T? {
         if let raw = raw() {
             return callback(raw)
@@ -327,7 +325,7 @@ public extension Hitchable {
         return nil
     }
 
-    @inlinable
+
     subscript (index: Int) -> UInt8 {
         get {
             guard let raw = raw() else { return 0 }
@@ -336,7 +334,7 @@ public extension Hitchable {
         }
     }
 
-    @inlinable
+
     func makeIterator() -> HitchableIterator {
         var iterator = HitchableIterator()
         if let data = raw() {
@@ -346,7 +344,7 @@ public extension Hitchable {
         return iterator
     }
 
-    @inlinable
+
     func stride(from: Int, to: Int) -> HitchableIterator {
         var iterator = HitchableIterator()
         if let data = raw() {
@@ -356,7 +354,7 @@ public extension Hitchable {
         return iterator
     }
     
-    @inlinable
+
     func md5() -> Hitch? {
         if let raw = raw() {
             return hex_md5(raw: raw, count: count)
@@ -367,7 +365,7 @@ public extension Hitchable {
         return nil
     }
 
-    @inlinable
+
     func dataNoCopy() -> Data {
         if let raw = raw() {
             return Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: raw), count: count, deallocator: .none)
@@ -378,7 +376,7 @@ public extension Hitchable {
         return Data()
     }
 
-    @inlinable
+
     func dataCopy() -> Data {
         if let raw = raw() {
             return Data(bytes: raw, count: count)
@@ -386,7 +384,7 @@ public extension Hitchable {
         return Data()
     }
 
-    @inlinable
+
     func dataNoCopy(start inStart: Int = -1,
                     end inEnd: Int = -1) -> Data {
         let max = count
@@ -412,7 +410,7 @@ public extension Hitchable {
         return Data()
     }
 
-    @inlinable
+
     func dataCopy(start inStart: Int,
                   end inEnd: Int) -> Data {
         if let data = raw() {
@@ -436,22 +434,22 @@ public extension Hitchable {
         return Data()
     }
 
-    @inlinable
+
     func compare(other: Hitchable) -> Int {
         return chitch_cmp_raw(raw(), count, other.raw(), other.count)
     }
     
-    @inlinable
+
     func equals(exact other: Hitchable) -> Bool {
         return chitch_equal_raw(raw(), count, other.raw(), other.count)
     }
     
-    @inlinable
+
     func equals(caseless other: Hitchable) -> Bool {
         return chitch_equal_caseless_raw(raw(), count, other.raw(), other.count)
     }
     
-    @inlinable
+
     func startsAt(raw otherRaw: UnsafePointer<UInt8>, count otherCount: Int, caseless: Bool = false) -> Bool {
         if otherCount < count { return false }
         if caseless {
@@ -460,7 +458,7 @@ public extension Hitchable {
         return chitch_equal_raw(raw(), count, otherRaw, count)
     }
 
-    @inlinable
+
     func canEscape(unicode: Bool,
                    singleQuotes: Bool) -> Bool {
         guard var ptr = raw() else { return false }
@@ -486,7 +484,7 @@ public extension Hitchable {
         return false
     }
 
-    @inlinable
+
     func escaped(unicode: Bool,
                  singleQuotes: Bool) -> Hitch {
         if let raw = mutableRaw() {
@@ -503,66 +501,66 @@ public extension Hitchable {
         return Hitch.empty
     }
 
-    @inlinable
+
     @discardableResult
     func starts(with hitch: Hitchable) -> Bool {
         guard count >= hitch.count else { return false }
         return chitch_equal_raw(raw(), hitch.count, hitch.raw(), hitch.count)
     }
 
-    @inlinable
+
     @discardableResult
     func starts(with hitch: HalfHitch) -> Bool {
         guard count >= hitch.count else { return false }
         return chitch_equal_raw(raw(), hitch.count, hitch.raw(), hitch.count)
     }
 
-    @inlinable
+
     @discardableResult
     func ends(with hitch: Hitchable) -> Bool {
         return lastIndex(of: hitch) == count - hitch.count
     }
 
-    @inlinable
+
     @discardableResult
     func ends(with hitch: HalfHitch) -> Bool {
         return lastIndex(of: hitch) == count - hitch.count
     }
     
-    @inlinable
+
     @discardableResult
     func contains(_ hitch: Hitchable) -> Bool {
         return chitch_contains_raw(raw(), count, hitch.raw(), hitch.count)
     }
 
-    @inlinable
+
     @discardableResult
     func contains(_ halfHitch: HalfHitch) -> Bool {
         return chitch_contains_raw(raw(), count, halfHitch.source, halfHitch.count)
     }
 
-    @inlinable
+
     @discardableResult
     func contains(char: UInt8) -> Bool {
         var local = char
         return chitch_contains_raw(raw(), count, &local, 1)
     }
 
-    @inlinable
+
     @discardableResult
     func firstIndex(of hitch: Hitchable, offset: Int = 0) -> Int? {
         let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
 
-    @inlinable
+
     @discardableResult
     func firstIndex(of hitch: HalfHitch, offset: Int = 0) -> Int? {
         let index = chitch_firstof_raw_offset(raw(), offset, count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
 
-    @inlinable
+
     @discardableResult
     func firstIndex(of char: UInt8, offset: Int = 0) -> Int? {
         var local = char
@@ -570,21 +568,21 @@ public extension Hitchable {
         return index >= 0 ? index : nil
     }
 
-    @inlinable
+
     @discardableResult
     func lastIndex(of hitch: Hitchable) -> Int? {
         let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
 
-    @inlinable
+
     @discardableResult
     func lastIndex(of hitch: HalfHitch) -> Int? {
         let index = chitch_lastof_raw(raw(), count, hitch.raw(), hitch.count)
         return index >= 0 ? index : nil
     }
 
-    @inlinable
+
     @discardableResult
     func lastIndex(of char: UInt8) -> Int? {
         var local = char
@@ -592,7 +590,7 @@ public extension Hitchable {
         return index >= 0 ? index : nil
     }
 
-    @inlinable
+
     @discardableResult
     func substring(_ lhsPos: Int, _ rhsPos: Int) -> Hitch? {
         guard lhsPos >= 0 && lhsPos <= count else { return nil }
@@ -601,19 +599,19 @@ public extension Hitchable {
         return Hitch(chitch: chitch_init_substring_raw(raw(), count, lhsPos, rhsPos))
     }
     
-    @inlinable
+
     @discardableResult
     func extract(_ lhs: Hitchable, _ rhs: Hitchable) -> Hitch? {
         return extract(lhs, [rhs])
     }
 
-    @inlinable
+
     @discardableResult
     func extract(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
         return extract(lhs, [rhs])
     }
 
-    @inlinable
+
     @discardableResult
     func extract(_ lhs: Hitchable, _ rhs: [Hitchable]) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
@@ -621,7 +619,7 @@ public extension Hitchable {
         return substring(lhsPos + lhs.count, rhsPos)
     }
 
-    @inlinable
+
     @discardableResult
     func extract(_ lhs: HalfHitch, _ rhs: [HalfHitch]) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
@@ -629,7 +627,7 @@ public extension Hitchable {
         return substring(lhsPos + lhs.count, rhsPos)
     }
 
-    @inlinable
+
     @discardableResult
     func toInt(fuzzy: Bool = false) -> Int? {
         if let data = raw() {
@@ -643,7 +641,7 @@ public extension Hitchable {
         return nil
     }
 
-    @inlinable
+
     @discardableResult
     func toDouble(fuzzy: Bool = false) -> Double? {
         if let data = raw() {
@@ -657,25 +655,25 @@ public extension Hitchable {
         return nil
     }
 
-    @inlinable
+
     @discardableResult
     func toEpoch() -> Int {
         return chitch_toepoch_raw(raw(), count)
     }
     
-    @inlinable
+
     @discardableResult
     func toEpoch2() -> Int {
         return chitch_toepoch2_raw(raw(), count)
     }
     
-    @inlinable
+
     @discardableResult
     func toEpochISO8601() -> Int {
         return chitch_toepochISO8601_raw(raw(), count)
     }
     
-    @inlinable
+
     func components(inTwain separators: [UInt8],
                     minWidth: Int = 2) -> [HalfHitch] {
         // Splits strings into multiple which are separated by at least minWidth separators
@@ -726,13 +724,13 @@ public extension Hitchable {
     }
 }
 
- @inlinable
+
 func roundToPlaces(value: Double, places: Int) -> Double {
     let divisor = pow(10.0, Double(places))
     return round(value * divisor) / divisor
 }
 
- @inlinable
+
 func intFromBinary(data: UnsafePointer<UInt8>,
                    count: Int) -> Int? {
     var value = 0
@@ -782,7 +780,7 @@ func intFromBinary(data: UnsafePointer<UInt8>,
     return value
 }
 
- @inlinable
+
 func doubleFromBinary(data: UnsafePointer<UInt8>,
                       count: Int) -> Double? {
     var value: Double = 0
@@ -858,7 +856,7 @@ func doubleFromBinary(data: UnsafePointer<UInt8>,
     return value
 }
 
- @inlinable
+
 func intFromBinaryFuzzy(data: UnsafePointer<UInt8>,
                         count: Int) -> Int? {
     var value = 0
@@ -885,7 +883,7 @@ func intFromBinaryFuzzy(data: UnsafePointer<UInt8>,
     return value
 }
 
- @inlinable
+
 func doubleFromBinaryFuzzy(data: UnsafePointer<UInt8>,
                            count: Int) -> Double? {
     var value: Double = 0
@@ -938,7 +936,7 @@ func doubleFromBinaryFuzzy(data: UnsafePointer<UInt8>,
     return value
 }
 
-@inlinable
+
 func append(_ v: UInt8,
             _ advance: Int,
             _ write: inout UnsafeMutablePointer<UInt8>,
@@ -948,7 +946,7 @@ func append(_ v: UInt8,
     read += advance
 }
 
-@inlinable
+
 func append2(_ v: UInt8,
              _ advance: Int,
              _ write: inout UnsafeMutablePointer<UInt8>,
@@ -963,7 +961,7 @@ func append2(_ v: UInt8,
     read += advance
 }
 
-@inlinable
+
 func convert(_ write: inout UnsafeMutablePointer<UInt8>,
              _ read: inout UnsafeMutablePointer<UInt8>,
              _ end: UnsafeMutablePointer<UInt8>,
@@ -982,7 +980,7 @@ func convert(_ write: inout UnsafeMutablePointer<UInt8>,
     }
 }
 
-@inlinable
+
 func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     var read = data
@@ -1033,7 +1031,7 @@ func unescapeBinary(unicode data: UnsafeMutablePointer<UInt8>,
     return (write - data)
 }
 
- @inlinable
+
 func escapeBinary(unicode data: UnsafePointer<UInt8>,
                   count: Int,
                   unicode: Bool,
@@ -1126,7 +1124,7 @@ func escapeBinary(unicode data: UnsafePointer<UInt8>,
     return writer
 }
 
- @inlinable
+
 func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     var read = data
@@ -1283,7 +1281,7 @@ func unescapeBinary(ampersand data: UnsafeMutablePointer<UInt8>,
     return (write - data)
 }
 
- @inlinable
+
 func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     
@@ -1341,7 +1339,7 @@ func unescapeBinary(quotedPrintable data: UnsafeMutablePointer<UInt8>,
     return (write - data)
 }
 
- @inlinable
+
 func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     // like: =?UTF-8?B?T3JkZXIgQ29uZmlybWF0aW9uIOKAkyBPcmRlciAjOiAyNzU1NTQ=?=
@@ -1413,7 +1411,7 @@ func unescapeBinary(emlHeader data: UnsafeMutablePointer<UInt8>,
     return (write - data)
 }
 
- @inlinable
+
 func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
                     count: Int) -> Int {
     // https:\/\/www.google.com\/url?q=https%3A%2F%2Fsardelkitchen.com&amp;sa=D&amp;sntz=1&amp;usg=AOvVaw1T4EtLqdGmEYA-MilAqQIc"
@@ -1465,7 +1463,7 @@ func unescapeBinary(percent data: UnsafeMutablePointer<UInt8>,
     return (write - data)
 }
 
-@inlinable
+
 public func decimal(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -1482,7 +1480,7 @@ public func decimal(_ v: UInt8) -> UInt32? {
     }
 }
 
-@inlinable
+
 public func decimal(_ v: UInt8) -> UInt8? {
     switch v {
     case .zero: return 0
@@ -1499,7 +1497,7 @@ public func decimal(_ v: UInt8) -> UInt8? {
     }
 }
 
-@inlinable
+
 public func hex(_ v: UInt8) -> UInt32? {
     switch v {
     case .zero: return 0
@@ -1522,7 +1520,7 @@ public func hex(_ v: UInt8) -> UInt32? {
     }
 }
 
-@inlinable
+
 public func hex(_ v: UInt8) -> UInt8? {
     switch v {
     case .zero: return 0
@@ -1545,7 +1543,7 @@ public func hex(_ v: UInt8) -> UInt8? {
     }
 }
 
-@inlinable
+
 public func hex2(_ v: UInt32) -> UInt8 {
     switch v {
     case 0: return .zero
@@ -1568,7 +1566,7 @@ public func hex2(_ v: UInt32) -> UInt8 {
     }
 }
 
-@inlinable
+
 public func hex2(_ v: UInt8) -> UInt8 {
     switch v {
     case 0: return .zero

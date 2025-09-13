@@ -4,7 +4,7 @@ import Foundation
 
 public extension UInt8 {
     
-    @inlinable
+
     func htod() -> UInt8 {
         if self >= .zero && self <= .nine {
             return self - .zero
@@ -16,7 +16,7 @@ public extension UInt8 {
         return 0
     }
     
-    @inlinable
+
     func isWhitspace() -> Bool {
         switch self {
         case .space, .newLine, .carriageReturn, .tab:

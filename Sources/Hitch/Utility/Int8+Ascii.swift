@@ -4,7 +4,6 @@ import Foundation
 
 public extension Int8 {
         
-    @inlinable
     func isWhitspace() -> Bool {
         switch self {
         case .space, .newLine, .carriageReturn, .tab:

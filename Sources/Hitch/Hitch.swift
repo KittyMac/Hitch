@@ -2,25 +2,25 @@
 
 import Foundation
 
-@usableFromInline
+
 struct HitchOutputStream: TextOutputStream {
-    @usableFromInline
+    
     let hitch: Hitch
 
-    @usableFromInline
+    
     let index: Int?
 
-    @usableFromInline
+    
     let precision: Int?
 
-    @usableFromInline
+    
     init(hitch: Hitch, index: Int? = nil, precision: Int? = nil) {
         self.hitch = hitch
         self.index = index
         self.precision = precision
     }
 
-    @inlinable
+
     mutating func write(_ string: String) {
         if let index = index {
             hitch.insert(string, index: index, precision: precision)
@@ -35,60 +35,60 @@ struct HitchOutputStream: TextOutputStream {
 public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Sequence, Comparable, Codable {
     public static let empty: Hitch = ""
     
-    @inlinable
+
     public func getSourceObject() -> Any? {
         return self
     }
 
-    @inlinable
+
     public static func == (lhs: Hitch, rhs: Hitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func == (lhs: Hitch, rhs: HalfHitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func == (lhs: Hitch, rhs: StaticString) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: rhs)
         return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
     }
 
-    @inlinable
+
     public static func == (lhs: StaticString, rhs: Hitch) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: lhs)
         return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
     
-    @inlinable
+
     public static func ~== (lhs: Hitch, rhs: Hitch) -> Bool {
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func ~== (lhs: Hitch, rhs: HalfHitch) -> Bool {
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func ~== (lhs: HalfHitch, rhs: Hitch) -> Bool {
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
 
-    @inlinable
+
     public static func ~== (lhs: Hitch, rhs: StaticString) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: rhs)
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
     }
 
-    @inlinable
+
     public static func ~== (lhs: StaticString, rhs: Hitch) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: lhs)
         return chitch_equal_caseless_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
@@ -100,7 +100,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return chitch_equal_raw(raw(), count, object1.raw(), object1.count)
     }
 
-    @inlinable
+
     public subscript (index: Int) -> UInt8 {
         get {
             if let data = chitch.universalData,
@@ -117,33 +117,33 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
 
-    @inlinable
+
     public func raw() -> UnsafePointer<UInt8>? {
         return chitch.universalData
     }
 
-    @inlinable
+
     public func mutableRaw() -> UnsafeMutablePointer<UInt8>? {
         return chitch.mutableData
     }
 
-    @inlinable
+
     public convenience init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let string = try container.decode(String.self)
         self.init(string: string)
     }
 
-    @inlinable
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.description)
     }
 
-    @usableFromInline
+    
     var chitch: CHitch
 
-    @usableFromInline
+    
     var lastHash: Int = 0
 
     deinit {
@@ -284,7 +284,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         chitch = chitch_empty()
     }
 
-    @usableFromInline
+    
     internal init(chitch: CHitch) {
         self.chitch = chitch
     }
@@ -293,7 +293,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return toTempString()
     }
 
-    @inlinable
+
     public var count: Int {
         get {
             return chitch.count
@@ -303,7 +303,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
 
-    @inlinable
+
     public var capacity: Int {
         get {
             return chitch.capacity
@@ -313,7 +313,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     /// Give the raw memory for this string back to the caller, then
     /// forget about it. It becomes the responsibility of the caller
     /// to release this memory
-    @inlinable
+
     public func export() -> (UnsafePointer<UInt8>?, Int) {
         defer { chitch = chitch_empty() }
         if let raw = chitch.universalData {
@@ -322,7 +322,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return (nil, 0)
     }
 
-    @inlinable
+
     public func exportAsData() -> Data {
         if let raw = chitch.mutableData {
             defer { chitch = chitch_empty() }
@@ -335,7 +335,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return Data()
     }
 
-    @inlinable
+
     public override var hash: Int {
         if lastHash == 0 {
             lastHash = chitch_multihash_raw(raw(), count)
@@ -343,7 +343,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return lastHash
     }
 
-    @inlinable
+
     public func components(separatedBy separator: HalfHitch) -> [HalfHitch] {
         guard let raw = raw() else { return [] }
         guard let separatorRaw = separator.raw() else { return [] }
@@ -384,7 +384,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return components
     }
 
-    @inlinable
+
     public func components(separatedBy separator: HalfHitch) -> [Hitch] {
         let hhcomponents: [HalfHitch] = components(separatedBy: separator)
         return hhcomponents.map { $0.hitch() }
@@ -392,34 +392,34 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
 
     // MARK: - Mutating
 
-    @inlinable
+
     public func clear() {
         lastHash = 0
         chitch_resize(&chitch, 0)
     }
 
-    @inlinable
+
     public func release() {
         lastHash = 0
         chitch_dealloc(&chitch)
         chitch = chitch_empty()
     }
 
-    @inlinable
+
     public func replace(with string: String) {
         lastHash = 0
         count = 0
         append(string)
     }
 
-    @inlinable
+
     public func replace(with hitch: Hitch) {
         lastHash = 0
         count = 0
         append(hitch)
     }
 
-    @inlinable
+
     @discardableResult
     public func replace(from: Int, to: Int, with: Hitch) -> Self {
         guard from >= 0 && from <= count else { return self }
@@ -432,7 +432,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func replace(occurencesOf hitch: Hitch, with: Hitch, ignoreCase: Bool = false) -> Self {
         lastHash = 0
@@ -441,7 +441,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func extractAndDelete(_ lhs: Hitchable, _ rhs: Hitchable) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
@@ -452,7 +452,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return substring(lhsPos + lhs.count, rhsPos)
     }
 
-    @inlinable
+
     @discardableResult
     public func extractAndDelete(_ lhs: HalfHitch, _ rhs: HalfHitch) -> Hitch? {
         guard let lhsPos = firstIndex(of: lhs) else { return nil }
@@ -463,7 +463,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return substring(lhsPos + lhs.count, rhsPos)
     }
 
-    @inlinable
+
     @discardableResult
     public func reserveCapacity(_ newCapacity: Int) -> Self {
         if newCapacity > chitch.capacity {
@@ -473,7 +473,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
     
-    @inlinable
+
     @discardableResult
     public func ascii() -> Self {
         lastHash = 0
@@ -485,7 +485,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func lowercase() -> Self {
         lastHash = 0
@@ -494,7 +494,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func uppercase() -> Self {
         lastHash = 0
@@ -503,7 +503,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ hitch: Hitch, precision: Int? = nil) -> Self {
         lastHash = 0
@@ -516,7 +516,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ bytes: UnsafePointer<UInt8>, count: Int) -> Self {
         lastHash = 0
@@ -525,7 +525,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ bytes: UnsafeMutablePointer<UInt8>, count: Int) -> Self {
         lastHash = 0
@@ -534,7 +534,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ hitch: Hitchable) -> Self {
         lastHash = 0
@@ -543,7 +543,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ string: String) -> Self {
         lastHash = 0
@@ -554,7 +554,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ string: String, precision: Int?) -> Self {
         lastHash = 0
@@ -569,7 +569,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         }
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ char: UInt8) -> Self {
         lastHash = 0
@@ -578,13 +578,13 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append<T: FixedWidthInteger>(number: T) -> Self {
         return insert(number: number, index: count)
     }
 
-    @inlinable
+
     @discardableResult
     public func append(double: Double, precision: Int? = nil) -> Self {
         var output = HitchOutputStream(hitch: self, precision: precision)
@@ -592,7 +592,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func append(_ data: Data) -> Self {
         lastHash = 0
@@ -605,7 +605,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(_ hitch: Hitch, index: Int) -> Self {
         lastHash = 0
@@ -614,7 +614,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(_ string: String, index: Int) -> Self {
         lastHash = 0
@@ -623,7 +623,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(_ string: String, index: Int, precision: Int?) -> Self {
         lastHash = 0
@@ -646,7 +646,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(_ char: UInt8, index: Int) -> Self {
         lastHash = 0
@@ -655,7 +655,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert<T: FixedWidthInteger>(number: T, index: Int) -> Self {
         lastHash = 0
@@ -664,7 +664,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(double: Double, index: Int, precision: Int? = nil) -> Self {
         var output = HitchOutputStream(hitch: self, index: index, precision: precision)
@@ -672,7 +672,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func insert(_ data: Data, index: Int) -> Self {
         lastHash = 0
@@ -685,7 +685,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
     
-    @inlinable
+
     @discardableResult
     public func clamp(_ k: Int) -> Self {
         if count > k {
@@ -694,7 +694,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func trim() -> Self {
         lastHash = 0
@@ -703,7 +703,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func unicodeUnescape() -> Hitch {
         lastHash = 0
@@ -714,7 +714,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func unicodeUnescaped() -> Hitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -726,7 +726,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return Hitch(hitch: self).unicodeUnescape()
     }
     
-    @inlinable
+
     @discardableResult
     public func percentUnescape() -> Hitch {
         lastHash = 0
@@ -737,7 +737,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func percentUnescaped() -> Hitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -749,7 +749,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return Hitch(hitch: self).percentUnescape()
     }
     
-    @inlinable
+
     @discardableResult
     public func ampersandUnescape() -> Hitch {
         lastHash = 0
@@ -760,7 +760,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func ampersandUnescaped() -> Hitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -772,7 +772,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return Hitch(hitch: self).ampersandUnescape()
     }
     
-    @inlinable
+
     @discardableResult
     public func quotedPrintableUnescape() -> Hitch {
         lastHash = 0
@@ -783,7 +783,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func quotedPrintableUnescaped() -> Hitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -795,7 +795,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return Hitch(hitch: self).quotedPrintableUnescape()
     }
     
-    @inlinable
+
     @discardableResult
     public func emlHeaderUnescape() -> Hitch {
         lastHash = 0
@@ -806,7 +806,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
-    @inlinable
+
     @discardableResult
     public func emlHeaderUnescaped() -> Hitch {
         // returns self if there was nothing to unescape, or silo'd halfhitch if there was
@@ -818,7 +818,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return Hitch(hitch: self).emlHeaderUnescape()
     }
 
-    @inlinable
+
     @discardableResult
     public func halfhitch(_ lhsPos: Int, _ rhsPos: Int) -> HalfHitch {
         guard lhsPos >= 0 && lhsPos <= count else { return HalfHitch() }
@@ -827,7 +827,7 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return HalfHitch(source: self, from: lhsPos, to: rhsPos)
     }
 
-    @inlinable
+
     @discardableResult
     public func halfhitch() -> HalfHitch {
         return HalfHitch(source: self, from: 0, to: count)
