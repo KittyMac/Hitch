@@ -41,6 +41,15 @@ final class HitchTests: XCTestCase {
             }
         }
     
+    func testComparable0() {
+        let hitch0: Hitch = "test"
+        let hitch1: Hitch? = "test"
+        let hitch2: Hitch? = nil
+        
+        XCTAssertTrue(hitch0 == "test")
+        XCTAssertTrue(hitch1 == "test")
+        XCTAssertTrue(hitch2 == nil)
+    }
     
     func testCastAnyToHitch() {
         let unknown: Any? = [

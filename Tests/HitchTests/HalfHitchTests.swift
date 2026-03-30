@@ -7,6 +7,16 @@ struct TestHalfHitchCodable: Codable {
 
 final class HalfHitchTests: XCTestCase {
     
+    func testComparable0() {
+        let hitch0: HalfHitch = "test"
+        let hitch1: HalfHitch? = "test"
+        let hitch2: HalfHitch? = nil
+        
+        XCTAssertTrue(hitch0 == "test")
+        XCTAssertTrue(hitch1 == "test")
+        XCTAssertTrue(hitch2 == nil)
+    }
+    
     func testCodeBlock() {
         let source: HalfHitch = """
         let x = 5;

@@ -54,11 +54,23 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public static func == (lhs: HalfHitch, rhs: Hitch) -> Bool {
         return chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
+    
+    
+    public static func == (lhs: Hitch, rhs: String) -> Bool {
+        let halfhitch = HalfHitch(string: rhs)
+        return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
 
 
     public static func == (lhs: Hitch, rhs: StaticString) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: rhs)
         return chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
+    
+    
+    public static func == (lhs: String, rhs: Hitch) -> Bool {
+        let halfhitch = HalfHitch(string: lhs)
+        return chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
 
 
@@ -81,11 +93,23 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
     public static func ~== (lhs: HalfHitch, rhs: Hitch) -> Bool {
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
+    
+    
+    public static func ~== (lhs: Hitch, rhs: String) -> Bool {
+        let halfhitch = HalfHitch(string: rhs)
+        return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
 
 
     public static func ~== (lhs: Hitch, rhs: StaticString) -> Bool {
         let halfhitch = HalfHitch(stringLiteral: rhs)
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
+    }
+    
+    
+    public static func ~== (lhs: String, rhs: Hitch) -> Bool {
+        let halfhitch = HalfHitch(string: lhs)
+        return chitch_equal_caseless_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
 
 
