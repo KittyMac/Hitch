@@ -321,24 +321,21 @@ func chitch_toupper_raw(_ lhs: UnsafeMutablePointer<UInt8>?, _ lhs_count: Int) {
 
 func chitch_trim(_ c0: inout CHitch) {
     guard let c0_data = c0.mutableData else { return }
+    guard c0.count > 0 else { return }
 
     var start = c0_data
     var end = c0_data + c0.count - 1
 
-    var c = start[0]
-    while start < end && isWhitespace(c) {
+    while start <= end && isWhitespace(start[0]) {
         start += 1
-        c = start[0]
     }
 
-    c = end[0]
-    while end > start && isWhitespace(c) {
+    while end > start && isWhitespace(end[0]) {
         end -= 1
-        c = end[0]
     }
 
     c0.count = end - start + 1
-    
+
     if start == c0.mutableData {
         nullify(&c0)
         return
@@ -361,7 +358,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
 
     // Expansion: our array is going to need to grow before we can perform the replacement
     if replace_count > find_count {
-        // Figure out how big out final array needs to be, then resize c0
+        // Figure out how big our final array needs to be, then resize c0
         var num_occurences = 0
         var nextOffset = 0
         while true {
@@ -383,7 +380,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         let old_end = c0_data + c0_count
         let new_end = c0_data + capacity_required
 
-        var old_ptr_a = old_end
+        var old_ptr_a = old_end - 1
         var old_ptr_b = old_end
         var new_ptr = new_end
 
@@ -411,12 +408,10 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
             old_ptr_a -= 1
         }
 
-        // final copy
-        if old_ptr_a >= start {
-            fix_count = old_ptr_b - (old_ptr_a + find_count)
-            if fix_count > 0 {
-                memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
-            }
+        // final copy: move any remaining bytes at the front
+        fix_count = old_ptr_b - start
+        if fix_count > 0 {
+            memmove(new_ptr - fix_count, start, fix_count)
         }
 
         c0.count = capacity_required
@@ -426,14 +421,13 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
         // back we don't need to know the number of occurrences a priori.
         guard let c0_data = c0.mutableData else { return }
 
-        // work our way from back to front, copying and replacing as we go
         let start = c0_data
         let old_end = c0_data + c0_count
 
         var old_ptr = start
         var new_ptr = start
 
-        while old_ptr <= old_end {
+        while old_ptr < old_end {
             // is this the thing we need to replace?
             if (old_ptr[0] == find_start_lower || old_ptr[0] == find_start_upper) &&
                 old_ptr + find_count <= old_end &&
@@ -451,7 +445,7 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
             }
         }
 
-        c0.count = (new_ptr - start) - 1
+        c0.count = new_ptr - start
         nullify(&c0)
     }
 }
@@ -483,7 +477,7 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
         let old_end = c0_data + c0_count
         let new_end = c0_data + capacity_required
 
-        var old_ptr_a = old_end
+        var old_ptr_a = old_end - 1
         var old_ptr_b = old_end
         var new_ptr = new_end
 
@@ -509,12 +503,10 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
             old_ptr_a -= 1
         }
 
-        // final copy
-        if old_ptr_a >= start {
-            fix_count = old_ptr_b - (old_ptr_a + find_count)
-            if fix_count > 0 {
-                memmove((old_ptr_a + find_count), new_ptr - fix_count, fix_count)
-            }
+        // final copy: move any remaining bytes at the front
+        fix_count = old_ptr_b - start
+        if fix_count > 0 {
+            memmove(new_ptr - fix_count, start, fix_count)
         }
 
         c0.count = capacity_required
@@ -526,14 +518,13 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
 
         let from_ptr = c0_data + from
 
-        // work our way from back to front, copying and replacing as we go
         let start = c0_data
         let old_end = c0_data + c0_count
 
         var old_ptr = start
         var new_ptr = start
 
-        while old_ptr <= old_end {
+        while old_ptr < old_end {
             // is this the thing we need to replace?
             if old_ptr == from_ptr {
                 old_ptr += find_count
@@ -549,7 +540,7 @@ func chitch_replace(_ c0: inout CHitch, _ from: Int, _ to: Int, _ replace: CHitc
             }
         }
 
-        c0.count = (new_ptr - start) - 1
+        c0.count = new_ptr - start
         if c0.count < 0 {
             c0.count = 0
         }
@@ -809,7 +800,6 @@ func chitch_equal_caseless_raw(_ lhs: UnsafePointer<UInt8>?,
     guard let rhs = rhs else { return false }
     guard lhs_count == rhs_count else { return false }
     guard lhs != rhs else { return true }
-    if lhs_count > 0 && lhs[0] != rhs[0] { return false }
     return memcasecmp(lhs, rhs, rhs_count, true) == 0
 }
 
@@ -1429,7 +1419,7 @@ func chitch_base32_encode(data: Data) -> Hitch? {
     switch extra {
     case 1:
         result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
-        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_left(v: ptr[0], b: 0b00000111, c: 2)] )
     case 2:
         result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
         result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
@@ -1440,7 +1430,7 @@ func chitch_base32_encode(data: Data) -> Hitch? {
         result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
         result.append( encodeTable[chitch_base32_tableIdx1_right(v: ptr[1], b: 0b00111110, c: 1)] )
         result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[1], b: 0b00000001, c: 4, d: ptr[2], e: 4)] )
-        result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[2], b: 0b00001111, c: 1, d: ptr[3], e: 7)] )
+        result.append( encodeTable[chitch_base32_tableIdx1_left(v: ptr[2], b: 0b00001111, c: 1)] )
     case 4:
         result.append( encodeTable[chitch_base32_tableIdx0(v: ptr[0], b: 3)] )
         result.append( encodeTable[chitch_base32_tableIdx4(v: ptr[0], b: 0b00000111, c: 2, d: ptr[1], e: 6)] )
