@@ -12,13 +12,16 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     public static func == (lhs: HalfHitch, rhs: HalfHitch) -> Bool {
         return lhs.count == rhs.count &&
-                lhs.lastHash1 == rhs.lastHash1
+                lhs.lastHash1 == rhs.lastHash1 &&
+                chitch_equal_raw(lhs.raw(), lhs.count, rhs.raw(), rhs.count)
     }
     
     
     public static func == (lhs: HalfHitch, rhs: String) -> Bool {
         let halfhitch = HalfHitch(string: rhs)
-        return lhs.lastHash1 == halfhitch.lastHash1
+        return lhs.count == halfhitch.count &&
+                lhs.lastHash1 == halfhitch.lastHash1 &&
+                chitch_equal_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
     }
 
 
@@ -26,13 +29,16 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
         guard lhs.source != rhs.utf8Start else { return true }
         let halfhitch = HalfHitch(hashOnly: rhs)
-        return lhs.lastHash1 == halfhitch.lastHash1
+        return lhs.lastHash1 == halfhitch.lastHash1 &&
+                chitch_equal_raw(lhs.raw(), lhs.count, rhs.utf8Start, rhs.utf8CodeUnitCount)
     }
     
     
     public static func == (lhs: String, rhs: HalfHitch) -> Bool {
         let halfhitch = HalfHitch(string: lhs)
-        return halfhitch.lastHash1 == rhs.lastHash1
+        return halfhitch.count == rhs.count &&
+                halfhitch.lastHash1 == rhs.lastHash1 &&
+                chitch_equal_raw(halfhitch.raw(), halfhitch.count, rhs.raw(), rhs.count)
     }
 
 
@@ -40,7 +46,8 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard lhs.utf8CodeUnitCount == rhs.count else { return false }
         guard lhs.utf8Start != rhs.source else { return true }
         let halfhitch = HalfHitch(hashOnly: lhs)
-        return halfhitch.lastHash1 == rhs.lastHash1
+        return halfhitch.lastHash1 == rhs.lastHash1 &&
+                chitch_equal_raw(lhs.utf8Start, lhs.utf8CodeUnitCount, rhs.raw(), rhs.count)
     }
     
 

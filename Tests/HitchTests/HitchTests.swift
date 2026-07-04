@@ -14,6 +14,40 @@ struct TestHitchCodable: Codable {
 
 final class HitchTests: XCTestCase {
     
+    func testHalfHitchEqualityHashCollision() {
+        // "ab" and "bA" are a genuine collision in chitch_multihash_raw (DJB2):
+        //   h("ab") == h("bA") == 5863208, and both have count == 2.
+        // Under the old hash-only ==, that made two DIFFERENT strings compare
+        // equal. The byte-compare fallback must reject them.
+        //
+        // (DJB2 folds left-to-right, so any shared suffix preserves the
+        // collision — hence the longer "abstract"/"bAstract" pair below.)
+
+        let ab = HalfHitch(string: "ab")
+        let bA = HalfHitch(string: "bA")
+
+        // Precondition: this really is a hash+count collision, otherwise the test
+        // isn't exercising the fallback at all.
+        XCTAssertEqual(ab.count, bA.count)
+        XCTAssertEqual(ab.hashValue, bA.hashValue)
+
+        // The actual guarantee: equal hash + equal count must NOT imply equal bytes.
+        XCTAssertNotEqual(ab, bA)
+        XCTAssertNotEqual(bA, ab)                 // symmetry (String/HalfHitch path)
+        XCTAssertFalse(ab == "bA")                // HalfHitch == String overload
+        XCTAssertFalse("ab" == bA)                // String == HalfHitch overload
+
+        // Sanity: genuinely-equal values still compare equal.
+        XCTAssertEqual(ab, HalfHitch(string: "ab"))
+        XCTAssertEqual(ab, "ab")
+
+        // Same collision with a shared suffix (count 8), to show it isn't a
+        // length-2 fluke.
+        let long1 = HalfHitch(string: "abstract")
+        let long2 = HalfHitch(string: "bAstract")
+        XCTAssertEqual(long1.hashValue, long2.hashValue)
+        XCTAssertNotEqual(long1, long2)
+    }
     
     func testBufferOverflow() {
         let h = Hitch(string: "AB").replace(occurencesOf: Hitch(string: "ab"), with: Hitch(string: "xyz"), ignoreCase: true)
