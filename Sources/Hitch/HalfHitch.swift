@@ -86,7 +86,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     public var count: Int
 
     
-    let lastHash1: Int
+    var lastHash1: Int
     
 
     public func getSourceObject() -> Any? {
@@ -350,6 +350,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard let raw = raw() else { return self }
         count = unescapeBinary(unicode: UnsafeMutablePointer(mutating: raw),
                                count: count)
+        lastHash1 = chitch_multihash_raw(raw, count)
         return self
     }
 
@@ -389,6 +390,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard let raw = raw() else { return self }
         count = unescapeBinary(percent: UnsafeMutablePointer(mutating: raw),
                                count: count)
+        lastHash1 = chitch_multihash_raw(raw, count)
         return self
     }
 
@@ -418,6 +420,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard let raw = raw() else { return self }
         count = unescapeBinary(ampersand: UnsafeMutablePointer(mutating: raw),
                                count: count)
+        lastHash1 = chitch_multihash_raw(raw, count)
         return self
     }
 
@@ -447,6 +450,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard let raw = raw() else { return self }
         count = unescapeBinary(quotedPrintable: UnsafeMutablePointer(mutating: raw),
                                count: count)
+        lastHash1 = chitch_multihash_raw(raw, count)
         return self
     }
 
@@ -476,6 +480,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
         guard let raw = raw() else { return self }
         count = unescapeBinary(emlHeader: UnsafeMutablePointer(mutating: raw),
                                count: count)
+        lastHash1 = chitch_multihash_raw(raw, count)
         return self
     }
 

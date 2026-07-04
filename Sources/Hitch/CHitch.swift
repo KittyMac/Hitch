@@ -353,21 +353,37 @@ func chitch_replace(_ c0: inout CHitch, _ find: CHitch, _ replace: CHitch, _ ign
     let find_count = find.count
     let replace_count = replace.count
 
+    // An empty needle has no well-defined occurrences; bail early. (The old
+    // counting loop would also spin forever on this case.)
+    guard find_count > 0 else { return }
+
     let find_start_lower = toLower(find_data[0])
     let find_start_upper = toUpper(find_data[0])
 
     // Expansion: our array is going to need to grow before we can perform the replacement
     if replace_count > find_count {
-        // Figure out how big our final array needs to be, then resize c0
+        // Figure out how big our final array needs to be, then resize c0.
+        //
+        // IMPORTANT: this count must use the SAME matching logic as the
+        // replacement loop below. The previous implementation counted with
+        // chitch_firstof_raw (case-sensitive memcmp), which under-counted when
+        // ignoreCase == true, producing too small a capacity and a heap buffer
+        // overflow during the back-to-front copy. We mirror the replacement
+        // loop exactly (including its by-1 walk, which also matches overlapping
+        // occurrences) so capacity_required can never be too small.
         var num_occurences = 0
-        var nextOffset = 0
-        while true {
-            nextOffset = chitch_firstof_raw_offset(c0.mutableData, nextOffset, c0_count, find_data, find_count)
-            if nextOffset < 0 {
-                break
+        if let c0_data = c0.mutableData {
+            let start = c0_data
+            let old_end = c0_data + c0_count
+            var ptr = start
+            while ptr < old_end {
+                if (ptr[0] == find_start_lower || ptr[0] == find_start_upper) &&
+                    ptr + find_count <= old_end &&
+                    memcasecmp(ptr, find_data, find_count, ignoreCase) == 0 {
+                    num_occurences += 1
+                }
+                ptr += 1
             }
-            nextOffset += find_count
-            num_occurences += 1
         }
 
         let capacity_required = c0_count + (replace_count - find_count) * num_occurences
@@ -589,7 +605,7 @@ func chitch_concat_precision(_ c0: inout CHitch, _ rhs_in: UnsafePointer<UInt8>?
     rhs += 1
 
     while rhs < end {
-        if rhs[0] == .dot && isDigit(rhs[-1]) && isDigit(rhs[1]) {
+        if rhs[0] == .dot && isDigit(rhs[-1]) && rhs + 1 < end && isDigit(rhs[1]) {
             ptr[0] = rhs[0]
             ptr += 1; rhs += 1
 
@@ -978,7 +994,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // month
     monthPtr = ptr
-    while ptr[0] != .forwardSlash && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .forwardSlash {
         ptr += 1
         monthCount += 1
     }
@@ -988,17 +1004,18 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // day
     dayPtr = ptr
-    while ptr[0] != .forwardSlash && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .forwardSlash {
         ptr += 1
         dayCount += 1
     }
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard let tm_day = intFromBinary(data: dayPtr, count: dayCount) else { return 0 }
+    guard tm_day >= 1 && tm_day <= 31 else { return 0 }
     
     // year
     yearPtr = ptr
-    while ptr[0] != .space && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .space {
         ptr += 1
         yearCount += 1
     }
@@ -1008,7 +1025,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // hour
     hourPtr = ptr
-    while ptr[0] != .colon && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .colon {
         ptr += 1
         hourCount += 1
     }
@@ -1018,7 +1035,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // minute
     minutePtr = ptr
-    while ptr[0] != .colon && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .colon {
         ptr += 1
         minuteCount += 1
     }
@@ -1028,7 +1045,7 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr[0] != .space && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .space {
         ptr += 1
         secondCount += 1
     }
@@ -1056,6 +1073,8 @@ func chitch_toepoch_raw(_ raw: UnsafePointer<UInt8>?,
 
     tm_year -= 1900
     tm_month -= 1
+    
+    guard tm_month >= 0 && tm_month <= 11 else { return 0 }
     
     // Source adapted from https://dox.ipxe.org/time_8c.html
     let days_to_month_start: [Int] = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 ]
@@ -1104,7 +1123,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // year
     yearPtr = ptr
-    while ptr[0] != .minus && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .minus {
         ptr += 1
         yearCount += 1
     }
@@ -1114,7 +1133,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // month
     monthPtr = ptr
-    while ptr[0] != .minus && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .minus {
         ptr += 1
         monthCount += 1
     }
@@ -1124,19 +1143,18 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // day
     dayPtr = ptr
-    while ptr[0] != .space && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .space {
         ptr += 1
         dayCount += 1
     }
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard let tm_day = intFromBinary(data: dayPtr, count: dayCount) else { return 0 }
-    
-    
+    guard tm_day >= 1 && tm_day <= 31 else { return 0 }
     
     // hour
     hourPtr = ptr
-    while ptr[0] != .colon && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .colon {
         ptr += 1
         hourCount += 1
     }
@@ -1146,7 +1164,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // minute
     minutePtr = ptr
-    while ptr[0] != .colon && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .colon {
         ptr += 1
         minuteCount += 1
     }
@@ -1156,7 +1174,7 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr[0] != .dot && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .dot {
         ptr += 1
         secondCount += 1
     }
@@ -1176,6 +1194,8 @@ func chitch_toepoch2_raw(_ raw: UnsafePointer<UInt8>?,
 
     tm_year -= 1900
     tm_month -= 1
+    
+    guard tm_month >= 0 && tm_month <= 11 else { return 0 }
     
     // Source adapted from https://dox.ipxe.org/time_8c.html
     let days_to_month_start: [Int] = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 ]
@@ -1227,7 +1247,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // year
     yearPtr = ptr
-    while ptr[0] != .minus && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .minus {
         ptr += 1
         yearCount += 1
     }
@@ -1237,7 +1257,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // month
     monthPtr = ptr
-    while ptr[0] != .minus && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .minus {
         ptr += 1
         monthCount += 1
     }
@@ -1247,19 +1267,18 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // day
     dayPtr = ptr
-    while ptr[0] != .T && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .T {
         ptr += 1
         dayCount += 1
     }
     ptr += 1
     guard ptr < ptrEnd else { return 0 }
     guard let tm_day = intFromBinary(data: dayPtr, count: dayCount) else { return 0 }
-    
-    
+    guard tm_day >= 1 && tm_day <= 31 else { return 0 }
     
     // hour
     hourPtr = ptr
-    while ptr[0] != .colon && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .colon {
         ptr += 1
         hourCount += 1
     }
@@ -1269,7 +1288,7 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // minute
     minutePtr = ptr
-    while ptr[0] != .colon && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .colon {
         ptr += 1
         minuteCount += 1
     }
@@ -1279,22 +1298,22 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
     
     // second
     secondPtr = ptr
-    while ptr[0] != .Z && ptr[0] != .minus && ptr[0] != .plus && ptr < ptrEnd {
+    while ptr < ptrEnd && ptr[0] != .Z && ptr[0] != .minus && ptr[0] != .plus {
         ptr += 1
         secondCount += 1
     }
-    ptr += 1
-    
+    guard ptr < ptrEnd else { return 0 }
+
     // timezone
     var tm_gmtoff = 0
     if ptr[0] == .Z {
         // already UTC
     } else if ptrEnd - ptr >= 4,
-              ptr[-1] == .minus || ptr[-1] == .plus {
-        let colonOffset = ptr[2] == .colon ? 1 : 0
-        if let tzHours = intFromBinary(data: ptr, count: 2),
-           let tzMinutes = intFromBinary(data: ptr+2+colonOffset, count: 2) {
-            if ptr[-1] == .minus {
+              ptr[0] == .minus || ptr[0] == .plus {
+        let colonOffset = ptr[1] == .colon ? 1 : 0
+        if let tzHours = intFromBinary(data: ptr+1, count: 2),
+           let tzMinutes = intFromBinary(data: ptr+3+colonOffset, count: 2) {
+            if ptr[0] == .minus {
                 tm_gmtoff += tzHours * 60 * 60
                 tm_gmtoff += tzMinutes * 60
             } else {
@@ -1319,6 +1338,8 @@ func chitch_toepochISO8601_raw(_ raw: UnsafePointer<UInt8>?,
 
     tm_year -= 1900
     tm_month -= 1
+    
+    guard tm_month >= 0 && tm_month <= 11 else { return 0 }
     
     // Source adapted from https://dox.ipxe.org/time_8c.html
     let days_to_month_start: [Int] = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 ]

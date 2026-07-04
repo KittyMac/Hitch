@@ -14,6 +14,13 @@ struct TestHitchCodable: Codable {
 
 final class HitchTests: XCTestCase {
     
+    
+    func testBufferOverflow() {
+        let h = Hitch(string: "AB").replace(occurencesOf: Hitch(string: "ab"), with: Hitch(string: "xyz"), ignoreCase: true)
+        
+        XCTAssertEqual(h, #"xyz"#)
+    }
+    
     func testFormatString() {
         let h = "2061597409.20841497919669064"
         let h2 = #""{0}""# <<< [h]
