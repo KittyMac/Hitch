@@ -36,7 +36,7 @@ final class HitchPerformanceTests: XCTestCase {
     func testCreateChart() {
         results = [(String,Double)]()
         testAppendDynamicMemoryPerf()
-        testAppendStaticMemoryPerf()
+        // testAppendStaticMemoryPerf()
         testUTF8IterationPerf()
         testIterationPerf()
         testToUpperAndToLowerPerf()
