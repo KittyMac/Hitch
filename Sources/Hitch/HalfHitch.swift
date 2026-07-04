@@ -28,7 +28,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     public static func == (lhs: HalfHitch, rhs: StaticString) -> Bool {
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
         guard lhs.source != rhs.utf8Start else { return true }
-        let halfhitch = HalfHitch(hashOnly: rhs)
+        let halfhitch = HalfHitch(stringLiteral: rhs)
         return lhs.lastHash1 == halfhitch.lastHash1 &&
                 chitch_equal_raw(lhs.raw(), lhs.count, rhs.utf8Start, rhs.utf8CodeUnitCount)
     }
@@ -45,7 +45,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
     public static func == (lhs: StaticString, rhs: HalfHitch) -> Bool {
         guard lhs.utf8CodeUnitCount == rhs.count else { return false }
         guard lhs.utf8Start != rhs.source else { return true }
-        let halfhitch = HalfHitch(hashOnly: lhs)
+        let halfhitch = HalfHitch(stringLiteral: lhs)
         return halfhitch.lastHash1 == rhs.lastHash1 &&
                 chitch_equal_raw(lhs.utf8Start, lhs.utf8CodeUnitCount, rhs.raw(), rhs.count)
     }
@@ -64,7 +64,7 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
 
     public static func ~== (lhs: HalfHitch, rhs: StaticString) -> Bool {
         guard lhs.count == rhs.utf8CodeUnitCount else { return false }
-        let halfhitch = HalfHitch(hashOnly: rhs)
+        let halfhitch = HalfHitch(stringLiteral: rhs)
         return chitch_equal_caseless_raw(lhs.raw(), lhs.count, halfhitch.raw(), halfhitch.count)
     }
     
@@ -261,30 +261,6 @@ public struct HalfHitch: Hitchable, CustomStringConvertible, ExpressibleByString
             self.maybeMutable = false
         }
         lastHash1 = chitch_multihash_raw(self.source, self.count)
-    }
-    
-    public init(hashOnly: String) {
-        self.sourceObject = nil
-        self.source = nil
-        self.maybeMutable = false
-        
-        var tempHash1: Int = 0
-        var tempCount: Int = 0
-        chitch_using(hashOnly) { bytes, count in
-            tempCount = count
-            (tempHash1) = chitch_multihash_raw(bytes, count)
-        }
-        self.lastHash1 = tempHash1
-        self.count = tempCount
-    }
-    
-    public init(hashOnly: StaticString) {
-        self.sourceObject = nil
-        self.source = nil
-        self.maybeMutable = false
-        
-        lastHash1 = chitch_multihash_raw(hashOnly.utf8Start, hashOnly.utf8CodeUnitCount)
-        self.count = hashOnly.utf8CodeUnitCount
     }
     
     public init(from decoder: Decoder) throws {

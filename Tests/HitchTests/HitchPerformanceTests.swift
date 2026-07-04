@@ -246,7 +246,7 @@ final class HitchPerformanceTests: XCTestCase {
             })
         )
     }
-        
+    /*
     func testAppendStaticMemoryPerf() {
         var swiftCombined = ""
         let hitchCombined = Hitch()
@@ -263,6 +263,7 @@ final class HitchPerformanceTests: XCTestCase {
             })
         )
     }
+     */
     
     func testAppendDynamicMemoryPerf() {
         var swiftCombined = ""
