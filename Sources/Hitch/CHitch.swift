@@ -280,9 +280,17 @@ func chitch_resize(_ c0: inout CHitch, _ newCapacity: Int) {
 }
 
 
+fileprivate let chitchGrowthChunkMax = 1024 * 1024
+
+@inline(__always)
+func chitch_growth_capacity(_ currentCapacity: Int, _ desiredCapacity: Int) -> Int {
+    let headroom = min(max(currentCapacity, 16), chitchGrowthChunkMax)
+    return max(desiredCapacity, currentCapacity + headroom)
+}
+
 func chitch_sanity(_ c0: inout CHitch, _ desiredCapacity: Int) {
     if desiredCapacity > c0.capacity {
-        chitch_realloc(&c0, desiredCapacity)
+        chitch_realloc(&c0, chitch_growth_capacity(c0.capacity, desiredCapacity))
     }
 }
 
