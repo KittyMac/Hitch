@@ -68,7 +68,7 @@ func nullify(_ chitch: inout CHitch) {
     }
 }
 
-
+@inlinable
 func memcasecmp(_ ptr1: UnsafePointer<UInt8>,
                 _ ptr2: UnsafePointer<UInt8>,
                 _ count: Int,
@@ -798,7 +798,7 @@ func chitch_cmp_raw(_ lhs: UnsafePointer<UInt8>?,
     return 0
 }
 
-
+@inlinable
 func chitch_equal_raw(_ lhs: UnsafePointer<UInt8>?,
                       _ lhs_count: Int,
                       _ rhs: UnsafePointer<UInt8>?,
@@ -813,7 +813,7 @@ func chitch_equal_raw(_ lhs: UnsafePointer<UInt8>?,
     return memcmp(lhs, rhs, rhs_count) == 0
 }
 
-
+@inlinable
 func chitch_equal_caseless_raw(_ lhs: UnsafePointer<UInt8>?,
                       _ lhs_count: Int,
                       _ rhs: UnsafePointer<UInt8>?,
