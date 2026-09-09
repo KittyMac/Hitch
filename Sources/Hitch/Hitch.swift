@@ -728,6 +728,13 @@ public final class Hitch: NSObject, Hitchable, ExpressibleByStringLiteral, Seque
         return self
     }
 
+    @discardableResult
+    public func replaceControlChars() -> Self {
+        guard let raw = chitch.mutableData else { return self }
+        replaceDanglingControlChars(start: raw,
+                                    end: raw + count)
+        return self
+    }
 
     @discardableResult
     public func unicodeUnescape() -> Hitch {

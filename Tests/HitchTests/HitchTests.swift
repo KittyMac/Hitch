@@ -902,6 +902,21 @@ final class HitchTests: XCTestCase {
         
         XCTAssertEqual(numMatches, 10000000 * 10)
     }
+    
+    func testHitchControlChars() {
+        let hitch = Hitch(hitch: "Hello ")
+        hitch.append(0x03)
+        hitch.append(" World")
+        
+        let count0 = hitch.count
+        hitch.replaceControlChars()
+        let count1 = hitch.count
+        
+        XCTAssertEqual(hitch[6], 32)
+        XCTAssertEqual(count0, count1)
+    }
+    
+    //replaceControlChars()
 }
 
 extension HitchTests {
