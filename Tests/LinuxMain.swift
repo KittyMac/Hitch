@@ -6,5 +6,6 @@ XCTMain([
     testCase(HalfHitchTests.allTests),
     testCase(HitchFormatTests.allTests),
     testCase(HitchTests.allTests),
-    testCase(HitchPerformanceTests.allTests)
+    testCase(HitchPerformanceTests.allTests),
+    testCase(HitchISO8601Tests.allTests)
 ])
